@@ -1,0 +1,21 @@
+[project]
+name = "implementr-backend"
+version = "0.1.0"
+description = "Production-grade AI research implementation assistant"
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "pydantic-settings",
+    "python-dotenv",
+    "httpx",
+    "feedparser",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.black]
+line-length = 88
