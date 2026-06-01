@@ -1,0 +1,62 @@
+from app.embeddings.base import (
+    BaseEmbeddingModel,
+)
+from app.schemas.chunk import DocumentChunk
+from app.vectorstores.base import (
+    BaseVectorStore,
+)
+
+
+class RetrievalService:
+    def __init__(
+        self,
+        embedding_model: BaseEmbeddingModel,
+        vector_store: BaseVectorStore,
+    ) -> None:
+        self.embedding_model = embedding_model
+
+        self.vector_store = vector_store
+
+    async def index_chunks(
+        self,
+        chunks: list[DocumentChunk],
+    ) -> None:
+        texts = [
+            chunk.text
+            for chunk in chunks
+        ]
+
+        embeddings = (
+            await self.embedding_model.embed_texts(
+                texts
+            )
+        )
+
+        await self.vector_store.add_embeddings(
+            embeddings=embeddings,
+            chunks=chunks,
+        )
+
+    async def retrieve(
+        self,
+        query: str,
+        k: int = 5,
+    ) -> list[DocumentChunk]:
+        query_embedding = (
+            await self.embedding_model.embed_text(
+                query
+            )
+        )
+
+        query_embedding = (
+            query_embedding.reshape(1, -1)
+        )
+
+        results = (
+            await self.vector_store.similarity_search(
+                query_embedding=query_embedding,
+                k=k,
+            )
+        )
+
+        return results
