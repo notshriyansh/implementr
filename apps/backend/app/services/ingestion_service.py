@@ -7,6 +7,9 @@ from app.ingestion.pdf_downloader import (
     PDFDownloader,
 )
 from app.parsing.pdf_parser import PDFParser
+from app.retrieval.retrieval_service import (
+    RetrievalService,
+)
 from app.schemas.chunk import DocumentChunk
 
 
@@ -14,8 +17,11 @@ class IngestionService:
     def __init__(
         self,
         pdf_downloader: PDFDownloader,
+        retrieval_service: RetrievalService,
     ) -> None:
         self.pdf_downloader = pdf_downloader
+
+        self.retrieval_service = retrieval_service
 
         self.pdf_parser = PDFParser()
 
@@ -45,6 +51,10 @@ class IngestionService:
             document=parsed_document,
             paper_id=paper_id,
             user_id=user_id,
+        )
+
+        await self.retrieval_service.index_chunks(
+            chunks
         )
 
         return chunks

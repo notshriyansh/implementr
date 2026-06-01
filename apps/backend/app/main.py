@@ -6,6 +6,9 @@ from app.core.logging import setup_logging
 from app.api.routes.ingestion import (
     router as ingestion_router,
 )
+from app.api.routes.retrieval import (
+    router as retrieval_router,
+)
 
 setup_logging()
 
@@ -23,6 +26,11 @@ app.include_router(
 
 app.include_router(
     ingestion_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    retrieval_router,
     prefix=settings.api_v1_prefix,
 )
 

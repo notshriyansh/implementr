@@ -1,17 +1,28 @@
+import logging
+
 import feedparser
 import httpx
 
-from app.schemas.paper import Paper, PaperAuthor
+from app.schemas.paper import Paper
+from app.schemas.paper import PaperAuthor
+
+logger = logging.getLogger(__name__)
+
 
 class ArxivRepository:
-    BASE_URL = "http://export.arxiv.org/api/query"
+    BASE_URL = (
+        "http://export.arxiv.org/api/query"
+    )
 
     async def search_papers(
-            self,
-            query: str,
-            max_results: int = 5,
+        self,
+        query: str,
+        max_results: int = 5,
     ) -> list[Paper]:
-        search_query = query.replace(" ", "+")
+        search_query = query.replace(
+            " ",
+            "+",
+        )
 
         url = (
             f"{self.BASE_URL}"
@@ -20,16 +31,41 @@ class ArxivRepository:
             f"&max_results={max_results}"
         )
 
-        async with httpx.AsyncClient(
-            follow_redirects=True,
-        ) as client:
-            response = await client.get(url)
+        timeout = httpx.Timeout(
+            30.0,
+            connect=10.0,
+        )
 
-        response.raise_for_status()
+        try:
+            async with httpx.AsyncClient(
+                follow_redirects=True,
+                timeout=timeout,
+            ) as client:
+                response = await client.get(
+                    url
+                )
 
-        feed = feedparser.parse(response.text)
+            response.raise_for_status()
 
-        papers: list[Paper] =  []
+        except httpx.ReadTimeout:
+            logger.exception(
+                "arXiv API timed out"
+            )
+
+            return []
+
+        except httpx.HTTPError:
+            logger.exception(
+                "arXiv API request failed"
+            )
+
+            return []
+
+        feed = feedparser.parse(
+            response.text
+        )
+
+        papers: list[Paper] = []
 
         for entry in feed.entries:
             authors = [
