@@ -12,6 +12,10 @@ dependencies = [
     "python-dotenv",
     "httpx",
     "feedparser",
+    "pymupdf",
+    "sentence-transformers",
+    "faiss-cpu",
+    "numpy",
 ]
 
 [tool.ruff]

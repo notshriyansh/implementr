@@ -16,13 +16,14 @@ async def download_paper(
     ingestion_service: IngestionService = Depends(
         get_ingestion_service,
     ),
-) -> dict[str, str]:
-    saved_path = await ingestion_service.ingest_paper(
+) -> dict:
+    chunks = await ingestion_service.ingest_paper(
         pdf_url=pdf_url,
         user_id="local_user",
         paper_id=paper_id,
     )
 
     return {
-        "saved_path": saved_path,
+        "total_chunks": len(chunks),
+        "sample_chunk": chunks[0],
     }
