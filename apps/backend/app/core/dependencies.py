@@ -20,12 +20,18 @@ from app.storage.local_storage import (
 from app.vectorstores.faiss_store import (
     FAISSVectorStore,
 )
+from app.chat.rag_chat_service import (
+    RAGChatService,
+)
+from app.llm.groq_client import GroqLLM
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
 
 vector_store = FAISSVectorStore()
+
+llm = GroqLLM()
 
 
 def get_arxiv_repository() -> ArxivRepository:
@@ -71,4 +77,15 @@ def get_ingestion_service() -> IngestionService:
     return IngestionService(
         pdf_downloader=pdf_downloader,
         retrieval_service=retrieval_service,
+    )
+
+def get_rag_chat_service(
+) -> RAGChatService:
+    retrieval_service = (
+        get_retrieval_service()
+    )
+
+    return RAGChatService(
+        retrieval_service=retrieval_service,
+        llm=llm,
     )

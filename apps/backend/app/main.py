@@ -9,6 +9,9 @@ from app.api.routes.ingestion import (
 from app.api.routes.retrieval import (
     router as retrieval_router,
 )
+from app.api.routes.chat import (
+    router as chat_router,
+)
 
 setup_logging()
 
@@ -31,6 +34,11 @@ app.include_router(
 
 app.include_router(
     retrieval_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    chat_router,
     prefix=settings.api_v1_prefix,
 )
 

@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     api_v1_prefix: str = "/api/v1"
 
-    groq_api_key: str = ""
+    groq_api_key: str
     openai_api_key: str = ""
 
     log_level: str = "INFO"
@@ -23,3 +23,5 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+settings = Settings()
