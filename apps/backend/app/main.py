@@ -15,6 +15,9 @@ from app.api.routes.chat import (
 from app.api.routes.agents import (
     router as agents_router,
 )
+from app.api.routes.research import (
+    router as research_router,
+)
 
 setup_logging()
 
@@ -47,6 +50,11 @@ app.include_router(
 
 app.include_router(
     agents_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    research_router,
     prefix=settings.api_v1_prefix,
 )
 

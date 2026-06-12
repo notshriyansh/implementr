@@ -33,6 +33,10 @@ from app.agents.implementation_agent import (
     ImplementationAgent,
 )
 
+from app.agents.research_graph import (
+    ResearchGraph,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -110,6 +114,17 @@ def get_implementation_agent(
     )
 
     return ImplementationAgent(
+        retrieval_service=retrieval_service,
+        llm=llm,
+    )
+
+def get_research_graph(
+) -> ResearchGraph:
+    retrieval_service = (
+        get_retrieval_service()
+    )
+
+    return ResearchGraph(
         retrieval_service=retrieval_service,
         llm=llm,
     )
