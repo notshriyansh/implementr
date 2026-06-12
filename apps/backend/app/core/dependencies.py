@@ -25,6 +25,10 @@ from app.chat.rag_chat_service import (
 )
 from app.llm.groq_client import GroqLLM
 
+from app.memory.conversation_memory import (
+    ConversationMemory,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -32,6 +36,10 @@ embedding_model = (
 vector_store = FAISSVectorStore()
 
 llm = GroqLLM()
+
+conversation_memory = (
+    ConversationMemory()
+)
 
 
 def get_arxiv_repository() -> ArxivRepository:
@@ -88,4 +96,5 @@ def get_rag_chat_service(
     return RAGChatService(
         retrieval_service=retrieval_service,
         llm=llm,
+        memory=conversation_memory,
     )

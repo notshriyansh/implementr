@@ -22,12 +22,14 @@ router = APIRouter(
     response_model=ChatResponse,
 )
 async def chat(
+    session_id: str,
     question: str,
     rag_chat_service: RAGChatService = Depends(
         get_rag_chat_service,
     ),
 ) -> ChatResponse:
     return await rag_chat_service.chat(
+        session_id=session_id,
         question=question,
     )
 
