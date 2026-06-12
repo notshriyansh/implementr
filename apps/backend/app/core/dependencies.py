@@ -29,6 +29,10 @@ from app.memory.conversation_memory import (
     ConversationMemory,
 )
 
+from app.agents.implementation_agent import (
+    ImplementationAgent,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -97,4 +101,15 @@ def get_rag_chat_service(
         retrieval_service=retrieval_service,
         llm=llm,
         memory=conversation_memory,
+    )
+
+def get_implementation_agent(
+) -> ImplementationAgent:
+    retrieval_service = (
+        get_retrieval_service()
+    )
+
+    return ImplementationAgent(
+        retrieval_service=retrieval_service,
+        llm=llm,
     )
