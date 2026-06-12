@@ -6,6 +6,7 @@ from app.chat.rag_chat_service import (
 from app.core.dependencies import (
     get_rag_chat_service,
 )
+from app.schemas.chat import ChatResponse
 
 router = APIRouter(
     prefix="/chat",
@@ -13,18 +14,16 @@ router = APIRouter(
 )
 
 
-@router.post("/")
+@router.post(
+    "/",
+    response_model=ChatResponse,
+)
 async def chat(
     question: str,
     rag_chat_service: RAGChatService = Depends(
         get_rag_chat_service,
     ),
-) -> dict:
-    response = await rag_chat_service.chat(
+) -> ChatResponse:
+    return await rag_chat_service.chat(
         question=question,
     )
-
-    return {
-        "question": question,
-        "response": response,
-    }

@@ -5,6 +5,10 @@ from app.prompts.rag_prompts import (
 from app.retrieval.retrieval_service import (
     RetrievalService,
 )
+from app.schemas.chat import (
+    ChatResponse,
+    Citation,
+)
 
 
 class RAGChatService:
@@ -22,7 +26,7 @@ class RAGChatService:
     async def chat(
         self,
         question: str,
-    ) -> str:
+    ) -> ChatResponse:
         chunks = (
             await self.retrieval_service.retrieve(
                 query=question,
@@ -42,8 +46,20 @@ class RAGChatService:
             )
         )
 
-        response = await self.llm.generate(
+        answer = await self.llm.generate(
             prompt
         )
 
-        return response
+        citations = [
+            Citation(
+                paper_id=chunk.paper_id,
+                page_number=chunk.page_number,
+                chunk_index=chunk.chunk_index,
+            )
+            for chunk in chunks
+        ]
+
+        return ChatResponse(
+            answer=answer,
+            citations=citations,
+        )

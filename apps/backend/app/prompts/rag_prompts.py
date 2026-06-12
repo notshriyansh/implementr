@@ -6,7 +6,11 @@ Answer the user's question ONLY using the provided context.
 If the answer is not contained in the context, say:
 "I could not find the answer in the provided paper context."
 
-Be concise, accurate, and grounded.
+Keep the answer:
+- concise
+- factual
+- grounded
+- easy to understand
 
 Context:
 {context}
@@ -14,5 +18,5 @@ Context:
 Question:
 {question}
 
-Answer:
+Grounded Answer:
 """
