@@ -5,6 +5,10 @@ from app.schemas.chunk import DocumentChunk
 from app.vectorstores.base import (
     BaseVectorStore,
 )
+from app.retrieval.utils import (
+    deduplicate_chunks,
+    limit_chunks,
+)
 
 
 class RetrievalService:
@@ -57,6 +61,15 @@ class RetrievalService:
                 query_embedding=query_embedding,
                 k=k,
             )
+        )
+
+        results = deduplicate_chunks(
+            results
+        )
+
+        results = limit_chunks(
+            results,
+            max_chunks=k,
         )
 
         return results

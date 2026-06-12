@@ -35,9 +35,24 @@ class RAGChatService:
         session_id: str,
         question: str,
     ) -> ChatResponse:
+        history_messages = (
+            self.memory.get_messages(
+                session_id
+            )
+        )
+
+        recent_history = " ".join(
+            msg.content
+            for msg in history_messages[-2:]
+        )
+
+        retrieval_query = (
+            f"{recent_history} {question}"
+        )
+
         chunks = (
             await self.retrieval_service.retrieve(
-                query=question,
+                query=retrieval_query,
                 k=5,
             )
         )
