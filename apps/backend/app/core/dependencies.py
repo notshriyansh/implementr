@@ -36,6 +36,15 @@ from app.agents.implementation_agent import (
 from app.agents.research_graph import (
     ResearchGraph,
 )
+from app.agents.autonomous_agent import (
+    AutonomousResearchAgent,
+)
+from app.tools.planning_tool import (
+    PlanningTool,
+)
+from app.tools.retrieval_tool import (
+    RetrievalTool,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -127,4 +136,32 @@ def get_research_graph(
     return ResearchGraph(
         retrieval_service=retrieval_service,
         llm=llm,
+    )
+
+def get_retrieval_tool(
+) -> RetrievalTool:
+    retrieval_service = (
+        get_retrieval_service()
+    )
+
+    return RetrievalTool(
+        retrieval_service
+    )
+
+
+def get_planning_tool(
+) -> PlanningTool:
+    return PlanningTool(llm)
+
+
+def get_autonomous_agent(
+) -> AutonomousResearchAgent:
+    return AutonomousResearchAgent(
+        llm=llm,
+        retrieval_tool=(
+            get_retrieval_tool()
+        ),
+        planning_tool=(
+            get_planning_tool()
+        ),
     )

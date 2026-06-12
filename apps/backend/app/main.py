@@ -18,6 +18,9 @@ from app.api.routes.agents import (
 from app.api.routes.research import (
     router as research_router,
 )
+from app.api.routes.autonomous import (
+    router as autonomous_router,
+)
 
 setup_logging()
 
@@ -55,6 +58,11 @@ app.include_router(
 
 app.include_router(
     research_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    autonomous_router,
     prefix=settings.api_v1_prefix,
 )
 
