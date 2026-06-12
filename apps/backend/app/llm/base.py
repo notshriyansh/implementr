@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator
+
 
 class BaseLLM(ABC):
     @abstractmethod
@@ -6,4 +8,11 @@ class BaseLLM(ABC):
         self,
         prompt: str,
     ) -> str:
+        pass
+
+    @abstractmethod
+    async def stream_generate(
+        self,
+        prompt: str,
+    ) -> AsyncGenerator[str, None]:
         pass

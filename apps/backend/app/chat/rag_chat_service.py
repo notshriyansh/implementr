@@ -9,6 +9,7 @@ from app.schemas.chat import (
     ChatResponse,
     Citation,
 )
+from collections.abc import AsyncGenerator
 
 
 class RAGChatService:
@@ -63,3 +64,33 @@ class RAGChatService:
             answer=answer,
             citations=citations,
         )
+    
+    async def stream_chat(
+        self,
+        question: str,
+    ) -> AsyncGenerator[str, None]:
+        chunks = (
+            await self.retrieval_service.retrieve(
+                query=question,
+                k=5,
+            )
+        )
+
+        context = "\n\n".join(
+            chunk.text
+            for chunk in chunks
+        )
+
+        prompt = (
+            RAG_PROMPT_TEMPLATE.format(
+                context=context,
+                question=question,
+            )
+        )
+
+        async for token in (
+            self.llm.stream_generate(
+                prompt
+            )
+        ):
+            yield token
