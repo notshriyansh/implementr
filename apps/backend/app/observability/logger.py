@@ -10,7 +10,9 @@ def setup_logger(
 
     logger.setLevel(logging.INFO)
 
-    if not logger.hasHandlers():
+    logger.propagate = False
+
+    if not logger.handlers:
         handler = logging.StreamHandler()
 
         formatter = logging.Formatter(

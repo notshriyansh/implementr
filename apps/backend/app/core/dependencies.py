@@ -45,6 +45,15 @@ from app.tools.planning_tool import (
 from app.tools.retrieval_tool import (
     RetrievalTool,
 )
+from app.evaluation.benchmark_runner import (
+    BenchmarkRunner,
+)
+from app.evaluation.rag_eval import (
+    RAGEvaluator,
+)
+from app.evaluation.retrieval_eval import (
+    RetrievalEvaluator,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -163,5 +172,38 @@ def get_autonomous_agent(
         ),
         planning_tool=(
             get_planning_tool()
+        ),
+    )
+
+def get_retrieval_evaluator(
+) -> RetrievalEvaluator:
+    retrieval_service = (
+        get_retrieval_service()
+    )
+
+    return RetrievalEvaluator(
+        retrieval_service
+    )
+
+
+def get_rag_evaluator(
+) -> RAGEvaluator:
+    rag_service = (
+        get_rag_chat_service()
+    )
+
+    return RAGEvaluator(
+        rag_service
+    )
+
+
+def get_benchmark_runner(
+) -> BenchmarkRunner:
+    return BenchmarkRunner(
+        retrieval_evaluator=(
+            get_retrieval_evaluator()
+        ),
+        rag_evaluator=(
+            get_rag_evaluator()
         ),
     )
