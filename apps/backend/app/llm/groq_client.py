@@ -5,12 +5,20 @@ from groq import Groq
 from app.core.config import settings
 from app.llm.base import BaseLLM
 
+from app.observability.tracing import (
+    trace_execution,
+)
+
 
 class GroqLLM(BaseLLM):
     def __init__(self) -> None:
         self.client = Groq(
             api_key=settings.groq_api_key,
         )
+
+    @trace_execution(
+    "groq.generate"
+)
 
     async def generate(
         self,
@@ -33,6 +41,10 @@ class GroqLLM(BaseLLM):
             response.choices[0]
             .message.content
         )
+    
+    @trace_execution(
+    "groq.stream_generate"
+)
 
     async def stream_generate(
         self,

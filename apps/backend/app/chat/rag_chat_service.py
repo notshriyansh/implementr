@@ -113,13 +113,36 @@ class RAGChatService:
     
     async def stream_chat(
         self,
+        session_id: str,
         question: str,
     ) -> AsyncGenerator[str, None]:
+        history_messages = (
+            self.memory.get_messages(
+                session_id
+            )
+        )
+
+        recent_history = " ".join(
+            msg.content
+            for msg in history_messages[-2:]
+        )
+
+        retrieval_query = (
+            f"{recent_history} {question}"
+        )
+
         chunks = (
             await self.retrieval_service.retrieve(
-                query=question,
+                query=retrieval_query,
                 k=5,
             )
+        )
+
+        history = "\n".join(
+            (
+                f"{msg.role}: {msg.content}"
+            )
+            for msg in history_messages
         )
 
         context = "\n\n".join(
@@ -129,14 +152,31 @@ class RAGChatService:
 
         prompt = (
             RAG_PROMPT_TEMPLATE.format(
+                history=history,
                 context=context,
                 question=question,
             )
         )
+
+        full_response = ""
 
         async for token in (
             self.llm.stream_generate(
                 prompt
             )
         ):
+            full_response += token
+
             yield token
+
+        self.memory.add_message(
+            session_id=session_id,
+            role="user",
+            content=question,
+        )
+
+        self.memory.add_message(
+            session_id=session_id,
+            role="assistant",
+            content=full_response,
+        )

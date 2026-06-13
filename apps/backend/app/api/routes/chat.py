@@ -35,15 +35,18 @@ async def chat(
 
 @router.post("/stream")
 async def stream_chat(
+    session_id: str,
     question: str,
     rag_chat_service: RAGChatService = Depends(
         get_rag_chat_service,
     ),
 ) -> StreamingResponse:
+
     async def event_generator():
         async for token in (
             rag_chat_service.stream_chat(
-                question
+                session_id=session_id,
+                question=question,
             )
         ):
             yield token

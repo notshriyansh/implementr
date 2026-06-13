@@ -9,6 +9,9 @@ from app.retrieval.utils import (
     deduplicate_chunks,
     limit_chunks,
 )
+from app.observability.tracing import (
+    trace_execution,
+)
 
 
 class RetrievalService:
@@ -40,6 +43,10 @@ class RetrievalService:
             embeddings=embeddings,
             chunks=chunks,
         )
+
+    @trace_execution(
+    "retrieval_service.retrieve"
+)
 
     async def retrieve(
         self,

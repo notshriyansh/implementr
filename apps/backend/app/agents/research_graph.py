@@ -10,6 +10,9 @@ from app.llm.base import BaseLLM
 from app.retrieval.retrieval_service import (
     RetrievalService,
 )
+from app.observability.tracing import (
+    trace_execution,
+)
 
 class ResearchGraph:
     def __init__(
@@ -27,7 +30,9 @@ class ResearchGraph:
             self._build_graph()
         )
 
-
+    @trace_execution(
+    "graph.retrieve_context"
+)
     async def retrieve_context(
         self,
         state: ResearchState,
@@ -50,7 +55,9 @@ class ResearchGraph:
 
         return state
     
-
+    @trace_execution(
+    "graph.analyze_methodology"
+)
     async def analyze_methodology(
         self,
         state: ResearchState,
@@ -79,7 +86,9 @@ class ResearchGraph:
 
         return state
     
-
+    @trace_execution(
+    "graph.generate_plan"
+)
     async def generate_plan(
         self,
         state: ResearchState,
@@ -105,7 +114,9 @@ class ResearchGraph:
 
         return state
     
-
+    @trace_execution(
+    "graph.analyze_challenges"
+)
     async def analyze_challenges(
         self,
         state: ResearchState,
@@ -126,7 +137,9 @@ class ResearchGraph:
 
         return state
     
-
+    @trace_execution(
+    "graph.finalize"
+)
     async def finalize(
         self,
         state: ResearchState,
