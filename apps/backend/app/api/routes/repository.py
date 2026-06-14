@@ -12,6 +12,13 @@ from app.code_retrieval.code_retrieval_service import (
 from app.core.dependencies import (
     get_code_retrieval_service,
 )
+from app.code_ingestion.repository_analyzer import (
+    RepositoryAnalyzer,
+)
+
+from app.core.dependencies import (
+    get_repository_analyzer,
+)
 
 router = APIRouter(
     prefix="/repository",
@@ -61,3 +68,16 @@ async def search_repository(
     return {
         "results": chunks,
     }
+
+@router.get("/structure")
+async def analyze_repository(
+    repo_path: str,
+    analyzer: RepositoryAnalyzer = Depends(
+        get_repository_analyzer,
+    ),
+) -> dict:
+    result = analyzer.analyze(
+        repo_path
+    )
+
+    return result.model_dump()

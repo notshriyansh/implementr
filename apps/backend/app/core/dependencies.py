@@ -78,6 +78,9 @@ from app.hybrid.hybrid_retrieval_service import (
 from app.agents.hybrid_implementation_agent import (
     HybridImplementationAgent,
 )
+from app.code_ingestion.repository_analyzer import (
+    RepositoryAnalyzer,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -108,6 +111,10 @@ code_retrieval_service = (
             code_vector_store
         ),
     )
+)
+
+repository_analyzer = (
+    RepositoryAnalyzer()
 )
 
 
@@ -314,3 +321,7 @@ hybrid_retrieval_service = (
         ),
     )
 )
+
+def get_repository_analyzer(
+) -> RepositoryAnalyzer:
+    return repository_analyzer
