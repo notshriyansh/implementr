@@ -27,6 +27,9 @@ from app.api.routes.evaluation import (
 from app.api.routes.repository import (
     router as repository_router,
 )
+from app.api.routes.hybrid import (
+    router as hybrid_router,
+)
 
 setup_logging()
 
@@ -79,6 +82,11 @@ app.include_router(
 
 app.include_router(
     repository_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    hybrid_router,
     prefix=settings.api_v1_prefix,
 )
 

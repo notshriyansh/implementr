@@ -72,6 +72,12 @@ from app.code_retrieval.code_retrieval_service import (
 from app.code_vectorstores.code_vector_store import (
     CodeVectorStore,
 )
+from app.hybrid.hybrid_retrieval_service import (
+    HybridRetrievalService,
+)
+from app.agents.hybrid_implementation_agent import (
+    HybridImplementationAgent,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -103,6 +109,7 @@ code_retrieval_service = (
         ),
     )
 )
+
 
 
 def get_arxiv_repository() -> ArxivRepository:
@@ -278,7 +285,32 @@ def get_code_vector_store(
 ) -> CodeVectorStore:
     return code_vector_store
 
+def get_hybrid_retrieval_service(
+) -> HybridRetrievalService:
+    return hybrid_retrieval_service
+
+
+def get_hybrid_agent(
+) -> HybridImplementationAgent:
+    return HybridImplementationAgent(
+        retrieval_service=(
+            get_hybrid_retrieval_service()
+        ),
+        llm=llm,
+    )
+
 
 def get_code_retrieval_service(
 ) -> CodeRetrievalService:
     return code_retrieval_service
+
+hybrid_retrieval_service = (
+    HybridRetrievalService(
+        paper_retrieval=(
+            get_retrieval_service()
+        ),
+        code_retrieval=(
+            get_code_retrieval_service()
+        ),
+    )
+)
