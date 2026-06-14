@@ -30,6 +30,9 @@ from app.api.routes.repository import (
 from app.api.routes.hybrid import (
     router as hybrid_router,
 )
+from app.api.routes.symbols import (
+    router as symbols_router,
+)
 
 setup_logging()
 
@@ -87,6 +90,11 @@ app.include_router(
 
 app.include_router(
     hybrid_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    symbols_router,
     prefix=settings.api_v1_prefix,
 )
 

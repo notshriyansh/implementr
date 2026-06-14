@@ -81,6 +81,15 @@ from app.agents.hybrid_implementation_agent import (
 from app.code_ingestion.repository_analyzer import (
     RepositoryAnalyzer,
 )
+from app.code_ingestion.symbol_extractor import (
+    SymbolExtractor,
+)
+from app.code_retrieval.symbol_retrieval_service import (
+    SymbolRetrievalService,
+)
+from app.code_vectorstores.symbol_vector_store import (
+    SymbolVectorStore,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -281,6 +290,12 @@ def get_code_ingestion_service(
         retrieval_service=(
             get_code_retrieval_service()
         ),
+        symbol_extractor=(
+            get_symbol_extractor()
+        ),
+        symbol_retrieval_service=(
+            get_symbol_retrieval_service()
+        ),
     )
 
 def get_code_embedding_model(
@@ -322,6 +337,36 @@ hybrid_retrieval_service = (
     )
 )
 
+symbol_vector_store = (
+    SymbolVectorStore()
+)
+
+symbol_retrieval_service = (
+    SymbolRetrievalService(
+        embedding_model=(
+            get_code_embedding_model()
+        ),
+        vector_store=(
+            symbol_vector_store
+        ),
+    )
+)
+
+symbol_extractor = (
+    SymbolExtractor()
+)
+
 def get_repository_analyzer(
 ) -> RepositoryAnalyzer:
     return repository_analyzer
+
+def get_symbol_extractor(
+) -> SymbolExtractor:
+    return symbol_extractor
+
+
+def get_symbol_retrieval_service(
+) -> SymbolRetrievalService:
+    return (
+        symbol_retrieval_service
+    )

@@ -1,10 +1,8 @@
+from typing import Any
+
 import numpy as np
 from sentence_transformers import (
     SentenceTransformer,
-)
-
-from app.schemas.code_chunk import (
-    CodeChunk,
 )
 
 
@@ -19,12 +17,17 @@ class CodeEmbeddingModel:
             model_name
         )
 
-    async def embed_chunks(
+    def embed_chunks(
         self,
-        chunks: list[CodeChunk],
+        chunks: list[Any],
     ) -> np.ndarray:
         texts = [
             chunk.content
+            if hasattr(
+                chunk,
+                "content",
+            )
+            else chunk.code
             for chunk in chunks
         ]
 

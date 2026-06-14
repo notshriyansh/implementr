@@ -31,11 +31,10 @@ class CodeRetrievalService:
         self,
         chunks: list[CodeChunk],
     ) -> None:
-        embeddings = (
-            await self.embedding_model.embed_chunks(
+        embeddings = self.embedding_model.embed_chunks(
                 chunks
             )
-        )
+        
 
         await self.vector_store.add_embeddings(
             embeddings=embeddings,
