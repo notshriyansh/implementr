@@ -24,6 +24,9 @@ from app.api.routes.autonomous import (
 from app.api.routes.evaluation import (
     router as evaluation_router,
 )
+from app.api.routes.repository import (
+    router as repository_router,
+)
 
 setup_logging()
 
@@ -71,6 +74,11 @@ app.include_router(
 
 app.include_router(
     evaluation_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    repository_router,
     prefix=settings.api_v1_prefix,
 )
 

@@ -54,6 +54,15 @@ from app.evaluation.rag_eval import (
 from app.evaluation.retrieval_eval import (
     RetrievalEvaluator,
 )
+from app.code_ingestion.code_chunker import (
+    CodeChunker,
+)
+from app.code_ingestion.ingestion_service import (
+    CodeIngestionService,
+)
+from app.code_ingestion.repository_scanner import (
+    RepositoryScanner,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -205,5 +214,26 @@ def get_benchmark_runner(
         ),
         rag_evaluator=(
             get_rag_evaluator()
+        ),
+    )
+
+def get_repository_scanner(
+) -> RepositoryScanner:
+    return RepositoryScanner()
+
+
+def get_code_chunker(
+) -> CodeChunker:
+    return CodeChunker()
+
+
+def get_code_ingestion_service(
+) -> CodeIngestionService:
+    return CodeIngestionService(
+        scanner=(
+            get_repository_scanner()
+        ),
+        chunker=(
+            get_code_chunker()
         ),
     )
