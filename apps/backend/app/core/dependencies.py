@@ -63,6 +63,15 @@ from app.code_ingestion.ingestion_service import (
 from app.code_ingestion.repository_scanner import (
     RepositoryScanner,
 )
+from app.code_embeddings.code_embedding_model import (
+    CodeEmbeddingModel,
+)
+from app.code_retrieval.code_retrieval_service import (
+    CodeRetrievalService,
+)
+from app.code_vectorstores.code_vector_store import (
+    CodeVectorStore,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -74,6 +83,25 @@ llm = GroqLLM()
 
 conversation_memory = (
     ConversationMemory()
+)
+
+code_embedding_model = (
+    CodeEmbeddingModel()
+)
+
+code_vector_store = (
+    CodeVectorStore()
+)
+
+code_retrieval_service = (
+    CodeRetrievalService(
+        embedding_model=(
+            code_embedding_model
+        ),
+        vector_store=(
+            code_vector_store
+        ),
+    )
 )
 
 
@@ -236,4 +264,21 @@ def get_code_ingestion_service(
         chunker=(
             get_code_chunker()
         ),
+        retrieval_service=(
+            get_code_retrieval_service()
+        ),
     )
+
+def get_code_embedding_model(
+) -> CodeEmbeddingModel:
+    return code_embedding_model
+
+
+def get_code_vector_store(
+) -> CodeVectorStore:
+    return code_vector_store
+
+
+def get_code_retrieval_service(
+) -> CodeRetrievalService:
+    return code_retrieval_service

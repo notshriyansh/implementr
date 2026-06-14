@@ -7,6 +7,9 @@ from app.code_ingestion.repository_scanner import (
 from app.schemas.code_chunk import (
     CodeChunk,
 )
+from app.code_retrieval.code_retrieval_service import (
+    CodeRetrievalService,
+)
 
 
 class CodeIngestionService:
@@ -14,12 +17,19 @@ class CodeIngestionService:
         self,
         scanner: RepositoryScanner,
         chunker: CodeChunker,
+        retrieval_service: (
+            CodeRetrievalService
+        ),
     ) -> None:
         self.scanner = scanner
 
         self.chunker = chunker
 
-    def ingest_repository(
+        self.retrieval_service = (
+            retrieval_service
+        )
+
+    async def ingest_repository(
         self,
         repo_path: str,
     ) -> list[CodeChunk]:
@@ -37,5 +47,9 @@ class CodeIngestionService:
             )
 
             all_chunks.extend(chunks)
+
+        await self.retrieval_service.index_chunks(
+            all_chunks
+        )
 
         return all_chunks

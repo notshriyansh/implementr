@@ -6,6 +6,12 @@ from app.code_ingestion.ingestion_service import (
 from app.core.dependencies import (
     get_code_ingestion_service,
 )
+from app.code_retrieval.code_retrieval_service import (
+    CodeRetrievalService,
+)
+from app.core.dependencies import (
+    get_code_retrieval_service,
+)
 
 router = APIRouter(
     prefix="/repository",
@@ -22,11 +28,10 @@ async def ingest_repository(
         get_code_ingestion_service,
     ),
 ) -> dict:
-    chunks = (
-        ingestion_service.ingest_repository(
-            repo_path
-        )
+    chunks = await ingestion_service.ingest_repository(
+        repo_path
     )
+    
 
     return {
         "total_chunks": len(chunks),
@@ -35,4 +40,24 @@ async def ingest_repository(
             if chunks
             else None
         ),
+    }
+
+@router.get("/search")
+async def search_repository(
+    query: str,
+    retrieval_service: (
+        CodeRetrievalService
+    ) = Depends(
+        get_code_retrieval_service,
+    ),
+) -> dict:
+    chunks = (
+        await retrieval_service.retrieve(
+            query=query,
+            k=5,
+        )
+    )
+
+    return {
+        "results": chunks,
     }
