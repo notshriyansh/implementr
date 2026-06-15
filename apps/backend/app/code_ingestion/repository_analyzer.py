@@ -1,4 +1,5 @@
 import ast
+
 from pathlib import Path
 
 from app.schemas.repository_map import (
@@ -6,8 +7,18 @@ from app.schemas.repository_map import (
     RepositoryMap,
 )
 
+from app.architecture.repository_graph import (
+    RepositoryGraph,
+)
+
 
 class RepositoryAnalyzer:
+    def __init__(
+        self,
+        graph: RepositoryGraph,
+    ) -> None:
+        self.graph = graph
+
     def analyze(
         self,
         repo_path: str,
@@ -37,6 +48,9 @@ class RepositoryAnalyzer:
                 imports = []
                 functions = []
                 classes = []
+                relative_path = str(
+                    file.relative_to(root)
+                )
 
                 for node in ast.walk(tree):
                     if isinstance(
@@ -45,9 +59,7 @@ class RepositoryAnalyzer:
                     ):
                         imports.extend(
                             alias.name
-                            for alias in (
-                                node.names
-                            )
+                            for alias in node.names
                         )
 
                     elif isinstance(
@@ -61,10 +73,18 @@ class RepositoryAnalyzer:
 
                     elif isinstance(
                         node,
-                        ast.FunctionDef,
+                        (
+                            ast.FunctionDef,
+                            ast.AsyncFunctionDef,
+                        ),
                     ):
                         functions.append(
                             node.name
+                        )
+
+                        self.graph.add_symbol(
+                            symbol_name=node.name,
+                            file_path=relative_path,
                         )
 
                     elif isinstance(
@@ -75,13 +95,19 @@ class RepositoryAnalyzer:
                             node.name
                         )
 
+                        self.graph.add_symbol(
+                            symbol_name=node.name,
+                            file_path=relative_path,
+                        )
+
+                self.graph.add_file(
+                    file_path=relative_path,
+                    imports=imports,
+                )
+
                 files.append(
                     FileNode(
-                        path=str(
-                            file.relative_to(
-                                root
-                            )
-                        ),
+                        path=relative_path,
                         imports=imports,
                         functions=functions,
                         classes=classes,

@@ -33,6 +33,9 @@ from app.api.routes.hybrid import (
 from app.api.routes.symbols import (
     router as symbols_router,
 )
+from app.api.routes.architecture import (
+    router as architecture_router,
+)
 
 setup_logging()
 
@@ -95,6 +98,11 @@ app.include_router(
 
 app.include_router(
     symbols_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    architecture_router,
     prefix=settings.api_v1_prefix,
 )
 
