@@ -53,6 +53,7 @@ class RepositoryAnalyzer:
                 )
 
                 for node in ast.walk(tree):
+
                     if isinstance(
                         node,
                         ast.Import,
@@ -78,14 +79,48 @@ class RepositoryAnalyzer:
                             ast.AsyncFunctionDef,
                         ),
                     ):
+
                         functions.append(
                             node.name
                         )
 
                         self.graph.add_symbol(
                             symbol_name=node.name,
-                            file_path=relative_path,
+                            file_path=str(
+                                file.relative_to(root)
+                            ),
                         )
+
+                        for child in ast.walk(node):
+
+                            if isinstance(
+                                child,
+                                ast.Call,
+                            ):
+
+                                called_name = None
+
+                                if isinstance(
+                                    child.func,
+                                    ast.Name,
+                                ):
+                                    called_name = (
+                                        child.func.id
+                                    )
+
+                                elif isinstance(
+                                    child.func,
+                                    ast.Attribute,
+                                ):
+                                    called_name = (
+                                        child.func.attr
+                                    )
+
+                                if called_name:
+                                    self.graph.add_call(
+                                        caller=node.name,
+                                        callee=called_name,
+                                    )
 
                     elif isinstance(
                         node,
@@ -97,7 +132,9 @@ class RepositoryAnalyzer:
 
                         self.graph.add_symbol(
                             symbol_name=node.name,
-                            file_path=relative_path,
+                            file_path=str(
+                                file.relative_to(root)
+                            ),
                         )
 
                 self.graph.add_file(

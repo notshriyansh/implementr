@@ -16,6 +16,10 @@ from app.architecture.execution_flow_service import (
 
 from app.llm.base import BaseLLM
 
+from app.prompts.architecture_prompt import (
+    ARCHITECTURE_REASONING_PROMPT,
+)
+
 
 class ArchitectureReasoningService:
     def __init__(
@@ -49,6 +53,7 @@ class ArchitectureReasoningService:
         self,
         query: str,
     ) -> ArchitectureInsight:
+
         code_chunks = await (
             self.code_retrieval_service
             .retrieve(
@@ -65,69 +70,75 @@ class ArchitectureReasoningService:
             )
         )
 
-        code_context = "\n\n".join(
-            chunk.content
-            for chunk in code_chunks
-        )
-
-        symbol_context = "\n\n".join(
-            (
-                f"{symbol.symbol_name}"
-                f" ({symbol.symbol_type})\n"
-                f"{symbol.code}"
-            )
-            for symbol in symbols
-        )
-
         flow_context = await (
             self.execution_flow_service
             .expand_query(query)
         )
 
-        prompt = f"""
-You are an expert software architect.
+        relevant_files = list(
+            dict.fromkeys(
+                chunk.file_path
+                for chunk in code_chunks
+            )
+        )
 
-Analyze the repository context below.
+        relevant_symbols = list(
+            dict.fromkeys(
+                symbol.symbol_name
+                for symbol in symbols
+            )
+        )
 
-User Question:
-{query}
+        files_context = "\n".join(
+            relevant_files
+        )
 
-Code Context:
-{code_context}
+        symbols_context = "\n".join(
+            (
+                f"{symbol.symbol_name} "
+                f"({symbol.symbol_type}) "
+                f"in {symbol.file_path}"
+            )
+            for symbol in symbols
+        )
 
-Symbol Context:
-{symbol_context}
+        code_context = "\n\n".join(
+            (
+                f"FILE: {chunk.file_path}\n"
+                f"{chunk.content}"
+            )
+            for chunk in code_chunks
+        )
 
-Execution Flow Context:
-{flow_context}
-
-Your task:
-1. Explain the architecture relevant to the query
-2. Explain execution flow
-3. Identify important files
-4. Identify important symbols/functions/classes
-5. Explain engineering reasoning carefully
-6. Suggest where modifications should happen if relevant
-
-Return a detailed engineering explanation.
-"""
+        prompt = (
+            ARCHITECTURE_REASONING_PROMPT
+            .format(
+                query=query,
+                files=files_context,
+                symbols=symbols_context,
+                flow=flow_context,
+                code=code_context,
+            )
+        )
 
         reasoning = await (
             self.llm.generate(prompt)
         )
 
+        summary = (
+            reasoning[:400] + "..."
+            if len(reasoning) > 400
+            else reasoning
+        )
+
         return ArchitectureInsight(
             query=query,
-            summary=(
-                reasoning[:300]
+            summary=summary,
+            relevant_files=(
+                relevant_files
             ),
-            relevant_files=[
-                chunk.file_path
-                for chunk in code_chunks
-            ],
-            relevant_symbols=[
-                symbol.symbol_name
-                for symbol in symbols
-            ],
+            relevant_symbols=(
+                relevant_symbols
+            ),
             reasoning=reasoning,
         )

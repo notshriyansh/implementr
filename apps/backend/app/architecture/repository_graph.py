@@ -3,11 +3,16 @@ from collections import defaultdict
 
 class RepositoryGraph:
     def __init__(self) -> None:
+
         self.file_to_imports = (
             defaultdict(list)
         )
 
         self.symbol_to_file = {}
+
+        self.call_graph = (
+            defaultdict(set)
+        )
 
     def add_file(
         self,
@@ -27,6 +32,15 @@ class RepositoryGraph:
             symbol_name
         ] = file_path
 
+    def add_call(
+        self,
+        caller: str,
+        callee: str,
+    ) -> None:
+        self.call_graph[
+            caller
+        ].add(callee)
+
     def get_related_files(
         self,
         file_path: str,
@@ -43,3 +57,68 @@ class RepositoryGraph:
         return self.symbol_to_file.get(
             symbol_name
         )
+
+    def get_called_symbols(
+        self,
+        symbol_name: str,
+    ) -> list[str]:
+        return list(
+            self.call_graph.get(
+                symbol_name,
+                [],
+            )
+        )
+
+    def trace_execution_path(
+        self,
+        start_symbol: str,
+        depth: int = 3,
+    ) -> list[dict]:
+
+        visited = set()
+
+        results = []
+
+        def dfs(
+            symbol: str,
+            current_depth: int,
+        ) -> None:
+
+            if (
+                current_depth > depth
+                or symbol in visited
+            ):
+                return
+
+            visited.add(symbol)
+
+            callees = (
+                self.get_called_symbols(
+                    symbol
+                )
+            )
+
+            results.append(
+                {
+                    "symbol": symbol,
+                    "file": (
+                        self.get_symbol_file(
+                            symbol
+                        )
+                    ),
+                    "calls": callees,
+                }
+            )
+
+            for callee in callees:
+                dfs(
+                    callee,
+                    current_depth + 1,
+                )
+
+        dfs(
+            start_symbol,
+            0,
+        )
+
+        return results

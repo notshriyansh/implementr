@@ -15,6 +15,7 @@ class ExecutionFlowService:
             SymbolRetrievalService
         ),
     ) -> None:
+
         self.graph = graph
 
         self.symbol_service = (
@@ -25,6 +26,7 @@ class ExecutionFlowService:
         self,
         query: str,
     ) -> dict:
+
         symbols = await (
             self.symbol_service.retrieve(
                 query=query,
@@ -36,15 +38,32 @@ class ExecutionFlowService:
 
         visited_files = set()
 
+        execution_paths = []
+
         for symbol in symbols:
+
             file_path = symbol.file_path
 
-            visited_files.add(file_path)
+            visited_files.add(
+                file_path
+            )
 
             imports = (
                 self.graph.get_related_files(
                     file_path
                 )
+            )
+
+            call_chain = (
+                self.graph
+                .trace_execution_path(
+                    symbol.symbol_name,
+                    depth=2,
+                )
+            )
+
+            execution_paths.extend(
+                call_chain
             )
 
             expanded_context.append(
@@ -54,6 +73,12 @@ class ExecutionFlowService:
                     ),
                     "file": file_path,
                     "imports": imports,
+                    "calls": (
+                        self.graph
+                        .get_called_symbols(
+                            symbol.symbol_name
+                        )
+                    ),
                 }
             )
 
@@ -61,5 +86,8 @@ class ExecutionFlowService:
             "symbols": expanded_context,
             "visited_files": list(
                 visited_files
+            ),
+            "execution_paths": (
+                execution_paths
             ),
         }
