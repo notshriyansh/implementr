@@ -23,27 +23,49 @@ def trace_execution(
             start = time.perf_counter()
 
             logger.info(
-                f"START: {name}"
-            )
-
-            result = await func(
-                *args,
-                **kwargs,
-            )
-
-            duration = (
-                time.perf_counter()
-                - start
-            )
-
-            logger.info(
                 (
-                    f"END: {name} | "
-                    f"{duration:.2f}s"
+                    f"START | "
+                    f"operation={name}"
                 )
             )
 
-            return result
+            try:
+                result = await func(
+                    *args,
+                    **kwargs,
+                )
+
+                duration = (
+                    time.perf_counter()
+                    - start
+                )
+
+                logger.info(
+                    (
+                        f"SUCCESS | "
+                        f"operation={name} | "
+                        f"duration={duration:.2f}s"
+                    )
+                )
+
+                return result
+
+            except Exception as e:
+                duration = (
+                    time.perf_counter()
+                    - start
+                )
+
+                logger.exception(
+                    (
+                        f"FAILURE | "
+                        f"operation={name} | "
+                        f"duration={duration:.2f}s | "
+                        f"error={str(e)}"
+                    )
+                )
+
+                raise
 
         return wrapper
 
