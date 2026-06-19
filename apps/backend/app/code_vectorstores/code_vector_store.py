@@ -11,7 +11,7 @@ class CodeVectorStore:
         self,
         embedding_dimension: int = 384,
     ) -> None:
-        self.index = faiss.IndexFlatL2(
+        self.index = faiss.IndexFlatIP(
             embedding_dimension
         )
 
@@ -24,10 +24,16 @@ class CodeVectorStore:
         embeddings: np.ndarray,
         chunks: list[CodeChunk],
     ) -> None:
+        embeddings = embeddings.astype(
+            "float32"
+        )
+
+        faiss.normalize_L2(
+            embeddings
+        )
+
         self.index.add(
-            embeddings.astype(
-                "float32"
-            )
+            embeddings
         )
 
         self.chunks.extend(chunks)
@@ -37,11 +43,19 @@ class CodeVectorStore:
         query_embedding: np.ndarray,
         k: int = 5,
     ) -> list[CodeChunk]:
-        distances, indices = (
+        query_embedding = (
+            query_embedding.astype(
+                "float32"
+            )
+        )
+
+        faiss.normalize_L2(
+            query_embedding
+        )
+
+        scores, indices = (
             self.index.search(
-                query_embedding.astype(
-                    "float32"
-                ),
+                query_embedding,
                 k,
             )
         )
