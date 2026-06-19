@@ -1390,5 +1390,261 @@
     "chunk_index": 57,
     "paper_id": "video-transformers",
     "user_id": "local_user"
+  },
+  {
+    "chunk_id": "d8ddc179-7ddd-4811-8e1e-4c407ca7643b",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20251\nPhysics-Informed Machine Learning for\nTransformer Condition Monitoring \u2013 Part I:\nBasic Concepts, Neural Networks, and Variants\nJose I. Aizpurua, Senior Member, IEEE\nAbstract\u2014Power transformers are critical assets in\npower networks, whose reliability directly impacts grid\nresilience and stability. Traditional condition monitoring\napproaches, often rule-based or purely physics-based,\nstruggle with uncertainty, limited data availability, and\nthe complexity of modern operating conditions. Recent\nadvances in machine learning (ML) provide powerful\ntools to complement and extend these methods, enabling\nmore accurate diagnostics, prognostics, and control. In\nthis two-part series, we examine the role of Neural\nNetworks (NNs) and their extensions in transformer\ncondition monitoring and health management tasks. This\nfirst paper introduces the basic concepts of NNs, explores\nConvolutional Neural Networks (CNNs) for condition\nmonitoring using diverse data modalities, and discusses\nthe integration of NN concepts within the Reinforcement\nLearning (RL) paradigm for decision-making an",
+    "page_number": 1,
+    "chunk_index": 0,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c576c5bc-b455-4a57-ac4e-3de46ccef396",
+    "text": "d control.\nFinally, perspectives on emerging research directions are\nalso provided.\nIndex Terms\u2014Transformer, On-Load Tap Changer\n(OLTC), inrush current, Neural Networks, Convolutional\nNeural Networks, Reinforcement Learning, Prognostics &\nHealth Management (PHM).\nI. Introduction\nT\nRANSFORMERS are key components in the\nreliable operation of the power grid. Conse-\nquently, monitoring their health is essential to avoid\ncostly failures and unplanned outages, especially in\ncritical facilities such as nuclear power plants. Over\nthe past decade, I have developed and deployed\nmachine learning (ML) solutions for transformer\ndiagnostics and prognostics in industrial contexts [1].\nMost of the developed solutions have been focused\non Prognostics & Health Management (PHM) ap-\nJ. Aizpurua is with the University of the Basque Country\n(UPV/EHU), Faculty of Informatics, Department of Computer\nScience and Artificial Intelligence, Donostia - San Sebastian,\nSpain.\n978-84-XX-XXXXX-X /25 \u00a9 2025 Red iNtransf\n\u201c\u00a9 2025 IEEE. Personal use of this material is permitted.\nPermission from IEEE must be obtained for all other uses, in\nany current or future media, including reprinting/republishing\nthis material for",
+    "page_number": 1,
+    "chunk_index": 1,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "85de093c-7697-4c77-be27-7ac38360e8b6",
+    "text": " advertising or promotional purposes, creating\nnew collective works, for resale or redistribution to servers or\nlists, or reuse of any copyrighted component of this work in\nother works.\u201d\nplications. PHM is a health management paradigm\nthat integrates different predictive methodologies to\nimprove the reliability of engineering components\nand systems [2]. PHM is at the heart of modern\ncondition monitoring technology, where sensor data,\nphysics knowledge, and engineering expertise are\ncombined to develop anomaly detection, diagnostics,\nprognostics, and maintenance planning tools.\nUnder the umbrella of PHM methods for elec-\ntrical transformers, several data-driven and hy-\nbrid approaches have been developed, including a\ndata analytics suite [3], insulation lifetime prog-\nnostics through ML and state-space filtering [4],\nand diagnostic models using Dissolved Gas Analysis\n(DGA) data with Bayesian Networks [5]. The latter\nwas further enhanced through the integration of\nuncertainty-aware ensemble strategies [6]. Engineers\noften need to simplify the decision-making process\nthrough a single health indicator, and in this direc-\ntion, a composite health index was also proposed\nto integrate pre",
+    "page_number": 1,
+    "chunk_index": 2,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "35319f67-3026-4b90-970f-7ee8ab768b5d",
+    "text": "dictions from multiple transformer\nsubsystems [7].\nThe combination of ML and physics-based models,\ntogether with uncertainty quantification (UQ), has\nbeen a central element in most of these solutions.\nUQ is essential for decision-making, particularly in\nprognostics, where Remaining Useful Life (RUL)\npredictions must incorporate uncertainty estimates.\nUsing probabilistic forecasting methodologies, a hy-\nbrid physics\u2013ML method for transformer ageing\nprediction under renewable energy operation was de-\nveloped in [8]. The physics-based model served as the\nbaseline, while the probabilistic component learned\nand corrected its residual bias. A comprehensive\nstudy of these probabilistic forecasting methods and\ntheir validation can be found in [1].\nBeyond insulation ageing, transformer magnetiza-\ntion and inrush current phenomena have also been\ninvestigated. Based on the Jiles\u2013Atherton model for\nhysteresis curve modelling, a metaheuristics-based\napproach was proposed to estimate the underlying\npartial differential equation (PDE) parameters [9].\narXiv:2512.22190v1  [cs.LG]  20 Dec 2025\n",
+    "page_number": 1,
+    "chunk_index": 3,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6ac40974-e316-4d6a-b67f-4659ae7de060",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20252\nThis framework was later extended toward trans-\nformer inrush minimization strategies, integrating\nthe hysteresis model with a transformer electrical\nmodel in a Reinforcement Learning (RL) setup for\noptimal control [10].\nMotivated by the need for cost-effective and non-\ninvasive monitoring, recent work has also explored\nthe use of acoustic signals and ML for On-Load\nTap Changer (OLTC) monitoring [11]. This line of\nresearch demonstrates the potential of combining\nsignal processing and data-driven techniques for\ntransformer subsystem diagnostics.\nGiven the wide range of ML-based solutions pro-\nposed for transformer health management, this tuto-\nrial aims to provide a unified and accessible overview\nof Neural Network (NN)-based methods. NNs are\nchosen as the central modelling framework because\nmany of their variants, such as Convolutional NNs\nand Reinforcement Learning agents, are natural ex-\ntensions of the same underlying principles.\nThe increasing penetration of Renewable Energy\nSources (RESs) has also affected transformer health.\nTheir stochastic nature and the varia",
+    "page_number": 2,
+    "chunk_index": 4,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "e30a19fe-cb61-4017-a846-73e89fad0d46",
+    "text": "bility they\nintroduce to grid operations have motivated the\ndevelopment of complementary solutions, including:\n(i) feature selection for improved forecasting [12];\n(ii) surrogate modelling for transformer thermal\ndynamics [13]; and (iii) analysis of the impact of\nextreme events on transformer ageing [14]. However,\nthese applications and broader maintenance planning\napproaches (e.g., [15]) are beyond the scope of this\ntutorial.\nThis paper introduces the fundamentals of ML\nmethods for transformer condition monitoring, with\na focus on Neural Networks and their extensions.\nPart I presents the foundations of Neural Networks,\nincluding fully connected (feedforward) architec-\ntures, Convolutional Neural Networks (CNNs), and\ntheir integration within the Reinforcement Learning\n(RL) paradigm for transformer control. Part II builds\nupon these foundations by introducing Physics-\nInformed Neural Networks (PINNs) and Bayesian\nmethods for uncertainty quantification. Together, the\ntwo parts aim to provide researchers and practition-\ners with a coherent framework for developing data-\ne\ufb00icient, physics-consistent, and uncertainty-aware\nmodels for transformer health monitoring and asset\nmanagement.\nT",
+    "page_number": 2,
+    "chunk_index": 5,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "e114894e-47e9-413f-bba4-eb48e5ad8eb6",
+    "text": "he remainder of this document is organized as\nfollows. Section II introduces the basic concepts of\nNeural Networks. Section III presents Convolutional\nNeural Networks for structured data. Section IV\ndiscusses Reinforcement Learning for transformer\ncontrol, and finally, Section V concludes with per-\nspectives for future research.\nII. Neural Networks\nA. Basic Concepts\nArtificial Neural Networks (NNs) are computa-\ntional models inspired by the structure and func-\ntioning of biological neurons [16]. The most basic\narchitecture, known as a feedforward neural network\nor multilayer perceptron (MLP), consists of an input\nlayer, one or more hidden layers, and an output layer,\nas illustrated in Fig. 1.\n\u03c3\n\u03c3\n\u03c3\n\u03c3\nLoss\n(MSE / CE)\nInput\nLayer\nHidden\nLayer\nOutput\nLayer\nFig. 1. Multilayer Perceptron (MLP) with activation functions\nin the hidden layer and a loss function at the output.\nEach neuron receives an input vector X, applies\na linear transformation with weights W and bias b,\nand passes the result through a nonlinear activation\nfunction \u03c3(\u00b7). Formally, a fully connected (FC) layer\nis defined as:\nFC(X) = \u03c3(XW + b)\n(1)\nwhere X\n\u2208Rn\u00d7c is the input with n samples\nof dimension c, W \u2208Rc\u00d7c\u2032 is the we",
+    "page_number": 2,
+    "chunk_index": 6,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c8e53879-d62a-41d7-8575-0de716c09fff",
+    "text": "ight matrix,\nand b \u2208Rc\u2032 is the bias vector. The parameter c\u2032\ndetermines the number of neurons (or the width) in\nthe layer. The nonlinear activation function \u03c3(\u00b7) al-\nlows the network to approximate complex, nonlinear\nrelationships.\nAmong the various activation functions used in\npractice (e.g., ReLU, sigmoid, tanh), this tutorial\nemploys the softplus function,\n\u03c3(s) = log(1 + exp(s))\n(2)\nwhich is smooth, always positive, and avoids dead\n(or inactive) neurons that can occur with other\nactivation functions such as ReLU.\nTraining a Neural Network involves optimizing the\nparameters {Wk, bk}L\nk=1 across L layers to minimize\na loss function that quantifies the difference between\npredictions and true outputs. For regression tasks,\nthe mean squared error (MSE) is a common choice:\n",
+    "page_number": 2,
+    "chunk_index": 7,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "7d99c821-bd8b-4712-b382-0fb4ba5c10df",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20253\nL = 1\nn\nn\nX\ni=1\n\u0000yi \u2212f(xi)\n\u00012,\n(3)\nwhere f(xi) is the network prediction for the input\nxi. The parameters are optimized through gradient-\nbased algorithms such as stochastic gradient descent\n(SGD), with gradients e\ufb00iciently computed using the\nbackpropagation algorithm.\nBackpropagation applies the chain rule of calculus\nto propagate the loss gradient backward through\nthe layers, allowing all network parameters to be\nupdated simultaneously. This mechanism enables\nNeural Networks to e\ufb00iciently learn complex input\u2013\noutput mappings from data.\nB. Learning Tasks. Classification and Regression\nNeural Networks can be tailored to different su-\npervised learning tasks, primarily classification and\nregression.\n\u2022 Classification: The goal is to assign an input to\none of several categories. In transformer condi-\ntion monitoring, an example is fault type iden-\ntification from Dissolved Gas Analysis (DGA).\nTraditional methods such as Duval\u2019s triangle\nrely on threshold rules, whereas NNs can learn\nprobabilistic and nonlinear decision boundaries,\nimproving fault classification accuracy.",
+    "page_number": 3,
+    "chunk_index": 8,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "adbc793d-dbce-4644-a5c7-aab02e91c362",
+    "text": "\n\u2022 Regression: The network predicts continuous\nvalues. For transformers, regression can be used\nto predict oil temperature or estimate remaining\nuseful life (RUL) of insulation based on opera-\ntional history.\nThe choice of the output activation function and\nloss function depends on the problem type. For\ninstance, classification problems commonly employ a\nsoftmax output with categorical cross-entropy loss:\nL = \u2212\nK\nX\nk=1\nyk log(pk),\n(4)\nwhere pk is the predicted probability of class k, and\nyk is the one-hot encoded true label. In contrast,\nregression tasks typically use a linear output layer\nand the MSE loss defined in Eq. (3).\nC. Transformer Applications\nNeural Networks have been successfully applied to\na range of transformer asset management and con-\ndition monitoring tasks within the PHM framework.\nSome representative applications include:\n\u2022 Fault diagnostics from sensor data (e.g., DGA)\nusing fully connected NNs to identify gas ratios\nand fault categories [5].\n\u2022 Prognostics and Remaining Useful Life (RUL)\nprediction of insulation degradation from oper-\national data [4].\n\u2022 Ensemble learning strategies that combine mul-\ntiple models trained on different datasets to\nimprove robustne",
+    "page_number": 3,
+    "chunk_index": 9,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "4553b23d-6061-4c1f-9996-ce2eb1f95f17",
+    "text": "ss and accuracy in diagnostics\n[6].\nNeural Networks provide a flexible and expressive\nmodeling framework capable of capturing complex\nnonlinear relationships. However, they also exhibit\nlimitations, including a tendency to overfit when\ntraining data are scarce, limited interpretability,\nand the need for careful regularization to ensure\ngeneralization [16].\nMotivated by the need to better handle structured\nand high-dimensional data such as images and time\u2013\nfrequency representations, specialized architectures\nhave been proposed, such as Convolutional Neural\nNetworks (CNNs), which are introduced in the fol-\nlowing section.\nIII. Convolutional Neural Networks\nA. Motivation: Why Specialized Architectures?\nIn transformer monitoring, data come in diverse\nforms: gas concentration vectors, temperature time\nseries, high-frequency acoustic signals, or thermal\nimages. Conventional feedforward Neural Networks\n(MLPs) process each input feature independently\nand thus fail to exploit local structure or spatiotem-\nporal correlations. However, in many cases, these cor-\nrelations carry essential diagnostic information, such\nas bursts in the frequency domain, thermal hotspots,\nor waveform patterns, cru",
+    "page_number": 3,
+    "chunk_index": 10,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "27566da7-171e-4da3-9212-266182899992",
+    "text": "cial for identifying specific\nfault conditions.\nTable III-A summarizes typical transformer moni-\ntoring data sources, their structure, and representa-\ntive patterns.\nTABLE I\nData types used in transformer monitoring and their\ncharacteristic patterns\nSource\nFormat\nPatterns\nDGA\nLow-dimensional vectors\nGas ratios\nLoad, temperature\n1D time series\nTrends, seasonal effects\nOLTC acoustics, vibration\nWaveforms (20 kHz\u20131 MHz)\nTime-frequency bursts\nIR/thermal imaging\n2D images\nSpatial hot-spots\nConvolutional Neural Networks (CNNs) are de-\nsigned to capture such localized and hierarchical\npatterns. Instead of fully connected layers, CNNs\nemploy learnable filters (kernels) that slide across the\ninput domain, detecting meaningful features, such\nas edges, bursts, or hotspots, independent of their\nposition. These spatially shared filters enable e\ufb00icient\nlearning from high-dimensional, structured data [17].\n",
+    "page_number": 3,
+    "chunk_index": 11,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "45df6109-c86c-4ce2-a9cb-334f59436fa7",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20254\nB. CNN Fundamentals: Local Filters and Feature\nHierarchies\nConsider an input tensor X\n\u2208Rh\u00d7w\u00d7c, rep-\nresenting an image of height h, width w, and c\nchannels (e.g., grayscale or RGB). A convolutional\nfilter K \u2208Rkh\u00d7kw\u00d7c produces an output feature map\nY via the convolution operation:\nY (k)\ni,j = \u03c3\n X\nu,v,c\nK(k)\nu,v,c \u00b7 Xi+u,j+v,c + b(k)\n!\n,\n(5)\nwhere \u03c3(\u00b7) is a nonlinear activation function (typ-\nically ReLU), and b(k) is a bias term for the k-th\nfeature map.\nAs an illustrative example, a 3 \u00d7 3 filter can be\ndefined as:\nK =\n\uf8ee\n\uf8f0\n\u22121\n\u22121\n\u22121\n0\n0\n0\n1\n1\n1\n\uf8f9\n\uf8fb\n(6)\nThis kernel acts as a vertical edge detector, empha-\nsizing horizontal transitions in the input image. The\nconvolution is performed by sliding the kernel over\nthe input region, computing element-wise products,\nsumming them, and applying the activation function:\nYi,j = \u03c3\n 2\nX\nu=0\n2\nX\nv=0\nKu,v \u00b7 Xi+u,j+v + b\n!\n.\n(7)\nDuring training, CNNs automatically learn a di-\nverse set of filters that respond to different features\u2014\nedges, textures, or frequency transitions. Shallow\nlayers capture low-level details, while deeper layers\n",
+    "page_number": 4,
+    "chunk_index": 12,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "e88877a0-5087-4955-a5b1-0ee723c038b4",
+    "text": "learn higher-level abstractions such as characteristic\nOLTC acoustic patterns or thermal fault signatures.\nKey benefits of CNNs include:\n\u2022 Parameter e\ufb00iciency. The same kernel detects a\nfeature across the entire input, reducing param-\neters and improving generalization.\n\u2022 Spatio-temporal information. Filters operate on\nspatial or temporal neighborhoods, detecting\nmeaningful patterns.\n\u2022 Hierarchical abstraction. Stacked layers con-\nstruct features from low-level edges to complex\npatterns.\n\u2022 Pooling operations. Downsampling (e.g., max-\npooling) reduces dimensionality while preserving\ndominant features.\nAlthough CNNs are commonly associated with\n2-D image data, they are also applicable to 1-D\nsignals such as vibration or acoustic recordings using\n1-D convolutions. Alternatively, transforming time\nseries into 2-D time\u2013frequency representations (e.g.,\nspectrograms) allows CNNs to leverage their full\nspatial feature extraction capabilities.\nC. From Time Series to Images: Spectrograms for\nAcoustic Monitoring\nIn the context of transformer diagnostics, partic-\nularly On-Load Tap Changer (OLTC) monitoring,\nacoustic signals contain information about electri-\ncal and mechanical events. The fre",
+    "page_number": 4,
+    "chunk_index": 13,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c04aa6b7-ea41-4a45-86b4-77522599a658",
+    "text": "quency content\nof these signals varies over time (i.e., they are\nnon-stationary), which motivates the use of time\u2013\nfrequency analysis.\nA widely used method for this purpose is the\n(discrete) Short-Time Fourier Transform (STFT),\nwhich decomposes a signal into overlapping time-\nlocalized frequency components:\nS(t, f) =\n\f\f\f\f\f\nL\u22121\nX\nn=0\nx[n + t] \u00b7 w[n] \u00b7 e\u2212j2\u03c0fn/L\n\f\f\f\f\f ,\n(8)\nwhere x[n] is the discrete-time input signal obtained\nwith respect to a sampling rate Fs, w[n] is a window\nfunction (e.g., Hamming or Hann) of length L, t\ndenotes the time index (window shift), f is the\nfrequency bin index. The window length L deter-\nmines the temporal resolution (i.e. L/Fs seconds).\nFor simplicity, the hop size (window shift step), is\nomitted.\nBy sliding the analysis window over time, the\nSTFT\nyields\na\ntwo-dimensional\nrepresentation,\nknown as the spectrogram:\nSpectrogram(t, f) = 20 log10 (|S(t, f)|) .\n(9)\nLog-scaling enhances perceptual relevance and dy-\nnamic range. In practice, Mel-scaled spectrograms\nare often employed to mimic human auditory per-\nception, particularly effective for identifying low-\nfrequency variations critical to OLTC event detec-\ntion.\nThis transformation enables CNNs to pr",
+    "page_number": 4,
+    "chunk_index": 14,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3346ca01-0fac-4fe0-afba-bba965ba8fe2",
+    "text": "ocess au-\ndio data as images, learning discriminative patterns\nfrom the spectrograms for event classification or\nanomaly detection.\nD. Case Study: CNN-Based OLTC Acoustic Moni-\ntoring\nIn [11], a CNN architecture was developed to\ndetect OLTC operational states from acoustic record-\nings sampled at 48 kHz. Fig. 2 illustrates the CNN\nstructure.\nThe model input consists of Mel spectrograms\ncorresponding to 360 ms audio segments (17\u00d71024\n",
+    "page_number": 4,
+    "chunk_index": 15,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "80f5fc44-28aa-42fd-9bdd-6979346fae11",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20255\nFig. 2.\nSchematics of the CNN architecture. The numbers\na \u00d7 b \u00d7 c inside the Conv2D boxes indicate the kernel size and\nthe number of filters [11].\nsamples). The CNN classifies each segment into one\nof the OLTC states defined in Table II. Fig. 3(a)\nshows the test environment, Fig. 3(b) depicts the\nvoltage regulation control scheme, and Fig. 3(c)\npresents the segmented acoustic signature corre-\nsponding to one OLTC transition.\nTABLE II\nSegmentation of transformer OLTC states.\nState\nDescription\n#1\nIdle state and motor operation\n#2\nMotor starts\n#3\nGeneva drive activation\n#4\nTap selector stops and end of Geneva drive\n#5\nDiverter switch operation\n#6\nMotor stops\n#7\nEvents associated with the mechanical braking\nprocess\nThe proposed approach achieved over 98% clas-\nsification accuracy on unseen audio signals, demon-\nstrating the strong feature extraction capability of\nCNNs for high-dimensional acoustic data. Compared\nto traditional feature-engineered machine learning\nmodels, CNNs exhibited superior adaptability and\ngeneralization across varying acoustic environments\n[11].\nThe ",
+    "page_number": 5,
+    "chunk_index": 16,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "22d9cefa-20d4-4034-b1d6-f1c499bed18c",
+    "text": "model\u2019s robustness was further evaluated\nunder both synthetic and real noise conditions.\nWhile the CNN maintained high accuracy in the\npresence of synthetic noise, real-world tests revealed\nsensitivity to background humming, requiring a pre-\nprocessing denoising step for optimal performance.\nThese findings underscore the importance of noise-\nrobust preprocessing in practical deployments.\nCNNs thus extend Neural Networks to structured\ndata, enabling hierarchical feature extraction from\ncomplex sensor signals. Their ability to generalize\nacross noise conditions and learn diagnostic rep-\nresentations makes them a key enabler for future\ntransformer health monitoring solutions.\nIV. Reinforcement Learning for Transformer\nControl\nTransiting towards Prognostics and Health Man-\nagement (PHM) solutions that integrate predictive\ninformation requires coupling condition assessment\nwith optimal decision-making. One example would\nbe the use of insulation ageing predictions to plan\ncost-effective maintenance actions. In this direction,\nReinforcement Learning (RL) provides a framework\nthat enables adaptive, data-driven control by learn-\ning from interaction with the system [18]. Rather\nthan focusin",
+    "page_number": 5,
+    "chunk_index": 17,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "18d09870-55ce-43df-9b1c-141261d0b989",
+    "text": "g on maintenance scheduling, this sec-\ntion illustrates how RL can be used for transformer\nactuation control, specifically for minimizing inrush\ncurrent during energization\u2014a phenomenon that\ndirectly contributes to accelerated ageing.\nA. Motivation: Adaptive Control with Neural Poli-\ncies\nTraditional control strategies for transformers,\nsuch as fixed switching sequences, often rely on\nstatic settings. While these methods are effective\nunder nominal steady-state conditions, they cannot\neasily adapt to varying load profiles, fluctuating\ngrid conditions, or complex operational trade-offs.\nMoreover, these rule-based systems rarely integrate\nreal-time health signals or system feedback in a\nprincipled manner.\nRL provides a data-driven alternative for sequen-\ntial decision-making. Instead of pre-defined rules, an\nRL agent learns optimal control strategies through\ninteraction with an environment, which may be a\ndetailed simulator or, eventually, a real operating\nenvironment. RL agents can dynamically adapt to\ncontext, achieving objectives such as minimizing\ninrush currents, reducing thermal stress, or improv-\ning lifetime utilization. Namely they learn to take\nactions that maximize a cumul",
+    "page_number": 5,
+    "chunk_index": 18,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "2e30ae2d-dfe6-4444-8986-2c3b684a2c3a",
+    "text": "ative reward function,\ncapturing both short-term performance and long-\nterm effects. Neural networks are typically used to\nrepresent the agent\u2019s decision policy, making RL\nanother extension of NNs toward control.\nFig.\n4\nillustrates\nthe\nclassical\nRL\nagent\u2013\nenvironment interaction loop. At each time step t,\nthe agent observes the environment state st, selects\nan action at, and receives a scalar reward rt+1 and a\nnew state st+1 from the environment. The goal is to\nlearn a policy \u03c0(at|st) that maximizes the expected\ncumulative reward.\nThe motivations to use RL in transformer health\nand control include: (i) the ability to learn from inter-\naction without requiring labeled datasets or expert\nheuristics, (ii) the use of simulators (environment)\nto explore long-term effects safely, and (iii) the\npotential to balance multiple, sometimes conflicting,\nobjectives via the design of custom reward functions\n(e.g., mechanical wear versus voltage quality).\n",
+    "page_number": 5,
+    "chunk_index": 19,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "7d779b6f-6f2f-40de-b636-e8ee6f9a8473",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20256\nFig. 3. (a) ELIN test environment (b) control scheme with acoustic sources; (c) segmented audio signal [11].\nat\nAction\nrt\nReward\nst\nState\nAgent\nEnvironment\nrt+1\nst+1\nFig. 4. Agent\u2013environment interaction in reinforcement learn-\ning. The agent learns an optimal policy through repeated\ninteraction with the environment.\nB. RL Fundamentals: Control as a Markov Decision\nProcess\nFormally, an RL problem is modeled as a Markov\nDecision Process (MDP), defined by the tuple\n(S, A, P, R, \u03b3), where:\n\u2022 S: Set of possible system states (e.g., trans-\nformer fluxes, grid voltage, ambient tempera-\nture).\n\u2022 A: Set of available actions (e.g., energization\nangle, tap changer positions).\n\u2022 P(s\u2032|s, a): State transition probabilities, defining\nsystem dynamics.\n\u2022 R(s, a): Reward function that quantifies the\ndesirability of each action.\n\u2022 \u03b3 \u2208[0, 1]: Discount factor that determines the\nimportance of future rewards.\nThe agent selects actions according to a policy\n\u03c0(at|st), often represented by a Neural Network, to\nmaximize the expected cumulative reward over time.\nIn most deep RL implementations",
+    "page_number": 6,
+    "chunk_index": 20,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "a7c7bfca-d73d-4f3f-b4bf-bae685ff4d6a",
+    "text": ", Neural Networks\nserve as policy approximators (actor), value estima-\ntors (critic), or both. These function approximators\nallow generalization across high-dimensional state\nspaces.\nC. Case Study: Minimizing Inrush Current via Neu-\nral Control\nA critical application of RL in transformers is the\nmitigation of inrush current during energization. Due\nto residual magnetic flux in the core, inappropriate\ncircuit breaker closing instants can cause inrush\ncurrents several times above nominal levels, leading\nto mechanical stress, false protection operation, and\nvoltage dips. In this context, classical rule-based\ncontrol is often insu\ufb00icient, and this makes it a\nnatural candidate for RL methods.\nTo address this, an RL agent can be trained in sim-\nulation to determine the optimal energization instant\n(i.e., circuit breaker closing angle) that minimizes\ninrush current. The environment includes a trans-\nformer model receiving as inputs the three-phase\nremanent flux values (\u03d51, \u03d52, \u03d53) and the selected\nswitching angle (action). It outputs the peak inrush\ncurrent Imax, which is used to compute the reward:\nr =\n(\n\u2212Imax,\nif Imax > 1,\n1 \u2212Imax,\notherwise.\n(10)\nThis incentivizes the agent to find ene",
+    "page_number": 6,
+    "chunk_index": 21,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "4c03a36d-dc09-4a5f-a380-35037300b8fa",
+    "text": "rgization\nstrategies that keep inrush below the rated current\n(1 pu). The diagram in Fig. 5 shows the inputs and\noutput of the environment.\n\u03a61, \u03a62, \u03a63 \n\u03b1 closing\nImax\nEnvironment\nTransformer Model\nFig. 5. Transformer simulation environment. Inputs: remanent\nfluxes and closing angle. Output: peak inrush current [10].\nAfter training, the agent receives state observa-\ntions (e.g., flux and timing) and outputs the optimal\nclosing angle that minimizes inrush. The learned\npolicy is evaluated in the simulation environment,\nas shown in Fig. 6.\nIn [10], multiple RL algorithms were benchmarked,\nincluding Deep Q-Networks (DQN) with linear and\n",
+    "page_number": 6,
+    "chunk_index": 22,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "0307526d-6660-4e54-869f-083d568cd685",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20257\n\u03b1 closing\n\u03a61 \nSimulation\nImax\n\u03b1 opening\n\u03a62 \n\u03a63 \nOutput\nInput\nHidden\nlayer\nlayers\nlayer\nFig. 6. Evaluation stage: trained policy maps state to closing\nangle. Simulation outputs inrush current [10].\nexponential \u03f5-greedy decay, and Proximal Policy Op-\ntimization (PPO). Fig. 7 compares the distribution\nof peak inrush currents for these approaches. While\nDQN with linear decay occasionally exceeds the\nrated limit, PPO and DQN with exponential decay\nshow more consistent and safer performance.\nFig. 7.\nDistribution of peak inrush currents for different\nRL algorithms. PPO yields the lowest mean and variance,\nachieving safer energization behavior [10].\nReinforcement Learning extends Neural Networks\nbeyond predictive modeling into sequential decision-\nmaking, where the focus is not only on estimating\nstates but also on learning control strategies that\noptimize long-term objectives. For transformers, this\ncase study demonstrates how neural agents can\neffectively control transformer behavior to minimize\ninrush current.\nAs high-fidelity simulators and hybrid physics\u2013\nML environments",
+    "page_number": 7,
+    "chunk_index": 23,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "2146176c-6d3d-4186-badc-159fa2b3f104",
+    "text": " become more available, RL-based\ncontrol will increasingly integrate physical models\nand uncertainty estimates. Such hybrid models can\nenable safe RL, where operational constraints and\nphysics laws guide exploration, paving the way\ntoward autonomous and health-aware transformer\ncontrol.\nV. Conclusions\nIn this first part of the tutorial, we have provided\nan overview of machine learning solutions for trans-\nformer condition monitoring based on Neural Net-\nworks (NNs) and their main variants. The focus was\nplaced on understanding the basic building blocks\nof NNs, their adaptation to structured data through\nConvolutional Neural Networks (CNNs), and their\nintegration into control-oriented frameworks via Re-\ninforcement Learning (RL).\nNNs serve as the foundation of most deep learning\narchitectures and provide a powerful means of learn-\ning nonlinear relationships directly from data. CNNs\nextend these capabilities by e\ufb00iciently processing\nstructured signals, such as acoustic and thermal\nmeasurements, enabling robust event detection and\nfeature extraction for On-Load Tap Changer (OLTC)\nmonitoring. RL, on the other hand, generalizes the\nrole of NNs from prediction to decision-making,\nallowi",
+    "page_number": 7,
+    "chunk_index": 24,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3ea151ac-7fa8-47bf-bff4-e32ea5ad4e36",
+    "text": "ng control policies to be learned directly from\ninteraction with the system, as demonstrated in the\ninrush current minimization case study.\nFuture research will likely advance in several direc-\ntions. Audio-based monitoring shows strong poten-\ntial for cost-effective condition assessment, though\nimproving robustness to noise remains an open chal-\nlenge. Another promising direction is the integra-\ntion of self-supervised learning to enable adaptive\ndiagnosis of previously unseen operating patterns.\nFor Reinforcement Learning, combining decision-\nmaking strategies with Remaining Useful Life (RUL)\nprediction models can pave the way for predictive,\ncost-effective maintenance scheduling.\nPart II of this series will extend these Neural Net-\nwork approaches toward physics-informed methods\nand uncertainty quantification, essential components\nfor robust decision-making under sparse or uncertain\ndata.\nTogether, Parts I and II aim to provide a coher-\nent view of how emerging AI paradigms, ranging\nfrom deep neural networks to physics-informed and\nprobabilistic models, can contribute to the next\ngeneration of reliable, explainable, and data-e\ufb00icient\nsolutions for power transformer monitoring an",
+    "page_number": 7,
+    "chunk_index": 25,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "472438cf-b6d1-4dd2-b0de-08ca65cf77ba",
+    "text": "d asset\nmanagement.\nAcknowledgements\nI am grateful to all my collaborators and mentors,\nespecially Vic Catterson, Stephen McArthur, and\nBrian Stewart. I would also like to thank Xose M.\nLopez-Fernandez for the invitation to present this\ntutorial at the ARWTr 2025 conference. In this Part\nI, I would like to acknowledge my collaborators\n",
+    "page_number": 7,
+    "chunk_index": 26,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "73007874-bb84-41f4-9d1a-8a43ee6d2e32",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20258\non OLTC audio monitoring: Adnan Secic, E\u00f1aut\nMuxika, Unai Garro, and Igor Kuzle, as well as on\nRL based solutions, including Manex Barrenetxea\nand Jone Ugarte.\nThis work has been partially funded by the\nSpanish State Research Agency through the Ram\u00f3n\ny Cajal Fellowship (grant No. RYC2022-037300-\nI)\nand\nProyectos\nGeneraci\u00f3n\nde\nConocimiento\n(grant No. PID2024-156284OA-I00), co-funded by\nMCIU/AEI/10.13039/501100011033 and FSE+.\nReferences\n[1] J. Aizpurua, B. Stewart, S. McArthur, M. Penalba,\nM. Barrenetxea, E. Muxika, and J. Ringwood, \u201cProba-\nbilistic forecasting informed failure prognostics framework\nfor improved rul prediction under uncertainty: A trans-\nformer case study,\u201d Reliability Engineering & System\nSafety, vol. 226, p. 108676, 2022.\n[2] J. Aizpurua, B. Stewart, and S. McArthur, \u201cPrognostics\n& health management oriented data analytics suite for\ntransformer health monitoring,\u201d Transformers Magazine,\npp. 1\u20139, Nov. 2022, published in Special Issue - ML & AI.\n[3] J. Aizpurua, V. Catterson, B. Stewart, S. McArthur,\nB. Lambert, B. Ampofo, G. Pereira, and J. Cross, \u201cDe",
+    "page_number": 8,
+    "chunk_index": 27,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3e6d82bb-d3f7-4f1a-ab20-ef2a1a533d47",
+    "text": "ter-\nmining appropriate data analytics for transformer health\nmonitoring,\u201d in 10th International Topical Meeting on\nNuclear Plant Instrumentation, Control and Human Ma-\nchine Interface Technologies.\nUnited States: American\nNuclear Society, 2017, pp. 1\u201311.\n[4] J. I. Aizpurua, S. D. J. McArthur, B. G. Stewart, B. Lam-\nbert, J. G. Cross, and V. M. Catterson, \u201cAdaptive power\ntransformer lifetime predictions through machine learning\nand uncertainty modeling in nuclear power plants,\u201d IEEE\nTransactions on Industrial Electronics, vol. 66, no. 6, pp.\n4726\u20134737, 2019.\n[5] J. I. Aizpurua, V. M. Catterson, B. G. Stewart, S. D. J.\nMcArthur, B. Lambert, B. Ampofo, G. Pereira, and J. G.\nCross, \u201cPower transformer dissolved gas analysis through\nbayesian networks and hypothesis testing,\u201d IEEE Trans-\nactions on Dielectrics and Electrical Insulation, vol. 25,\nno. 2, pp. 494\u2013506, 2018.\n[6] J. I. Aizpurua, V. M. Catterson, B. G. Stewart, S. D. J.\nMcArthur, B. Lambert, and J. G. Cross, \u201cUncertainty-\naware fusion of probabilistic classifiers for improved trans-\nformer diagnostics,\u201d IEEE Transactions on Systems, Man,\nand Cybernetics: Systems, vol. 51, no. 1, pp. 621\u2013633,\n2021.\n[7] J. Aizpurua, B. Stewart, ",
+    "page_number": 8,
+    "chunk_index": 28,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "8bc83bec-cd4e-4151-97f1-c9aa648d0f2c",
+    "text": "S. McArthur, B. Lambert,\nJ. Cross, and V. Catterson, \u201cImproved power transformer\ncondition monitoring under uncertainty through soft\ncomputing and probabilistic health index,\u201d Applied Soft\nComputing, vol. 85, p. 105530, 2019.\n[8] J. I. Aizpurua, I. Ramirez, I. Lasa, L. d. Rio, A. Ortiz, and\nB. G. Stewart, \u201cHybrid transformer prognostics frame-\nwork for enhanced probabilistic predictions in renewable\nenergy applications,\u201d IEEE Transactions on Power Deliv-\nery, vol. 38, no. 1, pp. 599\u2013609, 2023.\n[9] J. Ugarte Valdivielso, J. I. Aizpurua, and M. B. I\u00f1arra,\n\u201cUncertainty distribution assessment of jiles-atherton pa-\nrameter estimation for inrush current studies,\u201d IEEE\nTransactions on Power Delivery, vol. 39, no. 4, pp. 2275\u2013\n2285, 2024.\n[10] J. U. Valdivielso, J. I. Aizpurua, M. Barrenetxea, and\nB. G. Stewart, \u201cReinforcement learning-based controlled\nswitching\napproach\nfor\ninrush\ncurrent\nminimization\nin\npower\ntransformers,\u201d\n2025.\n[Online].\nAvailable:\nhttps://arxiv.org/abs/2503.11398\n[11] A. Secic, J. I. Aizpurua, U. Garro, E. Muxika, and\nI. Kuzle, \u201cTransformer oltc operation monitoring frame-\nwork through acoustic signal processing and convolutional\nneural networks,\u201d IEEE Transactions o",
+    "page_number": 8,
+    "chunk_index": 29,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "7b994823-9f50-47c5-aa70-423269a92bd7",
+    "text": "n Instrumentation\nand Measurement, vol. 74, pp. 1\u201314, 2025.\n[12] I. Ramirez, J. I. Aizpurua, I. Lasa, and L. del Rio,\n\u201cProbabilistic feature selection for improved asset lifetime\nestimation in renewables. application to transformers in\nphotovoltaic power plants,\u201d Engineering Applications of\nArtificial Intelligence, vol. 131, p. 107841, 2024.\n[13] J. I. Aizpurua, R. Pe\u00f1a-Alzola, J. Olano, I. Ramirez,\nI. Lasa, L. del Rio, and T. Dragicevic, \u201cProbabilistic\nmachine learning aided transformer lifetime prediction\nframework for wind energy systems,\u201d International Jour-\nnal of Electrical Power & Energy Systems, vol. 153, p.\n109352, 2023.\n[14] N. N. S\u00e1nchez-Pozo, E. Vanem, H. Bloomfield, and J. I.\nAizpurua, \u201cA probabilistic risk assessment framework for\nthe impact assessment of extreme events on renewable\npower plant components,\u201d Renewable Energy, vol. 240,\np. 122168, 2025.\n[15] J. Aizpurua, V. Catterson, Y. Papadopoulos, F. Chi-\nacchio,\nand\nD.\nD\u2019Urso,\n\u201cSupporting\ngroup\nmainte-\nnance through prognostics-enhanced dynamic depend-\nability prediction,\u201d Reliability Engineering & System\nSafety, vol. 168, pp. 171\u2013188, 2017, special Issue. Main-\ntenance Modelling.\n[16] S. Scardapane, Alice\u2019s Advent",
+    "page_number": 8,
+    "chunk_index": 30,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "7ebc3082-b39e-4dfe-856a-42332120b476",
+    "text": "ures in a Differentiable\nWonderland\n\u2013\nVolume\nI,\n2024.\n[Online].\nAvailable:\nhttps://arxiv.org/abs/2404.17625\n[17] Z. Li, F. Liu, W. Yang, S. Peng, and J. Zhou, \u201cA survey\nof convolutional neural networks: Analysis, applications,\nand prospects,\u201d IEEE Transactions on Neural Networks\nand Learning Systems, vol. 33, no. 12, pp. 6999\u20137019,\n2022.\n[18] R. S. Sutton and A. G. Barto, Reinforcement Learning:\nAn Introduction, 2nd ed.\nA Bradford Book, 2015.\n",
+    "page_number": 8,
+    "chunk_index": 31,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
   }
 ]

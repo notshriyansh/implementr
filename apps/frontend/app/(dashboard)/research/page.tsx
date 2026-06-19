@@ -1,11 +1,92 @@
-export default function ResearchPage() {
-  return (
-    <div className="p-8">
-      <h1 className="text-4xl font-bold">Paper Library</h1>
+"use client";
 
-      <p className="text-muted-foreground mt-2">
-        Search and ingest research papers.
-      </p>
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+
+import { Paper } from "@/types/paper";
+
+import { PaperSearchBar } from "@/components/research/paper-search-bar";
+import { PaperTable } from "@/components/research/paper-table";
+import { ResearchHeader } from "@/components/research/research-header";
+import { RecentPapersTable } from "@/components/research/recent-papers-table";
+
+import { useDebounce } from "@/hooks/use-debounce";
+import { usePaperSearch } from "@/hooks/use-paper-search";
+import { usePaperIngestion } from "@/hooks/use-paper-ingestion";
+
+function generatePaperId(title: string) {
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+export default function ResearchPage() {
+  const [query, setQuery] = useState("");
+  const [ingestingPaper, setIngestingPaper] = useState<string>();
+
+  const debouncedQuery = useDebounce(query);
+
+  const { data, isLoading, error } = usePaperSearch(debouncedQuery);
+
+  const ingestionMutation = usePaperIngestion();
+
+  const papers = useMemo(() => data?.papers ?? [], [data]);
+
+  async function handleIngest(paper: Paper) {
+    try {
+      setIngestingPaper(paper.pdf_url);
+
+      const paperId = generatePaperId(paper.title);
+
+      const result = await ingestionMutation.mutateAsync({
+        pdfUrl: paper.pdf_url,
+        paperId,
+      });
+
+      toast.success(`${paper.title} ingested successfully`);
+
+      console.log(result);
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to ingest paper");
+    } finally {
+      setIngestingPaper(undefined);
+    }
+  }
+
+  return (
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="mb-10">
+        <ResearchHeader />
+      </div>
+
+      <div className="mb-8">
+        <PaperSearchBar value={query} onChange={setQuery} />
+      </div>
+
+      {!query && <RecentPapersTable />}
+
+      {isLoading && (
+        <div className="text-muted-foreground">Searching papers...</div>
+      )}
+
+      {error && <div className="text-red-500">Failed to load papers.</div>}
+
+      {!isLoading && papers.length > 0 && (
+        <PaperTable
+          papers={papers}
+          onIngest={handleIngest}
+          ingestingPaper={ingestingPaper}
+        />
+      )}
+
+      {!isLoading && query && papers.length === 0 && (
+        <div className="text-center py-24 text-muted-foreground">
+          No papers found.
+        </div>
+      )}
     </div>
   );
 }
