@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { Paper } from "@/types/paper";
 
 import { Button } from "@/components/ui/button";
@@ -46,7 +48,10 @@ export function PaperRow({ paper, onIngest, isLoading }: Props) {
         <PaperStatusBadge status={isLoading ? "INGESTING" : "NOT_INGESTED"} />
       </div>
 
-      <div className="col-span-1 flex justify-end gap-2">
+      <div className="col-span-2 flex justify-end gap-2">
+        <Button variant="ghost" size="sm" disabled>
+          Open
+        </Button>
         <Button variant="ghost" size="sm" asChild>
           <a href={paper.pdf_url} target="_blank">
             View
