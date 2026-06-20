@@ -23,3 +23,18 @@ export interface IngestionResponse {
     content?: string;
   };
 }
+
+export interface Citation {
+  paper_id: string;
+  page_number: number;
+  chunk_index: number;
+}
+
+export interface ChatResponse {
+  answer: string;
+  citations: Citation[];
+}
+
+export interface ImplementationPlanResponse {
+  plan: string;
+}
