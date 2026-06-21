@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,10 +8,17 @@ import { Textarea } from "@/components/ui/textarea";
 interface Props {
   onSend: (question: string) => void;
   disabled?: boolean;
+  initialValue?: string;
 }
 
-export function ChatInput({ onSend, disabled }: Props) {
+export function ChatInput({ onSend, disabled, initialValue }: Props) {
   const [value, setValue] = useState("");
+
+  useEffect(() => {
+    if (initialValue) {
+      setValue(initialValue);
+    }
+  }, [initialValue]);
 
   function handleSend() {
     if (!value.trim()) return;
