@@ -44,3 +44,7 @@ export interface ArchitectureInsight {
   confidence: number;
   reasoning: string;
 }
+
+export interface HybridAnalysisResponse {
+  result: string;
+}
