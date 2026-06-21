@@ -1,3 +1,23 @@
-export default function Page() {
-  return <div>Repository</div>;
+export default function RepositoryPage() {
+  return (
+    <div className="max-w-7xl mx-auto p-8">
+      <div className="mb-10">
+        <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
+          02 · REPOSITORY
+        </div>
+
+        <h1 className="text-5xl font-semibold tracking-tight">
+          Repository Explorer
+        </h1>
+
+        <p className="mt-4 text-muted-foreground max-w-2xl">
+          Analyze repository structure, symbols and architecture.
+        </p>
+      </div>
+
+      <div className="border rounded-xl p-6">
+        Repository ingestion coming next...
+      </div>
+    </div>
+  );
 }
