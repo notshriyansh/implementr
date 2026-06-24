@@ -40,12 +40,18 @@ export function TopNavigation() {
             key={item.href}
             href={item.href}
             className={cn(
-              "text-xs uppercase tracking-[0.18em] transition-colors",
+              "relative text-xs uppercase tracking-[0.18em] transition-colors",
               active
-                ? "text-primary"
+                ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
+            <span
+              className={cn(
+                "absolute -bottom-2 left-0 h-px bg-foreground transition-all duration-300",
+                active ? "w-full" : "w-0",
+              )}
+            />
             {item.number} {item.label}
           </Link>
         );

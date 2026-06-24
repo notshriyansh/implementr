@@ -6,7 +6,7 @@ import { TopNavigation } from "./top-navigation";
 
 export function TopNavbar() {
   return (
-    <header className="h-16 border-b bg-background">
+    <header className="sticky top-0 z-50 h-16 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="max-w-[1600px] mx-auto px-8 h-full flex items-center justify-between">
         <div className="flex items-center gap-10">
           <div className="font-bold tracking-tight text-lg">IMPLEMENTR</div>

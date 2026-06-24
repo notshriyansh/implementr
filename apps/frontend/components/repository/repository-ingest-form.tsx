@@ -14,7 +14,7 @@ export function RepositoryIngestForm({ onAnalyze, loading }: Props) {
   const [path, setPath] = useState("");
 
   return (
-    <div className="border rounded-xl p-6">
+    <div className="rounded-3xl border border-border/50 bg-card/50 backdrop-blur-sm p-6">
       <h2 className="font-semibold mb-4">Analyze Repository</h2>
 
       <div className="flex gap-3">

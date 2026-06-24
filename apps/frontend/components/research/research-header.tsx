@@ -8,9 +8,11 @@ export function ResearchHeader() {
           01 · RESEARCH
         </div>
 
-        <h1 className="text-5xl font-semibold tracking-tight">Paper library</h1>
+        <h1 className="text-6xl font-semibold tracking-[-0.04em] leading-none">
+          Paper library
+        </h1>
 
-        <p className="mt-4 text-muted-foreground max-w-2xl">
+        <p className="mt-6 text-lg text-muted-foreground max-w-3xl leading-8">
           Ingest arXiv preprints, read with grounded citations, and hand them to
           the workspace as implementation briefs.
         </p>

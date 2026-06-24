@@ -7,14 +7,14 @@ interface Props {
 export function RepositoryCodeViewer({ file }: Props) {
   if (!file) {
     return (
-      <div className="border rounded-xl h-full flex items-center justify-center text-muted-foreground">
+      <div className="rounded-3xl bg-card/40 backdrop-blur-sm border border-border/50 h-full flex items-center justify-center text-muted-foreground">
         Select a file
       </div>
     );
   }
 
   return (
-    <div className="border rounded-xl p-6">
+    <div className="rounded-3xl bg-card/40 backdrop-blur-sm border border-border/50 p-6">
       <h2 className="font-semibold">{file.path}</h2>
 
       <div className="mt-6 space-y-6">

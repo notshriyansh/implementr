@@ -1,6 +1,7 @@
 import { HybridAnalysisResponse } from "@/types/repository";
 
 import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 
 interface Props {
   result: HybridAnalysisResponse;
@@ -8,14 +9,33 @@ interface Props {
 
 export function HybridResult({ result }: Props) {
   return (
-    <div className="space-y-6">
-      <div className="border rounded-xl p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="space-y-8"
+    >
+      <div
+        className="
+          rounded-3xl
+          bg-card/40
+          border
+          border-border/50
+          p-8
+          "
+      >
         <h2 className="font-semibold mb-3">Implementation Summary</h2>
 
         <p className="text-muted-foreground">{result.summary}</p>
       </div>
 
-      <div className="border rounded-xl p-6">
+      <div
+        className="
+          rounded-3xl
+          bg-muted/20
+          p-6
+          "
+      >
         <div className="flex items-center justify-between">
           <span className="font-medium">Confidence</span>
 
@@ -62,7 +82,7 @@ export function HybridResult({ result }: Props) {
 
         <p className="leading-7 text-muted-foreground">{result.reasoning}</p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

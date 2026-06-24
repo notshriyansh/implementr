@@ -11,7 +11,7 @@ export default async function PaperWorkspacePage({
   const { paperId } = await params;
 
   return (
-    <div className="max-w-7xl mx-auto p-8">
+    <div className="max-w-350] mx-auto p-8">
       <PaperHeader paperId={paperId} />
 
       <PaperWorkspace />

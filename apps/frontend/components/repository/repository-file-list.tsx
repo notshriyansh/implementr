@@ -7,7 +7,7 @@ interface Props {
 
 export function RepositoryFileList({ files, onSelect }: Props) {
   return (
-    <div className="border rounded-xl overflow-hidden">
+    <div className="rounded-3xl overflow-hidden bg-card/40 backdrop-blur-sm border border-border/50">
       <div className="px-4 py-3 border-b font-medium">Files</div>
 
       <div className="max-h-150 overflow-y-auto">
@@ -15,7 +15,7 @@ export function RepositoryFileList({ files, onSelect }: Props) {
           <button
             key={file.path}
             onClick={() => onSelect(file)}
-            className="w-full text-left px-4 py-3 border-b hover:bg-muted/30"
+            className="w-full text-left px-4 py-3 border-b hover:bg-muted/20 transition-all duration-200"
           >
             <div className="text-sm">{file.path}</div>
 

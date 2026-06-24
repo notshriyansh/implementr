@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 import { CodeChunk, FileNode } from "@/types/repository";
 
@@ -38,7 +39,12 @@ export default function RepositoryPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-8">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="max-w-350] mx-auto p-8"
+    >
       <RepositoryHeader />
 
       <RepositoryIngestForm
@@ -79,6 +85,6 @@ export default function RepositoryPage() {
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 import { Paper } from "@/types/paper";
 
@@ -57,7 +58,12 @@ export default function ResearchPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
+      className="p-8 max-w-350] mx-auto"
+    >
       <div className="mb-10">
         <ResearchHeader />
       </div>
@@ -87,6 +93,6 @@ export default function ResearchPage() {
           No papers found.
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

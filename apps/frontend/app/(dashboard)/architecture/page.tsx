@@ -9,7 +9,7 @@ export default function ArchitecturePage() {
   const mutation = useArchitectureAnalysis();
 
   return (
-    <div className="max-w-7xl mx-auto p-8">
+    <div className="max-w-350] mx-auto p-8">
       <div className="mb-10">
         <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
           03 · ARCHITECTURE

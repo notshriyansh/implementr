@@ -17,7 +17,16 @@ export function PaperSearchBar({ value, onChange }: Props) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search papers · arXiv ID · author · keyword"
-        className="pl-10 h-12 rounded-xl"
+        className="
+          pl-10
+          h-14
+          rounded-2xl
+          border-border/60
+          bg-muted/20
+          text-base
+          transition-all
+          focus-visible:ring-1
+          "
       />
     </div>
   );
