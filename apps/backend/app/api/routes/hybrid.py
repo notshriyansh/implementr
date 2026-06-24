@@ -6,8 +6,13 @@ from fastapi import (
 from app.agents.hybrid_implementation_agent import (
     HybridImplementationAgent,
 )
+
 from app.core.dependencies import (
     get_hybrid_agent,
+)
+
+from app.schemas.hybrid import (
+    HybridAnalysisResponse,
 )
 
 router = APIRouter(
@@ -16,7 +21,10 @@ router = APIRouter(
 )
 
 
-@router.post("/analyze")
+@router.post(
+    "/analyze",
+    response_model=HybridAnalysisResponse,
+)
 async def hybrid_analysis(
     question: str,
     agent: (
@@ -24,11 +32,7 @@ async def hybrid_analysis(
     ) = Depends(
         get_hybrid_agent,
     ),
-) -> dict:
-    result = await agent.analyze(
+) -> HybridAnalysisResponse:
+    return await agent.analyze(
         question
     )
-
-    return {
-        "result": result,
-    }

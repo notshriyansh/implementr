@@ -32,7 +32,7 @@ export default function WorkspacePage() {
 
       {mutation.data && (
         <div className="mt-8">
-          <HybridResult result={mutation.data.result} />
+          <HybridResult result={mutation.data} />
         </div>
       )}
     </div>

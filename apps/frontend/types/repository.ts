@@ -46,5 +46,11 @@ export interface ArchitectureInsight {
 }
 
 export interface HybridAnalysisResponse {
-  result: string;
+  summary: string;
+  relevant_files: string[];
+  relevant_symbols: string[];
+  implementation_steps: string[];
+  risks: string[];
+  confidence: number;
+  reasoning: string;
 }
