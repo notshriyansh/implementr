@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
 
 import { Paper } from "@/types/paper";
 
@@ -14,6 +14,8 @@ import { RecentPapersTable } from "@/components/research/recent-papers-table";
 import { useDebounce } from "@/hooks/use-debounce";
 import { usePaperSearch } from "@/hooks/use-paper-search";
 import { usePaperIngestion } from "@/hooks/use-paper-ingestion";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageContainer } from "@/components/shared/page-container";
 
 function generatePaperId(title: string) {
   return title
@@ -58,12 +60,7 @@ export default function ResearchPage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="p-8 max-w-350] mx-auto"
-    >
+    <PageContainer>
       <div className="mb-10">
         <ResearchHeader />
       </div>
@@ -74,9 +71,7 @@ export default function ResearchPage() {
 
       {!query && <RecentPapersTable />}
 
-      {isLoading && (
-        <div className="text-muted-foreground">Searching papers...</div>
-      )}
+      {isLoading && <LoadingSkeleton />}
 
       {error && <div className="text-red-500">Failed to load papers.</div>}
 
@@ -89,10 +84,11 @@ export default function ResearchPage() {
       )}
 
       {!isLoading && query && papers.length === 0 && (
-        <div className="text-center py-24 text-muted-foreground">
-          No papers found.
-        </div>
+        <EmptyState
+          title="No papers found"
+          description="Try searching with different keywords, authors, or arXiv identifiers."
+        />
       )}
-    </motion.div>
+    </PageContainer>
   );
 }

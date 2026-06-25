@@ -16,6 +16,7 @@ import { useRepositorySearch } from "@/hooks/use-repository-search";
 import { RepositorySearch } from "@/components/repository/repository-search";
 import { RepositorySearchResults } from "@/components/repository/repository-search-results";
 import { CodeChunkViewer } from "@/components/repository/code-chunk-viewer";
+import { PageContainer } from "@/components/shared/page-container";
 
 export default function RepositoryPage() {
   const [repoPath, setRepoPath] = useState("");
@@ -39,12 +40,7 @@ export default function RepositoryPage() {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="max-w-350] mx-auto p-8"
-    >
+    <PageContainer>
       <RepositoryHeader />
 
       <RepositoryIngestForm
@@ -85,6 +81,6 @@ export default function RepositoryPage() {
           </div>
         </div>
       )}
-    </motion.div>
+    </PageContainer>
   );
 }

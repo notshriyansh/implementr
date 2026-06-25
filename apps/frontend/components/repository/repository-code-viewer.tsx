@@ -1,4 +1,5 @@
 import { FileNode } from "@/types/repository";
+import { EmptyState } from "../shared/empty-state";
 
 interface Props {
   file?: FileNode;
@@ -7,9 +8,10 @@ interface Props {
 export function RepositoryCodeViewer({ file }: Props) {
   if (!file) {
     return (
-      <div className="rounded-3xl bg-card/40 backdrop-blur-sm border border-border/50 h-full flex items-center justify-center text-muted-foreground">
-        Select a file
-      </div>
+      <EmptyState
+        title="No file selected"
+        description="Choose a repository file from the explorer to inspect imports, classes and functions."
+      />
     );
   }
 
