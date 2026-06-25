@@ -2,11 +2,7 @@
 
 import { motion } from "framer-motion";
 
-interface Props {
-  children: React.ReactNode;
-}
-
-export function PageContainer({ children }: Props) {
+export function PageContainer({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -15,7 +11,13 @@ export function PageContainer({ children }: Props) {
         duration: 0.35,
         ease: "easeOut",
       }}
-      className="p-8 max-w-[1600px] mx-auto w-full"
+      className="
+        mx-auto
+        w-full
+        max-w-[1600px]
+        px-8
+        py-8
+      "
     >
       {children}
     </motion.div>

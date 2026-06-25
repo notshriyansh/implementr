@@ -2,57 +2,43 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import { cn } from "@/lib/utils";
 
 const items = [
-  {
-    label: "Research",
-    href: "/research",
-    number: "01",
-  },
-  {
-    label: "Repository",
-    href: "/repository",
-    number: "02",
-  },
-  {
-    label: "Workspace",
-    href: "/workspace",
-    number: "03",
-  },
-  {
-    label: "Evaluation",
-    href: "/evaluation",
-    number: "04",
-  },
+  { number: "01", label: "Research", href: "/research" },
+  { number: "02", label: "Repository", href: "/repository" },
+  { number: "03", label: "Architecture", href: "/architecture" },
+  { number: "04", label: "Workspace", href: "/workspace" },
+  { number: "05", label: "Evaluation", href: "/evaluation" },
 ];
 
 export function TopNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-8">
+    <nav className="flex items-center gap-10">
       {items.map((item) => {
-        const active = pathname === item.href;
+        const active = pathname.startsWith(item.href);
 
         return (
           <Link
             key={item.href}
             href={item.href}
             className={cn(
-              "relative text-xs uppercase tracking-[0.18em] transition-colors",
+              "group relative text-xs uppercase tracking-[0.18em] transition-colors duration-300",
               active
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
+            <span>{item.number}</span> <span>{item.label}</span>
             <span
               className={cn(
-                "absolute -bottom-2 left-0 h-px bg-foreground transition-all duration-300",
-                active ? "w-full" : "w-0",
+                "absolute -bottom-4.5 left-0 h-px bg-foreground transition-all duration-300",
+                active ? "w-full" : "w-0 group-hover:w-full",
               )}
             />
-            {item.number} {item.label}
           </Link>
         );
       })}

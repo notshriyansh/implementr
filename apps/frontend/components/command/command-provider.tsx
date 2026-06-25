@@ -1,26 +1,29 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  Dispatch,
+  SetStateAction,
+} from "react";
 
 interface CommandContextValue {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const CommandContext = createContext<CommandContextValue | null>(null);
 
 export function CommandProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const value = {
+    open,
+    setOpen,
+  };
 
   return (
-    <CommandContext.Provider
-      value={{
-        open,
-        setOpen,
-      }}
-    >
-      {children}
-    </CommandContext.Provider>
+    <CommandContext.Provider value={value}>{children}</CommandContext.Provider>
   );
 }
 

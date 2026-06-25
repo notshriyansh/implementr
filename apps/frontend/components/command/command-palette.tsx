@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 
 import {
   CommandDialog,
-  CommandInput,
-  CommandList,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
+  CommandSeparator,
 } from "@/components/ui/command";
 
 import { useCommandPalette } from "./command-provider";
@@ -19,40 +20,80 @@ export function CommandPalette() {
   const { open, setOpen } = useCommandPalette();
 
   useEffect(() => {
-    function down(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+    function handler(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
 
-        setOpen(!open);
+        setOpen((prev) => !prev);
       }
     }
 
-    document.addEventListener("keydown", down);
+    window.addEventListener("keydown", handler);
 
-    return () => document.removeEventListener("keydown", down);
-  }, [open, setOpen]);
+    return () => window.removeEventListener("keydown", handler);
+  }, [setOpen]);
+
+  function navigate(path: string) {
+    router.push(path);
+
+    setOpen(false);
+  }
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
-      <CommandInput placeholder="Search everywhere..." />
+      <CommandInput placeholder="Search papers, repositories, commands..." />
 
       <CommandList>
         <CommandGroup heading="Navigation">
-          <CommandItem onSelect={() => router.push("/research")}>
+          <CommandItem onSelect={() => navigate("/research")}>
             Research
           </CommandItem>
 
-          <CommandItem onSelect={() => router.push("/repository")}>
+          <CommandItem onSelect={() => navigate("/repository")}>
             Repository
           </CommandItem>
 
-          <CommandItem onSelect={() => router.push("/workspace")}>
+          <CommandItem onSelect={() => navigate("/architecture")}>
+            Architecture
+          </CommandItem>
+
+          <CommandItem onSelect={() => navigate("/workspace")}>
             Workspace
           </CommandItem>
 
-          <CommandItem onSelect={() => router.push("/architecture")}>
-            Architecture
+          <CommandItem onSelect={() => navigate("/evaluation")}>
+            Evaluation
           </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Actions">
+          <CommandItem onSelect={() => navigate("/research")}>
+            Search Papers
+          </CommandItem>
+
+          <CommandItem onSelect={() => navigate("/repository")}>
+            Analyze Repository
+          </CommandItem>
+
+          <CommandItem onSelect={() => navigate("/architecture")}>
+            Analyze Architecture
+          </CommandItem>
+
+          <CommandItem onSelect={() => navigate("/workspace")}>
+            Hybrid Analysis
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Recent">
+          <CommandItem>Attention Is All You Need</CommandItem>
+
+          <CommandItem>FlashAttention</CommandItem>
+
+          <CommandItem>Video Transformers</CommandItem>
         </CommandGroup>
       </CommandList>
     </CommandDialog>
