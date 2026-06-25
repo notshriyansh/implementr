@@ -88,12 +88,15 @@ export function HybridResult({ result }: Props) {
 
 function Section({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="border rounded-xl p-6">
-      <h2 className="font-semibold mb-4">{title}</h2>
+    <div className="rounded-3xl border border-border/50 bg-card/40 backdrop-blur-sm p-6">
+      <h2 className="mb-4 font-semibold">{title}</h2>
 
       <ul className="space-y-2">
         {items.map((item) => (
-          <li key={item} className="font-mono text-sm">
+          <li
+            key={item}
+            className="rounded-lg bg-muted/20 px-3 py-2 font-mono text-sm"
+          >
             {item}
           </li>
         ))}

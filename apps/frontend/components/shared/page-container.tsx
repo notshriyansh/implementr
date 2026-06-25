@@ -15,8 +15,12 @@ export function PageContainer({ children }: { children: React.ReactNode }) {
         mx-auto
         w-full
         max-w-[1600px]
-        px-8
-        py-8
+        px-4
+        sm:px-6
+        lg:px-8
+        xl:px-10
+        py-6
+        lg:py-8
       "
     >
       {children}

@@ -10,7 +10,7 @@ export function RepositoryFileList({ files, onSelect }: Props) {
     <div className="rounded-3xl overflow-hidden bg-card/40 backdrop-blur-sm border border-border/50">
       <div className="px-4 py-3 border-b font-medium">Files</div>
 
-      <div className="max-h-150 overflow-y-auto">
+      <div className="max-h-162.5 overflow-y-auto">
         {files.map((file) => (
           <button
             key={file.path}

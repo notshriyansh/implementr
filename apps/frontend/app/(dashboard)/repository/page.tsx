@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 
 import { CodeChunk, FileNode } from "@/types/repository";
 
@@ -9,22 +8,19 @@ import { RepositoryHeader } from "@/components/repository/repository-header";
 import { RepositoryIngestForm } from "@/components/repository/repository-ingest-form";
 import { RepositoryFileList } from "@/components/repository/repository-file-list";
 import { RepositoryCodeViewer } from "@/components/repository/repository-code-viewer";
-
-import { useRepositoryIngestion } from "@/hooks/use-repository-ingestion";
-import { useRepositoryStructure } from "@/hooks/use-repository-structure";
-import { useRepositorySearch } from "@/hooks/use-repository-search";
 import { RepositorySearch } from "@/components/repository/repository-search";
 import { RepositorySearchResults } from "@/components/repository/repository-search-results";
 import { CodeChunkViewer } from "@/components/repository/code-chunk-viewer";
 import { PageContainer } from "@/components/shared/page-container";
 
+import { useRepositoryIngestion } from "@/hooks/use-repository-ingestion";
+import { useRepositoryStructure } from "@/hooks/use-repository-structure";
+import { useRepositorySearch } from "@/hooks/use-repository-search";
+
 export default function RepositoryPage() {
   const [repoPath, setRepoPath] = useState("");
-
   const [selectedFile, setSelectedFile] = useState<FileNode>();
-
   const [searchQuery, setSearchQuery] = useState("");
-
   const [selectedChunk, setSelectedChunk] = useState<CodeChunk>();
 
   const ingestMutation = useRepositoryIngestion();
@@ -35,7 +31,6 @@ export default function RepositoryPage() {
 
   async function handleAnalyze(path: string) {
     setRepoPath(path);
-
     await ingestMutation.mutateAsync(path);
   }
 
@@ -53,30 +48,30 @@ export default function RepositoryPage() {
       </div>
 
       {structureQuery.data && (
-        <div className="grid grid-cols-12 gap-6 mt-8">
-          <div className="col-span-4">
+        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-12">
+          <div className="xl:col-span-4">
             <RepositoryFileList
               files={structureQuery.data.files}
               onSelect={setSelectedFile}
             />
           </div>
 
-          <div className="col-span-8">
+          <div className="xl:col-span-8">
             <RepositoryCodeViewer file={selectedFile} />
           </div>
         </div>
       )}
 
       {searchQueryResult.data && (
-        <div className="grid grid-cols-12 gap-6 mt-8">
-          <div className="col-span-5">
+        <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-12">
+          <div className="xl:col-span-5">
             <RepositorySearchResults
               results={searchQueryResult.data.results}
               onSelect={setSelectedChunk}
             />
           </div>
 
-          <div className="col-span-7">
+          <div className="xl:col-span-7">
             <CodeChunkViewer chunk={selectedChunk} />
           </div>
         </div>

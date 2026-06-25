@@ -2,20 +2,21 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+
 import { LoadingSkeleton } from "@/components/shared/loading-skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { PageContainer } from "@/components/shared/page-container";
 
 import { Paper } from "@/types/paper";
 
+import { ResearchHeader } from "@/components/research/research-header";
 import { PaperSearchBar } from "@/components/research/paper-search-bar";
 import { PaperTable } from "@/components/research/paper-table";
-import { ResearchHeader } from "@/components/research/research-header";
 import { RecentPapersTable } from "@/components/research/recent-papers-table";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { usePaperSearch } from "@/hooks/use-paper-search";
 import { usePaperIngestion } from "@/hooks/use-paper-ingestion";
-import { EmptyState } from "@/components/shared/empty-state";
-import { PageContainer } from "@/components/shared/page-container";
 
 function generatePaperId(title: string) {
   return title
@@ -42,17 +43,14 @@ export default function ResearchPage() {
 
       const paperId = generatePaperId(paper.title);
 
-      const result = await ingestionMutation.mutateAsync({
+      await ingestionMutation.mutateAsync({
         pdfUrl: paper.pdf_url,
         paperId,
       });
 
       toast.success(`${paper.title} ingested successfully`);
-
-      console.log(result);
     } catch (error) {
       console.error(error);
-
       toast.error("Failed to ingest paper");
     } finally {
       setIngestingPaper(undefined);
@@ -61,33 +59,50 @@ export default function ResearchPage() {
 
   return (
     <PageContainer>
-      <div className="mb-10">
-        <ResearchHeader />
-      </div>
+      <ResearchHeader />
 
-      <div className="mb-8">
+      <div className="mt-10">
         <PaperSearchBar value={query} onChange={setQuery} />
       </div>
 
-      {!query && <RecentPapersTable />}
+      {!query && (
+        <div className="mt-10">
+          <RecentPapersTable />
+        </div>
+      )}
 
-      {isLoading && <LoadingSkeleton />}
+      {isLoading && (
+        <div className="mt-8">
+          <LoadingSkeleton />
+        </div>
+      )}
 
-      {error && <div className="text-red-500">Failed to load papers.</div>}
+      {error && (
+        <div className="mt-10">
+          <EmptyState
+            title="Search failed"
+            description="Something went wrong while searching arXiv."
+          />
+        </div>
+      )}
 
       {!isLoading && papers.length > 0 && (
-        <PaperTable
-          papers={papers}
-          onIngest={handleIngest}
-          ingestingPaper={ingestingPaper}
-        />
+        <div className="mt-10">
+          <PaperTable
+            papers={papers}
+            onIngest={handleIngest}
+            ingestingPaper={ingestingPaper}
+          />
+        </div>
       )}
 
       {!isLoading && query && papers.length === 0 && (
-        <EmptyState
-          title="No papers found"
-          description="Try searching with different keywords, authors, or arXiv identifiers."
-        />
+        <div className="mt-10">
+          <EmptyState
+            title="No papers found"
+            description="Try searching with different keywords, authors, or arXiv identifiers."
+          />
+        </div>
       )}
     </PageContainer>
   );

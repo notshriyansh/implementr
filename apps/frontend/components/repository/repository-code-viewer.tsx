@@ -16,39 +16,45 @@ export function RepositoryCodeViewer({ file }: Props) {
   }
 
   return (
-    <div className="rounded-3xl bg-card/40 backdrop-blur-sm border border-border/50 p-6">
-      <h2 className="font-semibold">{file.path}</h2>
+    <div className="rounded-3xl border border-border/50 bg-card/40 backdrop-blur-sm p-6">
+      <h2 className="font-semibold text-lg">{file.path}</h2>
 
       <div className="mt-6 space-y-6">
-        <div>
-          <h3 className="font-medium mb-2">Imports</h3>
+        <section className="rounded-xl bg-muted/20 p-4">
+          <h3 className="mb-3 font-medium">Imports</h3>
 
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {file.imports.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item} className="font-mono text-sm">
+                {item}
+              </li>
             ))}
           </ul>
-        </div>
+        </section>
 
-        <div>
-          <h3 className="font-medium mb-2">Functions</h3>
+        <section className="rounded-xl bg-muted/20 p-4">
+          <h3 className="mb-3 font-medium">Functions</h3>
 
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {file.functions.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item} className="font-mono text-sm">
+                {item}
+              </li>
             ))}
           </ul>
-        </div>
+        </section>
 
-        <div>
-          <h3 className="font-medium mb-2">Classes</h3>
+        <section className="rounded-xl bg-muted/20 p-4">
+          <h3 className="mb-3 font-medium">Classes</h3>
 
-          <ul className="space-y-1">
+          <ul className="space-y-2">
             {file.classes.map((item) => (
-              <li key={item}>{item}</li>
+              <li key={item} className="font-mono text-sm">
+                {item}
+              </li>
             ))}
           </ul>
-        </div>
+        </section>
       </div>
     </div>
   );

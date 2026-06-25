@@ -23,7 +23,7 @@ export function PaperRow({ paper, onIngest, isLoading }: Props) {
       .join(", ") || "Unknown";
 
   return (
-    <div className="grid grid-cols-12 items-center border-b px-6 py-5 hover:bg-muted/20 hover:-translate-y-0.5 transition-all duration-300">
+    <div className="grid min-w-237.5 grid-cols-12 items-center border-b px-6 py-5 hover:bg-muted/20 hover:-translate-y-0.5 transition-all duration-300">
       <div className="col-span-7">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
