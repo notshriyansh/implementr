@@ -138,6 +138,18 @@ from app.architecture.context_expander import (
     ContextExpander,
 )
 
+from app.concepts.concept_extractor import (
+    ConceptExtractor,
+)
+
+from app.concepts.concept_matcher import (
+    ConceptMatcher,
+)
+
+from app.concepts.concept_service import (
+    ConceptService,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -236,6 +248,39 @@ architecture_reasoning_service = (
         ),
         context_expander=(
             context_expander
+        ),
+        llm=llm,
+    )
+)
+
+
+
+concept_extractor = (
+    ConceptExtractor()
+)
+
+concept_matcher = (
+    ConceptMatcher()
+)
+
+concept_service = (
+    ConceptService(
+        extractor=(
+            concept_extractor
+        ),
+        matcher=(
+            concept_matcher
+        ),
+    )
+)
+
+hybrid_agent = (
+    HybridImplementationAgent(
+        retrieval_service=(
+            hybrid_retrieval_service
+        ),
+        concept_service=(
+            concept_service
         ),
         llm=llm,
     )
@@ -420,12 +465,7 @@ def get_hybrid_retrieval_service(
 
 def get_hybrid_agent(
 ) -> HybridImplementationAgent:
-    return HybridImplementationAgent(
-        retrieval_service=(
-            hybrid_retrieval_service
-        ),
-        llm=llm,
-    )
+    return hybrid_agent
 
 
 def get_code_ingestion_service(
@@ -452,3 +492,7 @@ def get_code_ingestion_service(
 def get_architecture_reasoning_service(
 ) -> ArchitectureReasoningService:
     return architecture_reasoning_service
+
+def get_context_expander(
+) -> ContextExpander:
+    return context_expander

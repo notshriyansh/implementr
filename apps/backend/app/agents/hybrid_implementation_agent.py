@@ -12,12 +12,19 @@ from app.schemas.hybrid import (
     HybridAnalysisResponse,
 )
 
+from app.concepts.concept_service import (
+    ConceptService,
+)
+
 
 class HybridImplementationAgent:
     def __init__(
         self,
         retrieval_service: (
             HybridRetrievalService
+        ),
+        concept_service: (
+            ConceptService
         ),
         llm: BaseLLM,
     ) -> None:
@@ -26,6 +33,10 @@ class HybridImplementationAgent:
         )
 
         self.llm = llm
+
+        self.concept_service = (
+            concept_service
+        )
 
     def extract_section(
         self,
@@ -108,15 +119,40 @@ class HybridImplementationAgent:
             for chunk in code_chunks
         )
 
+        concept_map = (
+            self.concept_service
+            .build_concept_map(
+                paper_text=paper_context,
+                code_text=code_context,
+            )
+        )
+
+        concept_context = "\n".join(
+            (
+                f"{item['paper_concept']} "
+                f"-> "
+                f"{item['repository_concept']}"
+            )
+            for item in concept_map
+        )
+
+        if not concept_context:
+            concept_context = (
+                "No direct concept mappings found."
+            )
+
         prompt = (
             HYBRID_IMPLEMENTATION_PROMPT.format(
+                question=question,
                 paper_context=(
                     paper_context
+                ),
+                concept_mappings=(
+                    concept_context
                 ),
                 code_context=(
                     code_context
                 ),
-                question=question,
             )
         )
 
