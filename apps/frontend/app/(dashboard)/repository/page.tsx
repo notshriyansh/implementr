@@ -6,7 +6,7 @@ import { CodeChunk, FileNode } from "@/types/repository";
 
 import { RepositoryHeader } from "@/components/repository/repository-header";
 import { RepositoryIngestForm } from "@/components/repository/repository-ingest-form";
-import { RepositoryFileList } from "@/components/repository/repository-file-list";
+import { RepositoryTree } from "@/components/repository/repository-tree";
 import { RepositoryCodeViewer } from "@/components/repository/repository-code-viewer";
 import { RepositorySearch } from "@/components/repository/repository-search";
 import { RepositorySearchResults } from "@/components/repository/repository-search-results";
@@ -64,7 +64,7 @@ export default function RepositoryPage() {
       {structureQuery.data && (
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-12">
           <div className="xl:col-span-4">
-            <RepositoryFileList
+            <RepositoryTree
               files={structureQuery.data.files}
               onSelect={(file) => {
                 setSelectedFile(file);
