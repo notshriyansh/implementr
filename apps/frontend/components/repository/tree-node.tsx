@@ -5,22 +5,24 @@ import { ChevronRight, ChevronDown, Folder, FileCode } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { FileNode } from "@/types/repository";
-
 import { TreeNode as TreeNodeType } from "@/lib/tree-builder";
 
 interface Props {
   node: TreeNodeType;
   onSelect: (file: FileNode) => void;
+  selectedFile?: string;
 }
 
-export function TreeNode({ node, onSelect }: Props) {
-  const [open, setOpen] = useState(true);
+export function TreeNode({ node, onSelect, selectedFile }: Props) {
+  const [open, setOpen] = useState(false);
 
   if (node.type === "file") {
+    const active = node.file?.path === selectedFile;
+
     return (
       <button
         onClick={() => node.file && onSelect(node.file as FileNode)}
-        className="
+        className={`
           flex
           w-full
           items-center
@@ -30,9 +32,9 @@ export function TreeNode({ node, onSelect }: Props) {
           py-1.5
           text-left
           text-sm
-          hover:bg-muted/30
           transition-colors
-        "
+          ${active ? "bg-muted font-medium" : "hover:bg-muted/30"}
+        `}
       >
         <FileCode className="h-4 w-4 text-muted-foreground" />
 
@@ -64,7 +66,7 @@ export function TreeNode({ node, onSelect }: Props) {
           <ChevronRight className="h-4 w-4" />
         )}
 
-        <Folder className="h-4 w-4" />
+        <Folder className="h-4 w-4 text-muted-foreground" />
 
         <span className="text-sm">{node.name}</span>
       </button>
@@ -84,10 +86,18 @@ export function TreeNode({ node, onSelect }: Props) {
               height: 0,
               opacity: 0,
             }}
+            transition={{
+              duration: 0.2,
+            }}
             className="ml-5 overflow-hidden"
           >
             {node.children.map((child) => (
-              <TreeNode key={child.path} node={child} onSelect={onSelect} />
+              <TreeNode
+                key={child.path}
+                node={child}
+                onSelect={onSelect}
+                selectedFile={selectedFile}
+              />
             ))}
           </motion.div>
         )}

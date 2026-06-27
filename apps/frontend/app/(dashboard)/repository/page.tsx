@@ -66,11 +66,8 @@ export default function RepositoryPage() {
           <div className="xl:col-span-5">
             <RepositoryTree
               files={structureQuery.data.files}
-              onSelect={(file) => {
-                setSelectedFile(file);
-
-                setSelectedFileStore(file);
-              }}
+              onSelect={setSelectedFile}
+              selectedFile={selectedFile?.path}
             />
           </div>
 
