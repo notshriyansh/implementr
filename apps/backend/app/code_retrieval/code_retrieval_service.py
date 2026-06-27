@@ -7,6 +7,9 @@ from app.code_vectorstores.code_vector_store import (
 from app.schemas.code_chunk import (
     CodeChunk,
 )
+from app.code_retrieval.retrieval_utils import (
+    deduplicate_files,
+)
 
 
 class CodeRetrievalService:
@@ -31,10 +34,11 @@ class CodeRetrievalService:
         self,
         chunks: list[CodeChunk],
     ) -> None:
-        embeddings = self.embedding_model.embed_chunks(
+        embeddings = (
+            self.embedding_model.embed_chunks(
                 chunks
             )
-        
+        )
 
         await self.vector_store.add_embeddings(
             embeddings=embeddings,
@@ -52,9 +56,17 @@ class CodeRetrievalService:
             )
         )
 
-        return (
-            await self.vector_store.similarity_search(
+        results = await (
+            self.vector_store.similarity_search(
                 query_embedding=query_embedding,
-                k=k,
+                k=k * 3,
             )
         )
+
+        results = (
+            deduplicate_files(
+                results
+            )
+        )
+
+        return results[:k]
