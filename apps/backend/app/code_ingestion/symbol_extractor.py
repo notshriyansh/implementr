@@ -12,13 +12,22 @@ class SymbolExtractor:
         self,
         file_path: str,
     ) -> list[CodeSymbol]:
+
         path = Path(file_path)
 
-        source = path.read_text(
-            encoding="utf-8",
-        )
+        if path.suffix != ".py":
+            return []
 
-        tree = ast.parse(source)
+        try:
+            source = path.read_text(
+                encoding="utf-8",
+                errors="ignore",
+            )
+
+            tree = ast.parse(source)
+
+        except Exception:
+            return []
 
         lines = source.splitlines()
 
@@ -34,6 +43,7 @@ class SymbolExtractor:
                 ),
             ):
                 start = node.lineno
+
                 end = getattr(
                     node,
                     "end_lineno",

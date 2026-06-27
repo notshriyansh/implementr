@@ -22,13 +22,17 @@ IGNORED_DIRECTORIES = {
     "node_modules",
     "__pycache__",
     ".next",
+    ".turbo",
+    ".vercel",
+    ".cache",
+    "coverage",
     "dist",
     "build",
+    "out",
     ".idea",
     ".vscode",
-    ".mypy_cache",
     ".pytest_cache",
-    "coverage",
+    ".mypy_cache",
 }
 
 

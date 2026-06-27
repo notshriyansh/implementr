@@ -1646,5 +1646,589 @@
     "chunk_index": 31,
     "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
     "user_id": "local_user"
+  },
+  {
+    "chunk_id": "fc890a3a-48c9-4293-a33d-e6f1e1be4bfb",
+    "text": "FlashAttention-2:\nFaster Attention with Better Parallelism and Work Partitioning\nTri Dao1,2\n1Department of Computer Science, Princeton University\n2Department of Computer Science, Stanford University\ntrid@cs.stanford.edu\nJuly 18, 2023\nAbstract\nScaling Transformers to longer sequence lengths has been a major problem in the last several years,\npromising to improve performance in language modeling and high-resolution image understanding, as\nwell as to unlock new applications in code, audio, and video generation. The attention layer is the\nmain bottleneck in scaling to longer sequences, as its runtime and memory increase quadratically in\nthe sequence length. FlashAttention [5] exploits the asymmetric GPU memory hierarchy to bring\nsignificant memory saving (linear instead of quadratic) and runtime speedup (2-4\u00d7 compared to optimized\nbaselines), with no approximation. However, FlashAttention is still not nearly as fast as optimized\nmatrix-multiply (GEMM) operations, reaching only 25-40% of the theoretical maximum FLOPs/s. We\nobserve that the inefficiency is due to suboptimal work partitioning between different thread blocks and\nwarps on the GPU, causing either low-occupancy or unnecessary",
+    "page_number": 1,
+    "chunk_index": 0,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "af07eb43-e83c-4622-8405-638004bcb98f",
+    "text": " shared memory reads/writes. We propose\nFlashAttention-2, with better work partitioning to address these issues. In particular, we (1) tweak\nthe algorithm to reduce the number of non-matmul FLOPs (2) parallelize the attention computation, even\nfor a single head, across different thread blocks to increase occupancy, and (3) within each thread block,\ndistribute the work between warps to reduce communication through shared memory. These yield around\n2\u00d7 speedup compared to FlashAttention, reaching 50-73% of the theoretical maximum FLOPs/s on\nA100 and getting close to the efficiency of GEMM operations. We empirically validate that when used\nend-to-end to train GPT-style models, FlashAttention-2 reaches training speed of up to 225 TFLOPs/s\nper A100 GPU (72% model FLOPs utilization).1\n1\nIntroduction\nScaling up the context length of Transformers [18] is a challenge, since the attention layer at their heart\nhas runtime and memory requirements quadratic in the input sequence length. Ideally, we would like to go\nbeyond the standard 2k sequence length limit to train models to understand books, high resolution images,\nand long-form videos. Just within the last year, there have been several lang",
+    "page_number": 1,
+    "chunk_index": 1,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "cecd4ec2-1822-47fc-a9fe-6304d2172ec5",
+    "text": "uage models with much longer\ncontext than before: GPT-4 [12] with context length 32k, MosaicML\u2019s MPT with context length 65k, and\nAnthropic\u2019s Claude with context length 100k. Emerging use cases such as long document querying and story\nwriting have demonstrated a need for models with such long context.\nTo reduce the computational requirement of attention on such long context, there have been numerous\nmethods proposed to approximate attention [2, 3, 4, 8, 9, 14, 19, 20]. Though these methods have seen\nsome use cases, as far as we know, most large-scale training runs still use standard attention. Motivated by\nthis, Dao et al. [5] proposed to reorder the attention computation and leverages classical techniques (tiling,\nrecomputation) to significantly speed it up and reduce memory usage from quadratic to linear in sequence\nlength. This yields 2-4\u00d7 wall-clock time speedup over optimized baselines, up to 10-20\u00d7 memory saving,\n1FlashAttention-2 is available at https://github.com/Dao-AILab/flash-attention\n1\narXiv:2307.08691v1  [cs.LG]  17 Jul 2023\n",
+    "page_number": 1,
+    "chunk_index": 2,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "f635230b-2363-476d-b2ab-741743503b35",
+    "text": "with no approximation, and as a result FlashAttention has seen wide adoption in large-scale training and\ninference of Transformers.\nHowever, context length increases even more, FlashAttention is still not nearly as efficient as other\nprimitives such as matrix-multiply (GEMM). In particular, while FlashAttention is already 2-4\u00d7 faster\nthan a standard attention implementation, the forward pass only reaches 30-50% of the theoretical maximum\nFLOPs/s of the device (Fig. 5), while the backward pass is even more challenging, reaching only 25-35%\nof maximum throughput on A100 GPU (Fig. 6). In contrast, optimized GEMM can reach up to 80-90% of\nthe theoretical maximum device throughput. Through careful profiling, we observe that FlashAttention\nstill has suboptimal work partitioning between different thread blocks and warps on the GPU, causing either\nlow-occupancy or unnecessary shared memory reads/writes.\nBuilding on FlashAttention, we propose FlashAttention-2 with better parallelism and work\npartitioning to address these challenges.\n1. In Section 3.1, we tweak the algorithms to reduce the number of non-matmul FLOPs while not changing\nthe output. While the non-matmul FLOPs only account for a",
+    "page_number": 2,
+    "chunk_index": 3,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "148ac9f7-b16e-46ff-b24e-363598c204aa",
+    "text": " small fraction of the total FLOPs, they\ntake longer to perform as GPUs have specialized units for matrix multiply, and as a result the matmul\nthroughput can be up to 16\u00d7 higher than non-matmul throughput. It is thus important to reduce\nnon-matmul FLOPs and spend as much time as possible doing matmul FLOPs.\n2. We propose to parallelize both the forward pass and backward pass along the sequence length dimension,\nin addition to the batch and number of heads dimension. This increases occupancy (utilization of GPU\nresources) in the case where the sequences are long (and hence batch size is often small).\n3. Even within one block of attention computation, we partition the work between different warps of a\nthread block to reduce communication and shared memory reads/writes.\nIn Section 4, we empirically validate that FlashAttention-2 yields significant speedup compared to\neven FlashAttention. Benchmarks on different settings (with or without causal mask, different head\ndimensions) show that FlashAttention-2 achieves around 2\u00d7 speedup over FlashAttention, reaching\nup to 73% of the theoretical max throughput in the forward pass, and up to 63% of the theoretical max\nthroughput in the backward",
+    "page_number": 2,
+    "chunk_index": 4,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6bfcec06-93cd-4f66-bf1d-6f188d545faa",
+    "text": " pass. When used end-to-end to train GPT-style models, we reach training speed\nof up to 225 TFLOPs/s per A100 GPU.\n2\nBackground\nWe provide some background on the performance characteristics and execution model of GPUs. We also\ndescribe the standard implementation of attention, as well as FlashAttention.\n2.1\nHardware characteristics\nGPU performance characteristics. The GPU consists of compute elements (e.g., floating point arithmetic\nunits) and a memory hierarchy. Most modern GPUs contain specialized units to accelerate matrix multiply in\nlow-precision (e.g., Tensor Cores on Nvidia GPUs for FP16/BF16 matrix multiply). The memory hierarchy\ncomprise of high bandwidth memory (HBM), and on-chip SRAM (aka shared memory). As an example, the\nA100 GPU has 40-80GB of high bandwidth memory (HBM) with bandwidth 1.5-2.0TB/s and 192KB of\non-chip SRAM per each of 108 streaming multiprocessors with bandwidth estimated around 19TB/s [6, 7].\nAs the L2 cache is not directly controllable by the programmer, we focus on the HBM and SRAM for the\npurpose of this discussion.\nExecution Model. GPUs have a massive number of threads to execute an operation (called a kernel).\nThreads are organized into thread b",
+    "page_number": 2,
+    "chunk_index": 5,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "88f28d5f-aa03-401e-839c-bf4066d8ff65",
+    "text": "locks, which are scheduled to run on streaming multiprocessors (SMs).\nWithin each thread blocks, threads are grouped into warps (a group of 32 threads). Threads within a warp\ncan communicate by fast shuffle instructions or cooperate to perform matrix multiply. Warps within a thread\nblock can communicate by reading from / writing to shared memory. Each kernel loads inputs from HBM to\nregisters and SRAM, computes, then writes outputs to HBM.\n2\n",
+    "page_number": 2,
+    "chunk_index": 6,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "f061ebf7-9696-42e3-8fc3-1070e3daa0e0",
+    "text": "2.2\nStandard Attention Implementation\nGiven input sequences Q, K, V \u2208R\ud835\udc41\u00d7\ud835\udc51where \ud835\udc41is the sequence length and \ud835\udc51is the head dimension, we want\nto compute the attention output O \u2208R\ud835\udc41\u00d7\ud835\udc51:\nS = QK\u22a4\u2208R\ud835\udc41\u00d7\ud835\udc41,\nP = softmax(S) \u2208R\ud835\udc41\u00d7\ud835\udc41,\nO = PV \u2208R\ud835\udc41\u00d7\ud835\udc51,\nwhere softmax is applied row-wise.2 For multi-head attention (MHA), this same computation is performed in\nparallel across many heads, and parallel over the batch dimension (number of input sequences in a batch).\nThe backward pass of attention proceeds as follows. Let dO \u2208R\ud835\udc41\u00d7\ud835\udc51be the gradient of O with respect to\nsome loss function. Then by the chain rule (aka backpropagation):\ndV = P\u22a4dO \u2208R\ud835\udc41\u00d7\ud835\udc51\ndP = dOV\u22a4\u2208R\ud835\udc41\u00d7\ud835\udc41\ndS = dsoftmax(dP) \u2208R\ud835\udc41\u00d7\ud835\udc41\ndQ = dSK \u2208R\ud835\udc41\u00d7\ud835\udc51\ndK = QdS\u22a4\u2208R\ud835\udc41\u00d7\ud835\udc51,\nwhere dsoftmax is the gradient (backward pass) of softmax applied row-wise. One can work out that if \ud835\udc5d=\nsoftmax(\ud835\udc60) for some vector \ud835\udc60and \ud835\udc5d, then with output gradient \ud835\udc51\ud835\udc5d, the input gradient \ud835\udc51\ud835\udc60= (diag(\ud835\udc5d) \u2212\ud835\udc5d\ud835\udc5d\u22a4)\ud835\udc51\ud835\udc5d.\nStandard attention implementations materialize the matrices S and P to HBM, which takes \ud835\udc42(\ud835\udc412)\nmemory. Often \ud835\udc41\u226b\ud835\udc51(typically \ud835\udc41is on the order of 1k\u20138k and \ud835\udc51is around 64\u2013128). The standard attention\nimplementation (1) calls the matrix multiply (GEMM) subroutine to multiply S = QK\u22a4, writes the resul",
+    "page_number": 3,
+    "chunk_index": 7,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "82990967-66e2-410e-b167-deb285e11ccf",
+    "text": "t to\nHBM, then (2) loads \u00a7 from HBM to compute softmax and write the result P to HBM, and finally (3) calls\nGEMM to get O = PV. As most of the operations are bounded by memory bandwidth, the large number of\nmemory accesses translates to slow wall-clock time. Moreover, the required memory is \ud835\udc42(\ud835\udc412) due to having\nto materialize S and P. Moreover, one has to save P \u2208R\ud835\udc41\u00d7\ud835\udc41for the backward pass to compute the gradients.\n2.3\nFlashAttention\nTo speed up attention on hardware accelerators such as GPU, [5] proposes an algorithm to reduce the memory\nreads/writes while maintaining the same output (without approximation).\n2.3.1\nForward pass\nFlashAttention applies the classical technique of tiling to reduce memory IOs, by (1) loading blocks of\ninputs from HBM to SRAM, (2) computing attention with respect to that block, and then (3) updating the\noutput without writing the large intermediate matrices S and P to HBM. As the softmax couples entire rows\nor blocks of row, online softmax [11, 13] can split the attention computation into blocks, and rescale the\noutput of each block to finally get the right result (with no approximation). By significantly reducing the\namount of memory reads/writes, FlashAt",
+    "page_number": 3,
+    "chunk_index": 8,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "9cf5c19f-00dd-41e5-820f-cf3d569577ee",
+    "text": "tention yields 2-4\u00d7 wall-clock speedup over optimized baseline\nattention implementations.\nWe describe the online softmax technique [11] and how it is used in attention [13]. For simplicity, consider\njust one row block of the attention matrix S, of the form\n\u0002\nS(1)\nS(2)\u0003\nfor some matrices S(1), S(2) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50,\nwhere \ud835\udc35\ud835\udc5fand \ud835\udc35\ud835\udc50are the row and column block sizes. We want to compute softmax of this row block and\nmultiply with the value, of the form\n\u0014V(1)\nV(2)\n\u0015\nfor some matrices V(1), V(2) \u2208R\ud835\udc35\ud835\udc50\u00d7\ud835\udc51. Standard softmax would\n2For clarity of exposition, we omit the scaling of QK\u22a4(typically by 1/d), and optionally elementwise masking on S and/or\ndropout applied to P\n3\n",
+    "page_number": 3,
+    "chunk_index": 9,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3e5326c4-5654-45a8-9601-592d6c345ff5",
+    "text": "compute:\n\ud835\udc5a= max(rowmax(S(1)), rowmax(S(2))) \u2208R\ud835\udc35\ud835\udc5f\n\u2113= rowsum(\ud835\udc52S(1) \u2212\ud835\udc5a) + rowsum(\ud835\udc52S(2) \u2212\ud835\udc5a) \u2208R\ud835\udc35\ud835\udc5f\nP =\n\u0002\nP(1)\nP(2)\u0003\n= diag(\u2113)\u22121 h\n\ud835\udc52S(1) \u2212\ud835\udc5a\n\ud835\udc52S(2) \u2212\ud835\udc5a\ni\n\u2208R\ud835\udc35\ud835\udc5f\u00d72\ud835\udc35\ud835\udc50\nO =\n\u0002\nP(1)\nP(2)\u0003 \u0014V(1)\nV(2)\n\u0015\n= diag(\u2113)\u22121\ud835\udc52S(1) \u2212\ud835\udc5aV(1) + \ud835\udc52S(2) \u2212\ud835\udc5aV(2) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc51.\nOnline softmax instead computes \u201clocal\u201d softmax with respect to each block and rescale to get the right\noutput at the end:\n\ud835\udc5a(1) = rowmax(S(1)) \u2208R\ud835\udc35\ud835\udc5f\n\u2113(1) = rowsum(\ud835\udc52S(1) \u2212\ud835\udc5a(1) ) \u2208R\ud835\udc35\ud835\udc5f\n\u02dcP(1) = diag(\u2113(1))\u22121\ud835\udc52S(1) \u2212\ud835\udc5a(1) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50\nO(1) = \u02dcP(1)V(1) = diag(\u2113(1))\u22121\ud835\udc52S(1) \u2212\ud835\udc5a(1) V(1) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc51\n\ud835\udc5a(2) = max(\ud835\udc5a(1), rowmax(S(2))) = \ud835\udc5a\n\u2113(2) = \ud835\udc52\ud835\udc5a(1) \u2212\ud835\udc5a(2) \u2113(1) + rowsum(\ud835\udc52S(2) \u2212\ud835\udc5a(2) ) = rowsum(\ud835\udc52S(1) \u2212\ud835\udc5a) + rowsum(\ud835\udc52S(2) \u2212\ud835\udc5a) = \u2113\n\u02dcP(2) = diag(\u2113(2))\u22121\ud835\udc52S(2) \u2212\ud835\udc5a(2)\nO(2) = diag(\u2113(1)/\u2113(2))\u22121O(1) + \u02dcP(2)V(2) = diag(\u2113(2))\u22121\ud835\udc52\ud835\udc60(1) \u2212\ud835\udc5aV(1) + diag(\u2113(2))\u22121\ud835\udc52\ud835\udc60(2) \u2212\ud835\udc5aV(2) = O.\nWe show how FlashAttention uses online softmax to enable tiling (Fig. 1) to reduce memory reads/writes.\nFigure 1: Diagram of how FlashAttention forward pass is performed, when the key K is partitioned into\ntwo blocks and the value V is also partitioned into two blocks. By computing attention with respect to\neach block and rescaling the output, we get the right answer at the end, while avoiding expensive memory\nreads/writes of the inte",
+    "page_number": 4,
+    "chunk_index": 10,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "fb33ac35-d76b-49d3-a871-eff3a1af8644",
+    "text": "rmediate matrices S and P. We simplify the diagram, omitting the step in softmax\nthat subtracts each element by the row-wise max.\n4\n",
+    "page_number": 4,
+    "chunk_index": 11,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "4b574c72-1238-4d54-8c71-f0d501da68f3",
+    "text": "2.3.2\nBackward pass\nIn the backward pass, by re-computing the values of the attention matrices S and P once blocks of inputs\nQ, K, V are already loaded to SRAM, FlashAttention avoids having to store large intermediate values. By\nnot having to save the large matrices S and P of size \ud835\udc41\u00d7 \ud835\udc41, FlashAttention yields 10-20\u00d7 memory saving\ndepending on sequence length (memory required in linear in sequence length \ud835\udc41instead of quadratic). The\nbackward pass also achieves 2-4\u00d7 wall-clock speedup due to reduce memory reads/writes.\nThe backward pass applies tiling to the equations in Section 2.2. Though the backward pass is simpler\nthan the forward pass conceptually (there is no softmax rescaling), the implementation is significantly more\ninvolved. This is because there are more values to be kept in SRAM to perform 5 matrix multiples in the\nbackward pass, compared to just 2 matrix multiples in the forward pass.\n3\nFlashAttention-2: Algorithm, Parallelism, and Work Partition-\ning\nWe describe the FlashAttention-2 algorithm, which includes several tweaks to FlashAttention to reduce\nthe number of non-matmul FLOPs. We then describe how to parallelize the computation on different thread\nblocks to make fu",
+    "page_number": 5,
+    "chunk_index": 12,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "0e8dd973-1cc0-468f-9c36-ca8295c42d6f",
+    "text": "ll use the GPU resources. Finally we describe we partition the work between different warps\nwithin one thread block to reduce the amount of shared memory access. These improvements lead to 2-3\u00d7\nspeedup as validated in Section 4.\n3.1\nAlgorithm\nWe tweak the algorithm from FlashAttention to reduce the number of non-matmul FLOPs. This is\nbecause modern GPUs have specialized compute units (e.g., Tensor Cores on Nvidia GPUs) that makes\nmatmul much faster. As an example, the A100 GPU has a max theoretical throughput of 312 TFLOPs/s of\nFP16/BF16 matmul, but only 19.5 TFLOPs/s of non-matmul FP32. Another way to think about this is that\neach non-matmul FLOP is 16\u00d7 more expensive than a matmul FLOP. To maintain high throughput (e.g.,\nmore than 50% of the maximum theoretical TFLOPs/s), we want to spend as much time on matmul FLOPs\nas possible.\n3.1.1\nForward pass\nWe revisit the online softmax trick as shown in Section 2.3 and make two minor tweaks to reduce non-matmul\nFLOPs:\n1. We do not have to rescale both terms of the output update by diag(\u2113(2))\u22121:\nO(2) = diag(\u2113(1)/\u2113(2))\u22121O(1) + diag(\u2113(2))\u22121\ud835\udc52S(2) \u2212\ud835\udc5a(2) V(2).\nWe can instead maintain an \u201cun-scaled\u201d version of O(2) and keep around the statistic",
+    "page_number": 5,
+    "chunk_index": 13,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "7622df30-4a4c-4328-a7df-4a4658330ddb",
+    "text": "s \u2113(2):\n\u02dcO(2) = diag(\u2113(1))\u22121O(1) + \ud835\udc52S(2) \u2212\ud835\udc5a(2) V(2).\nOnly at the every end of the loop do we scale the final \u02dcO(last) by diag(\u2113(last))\u22121 to get the right output.\n2. We do not have to save both the max \ud835\udc5a( \ud835\udc57) and the sum of exponentials \u2113( \ud835\udc57) for the backward pass. We\nonly need to store the logsumexp \ud835\udc3f( \ud835\udc57) = \ud835\udc5a( \ud835\udc57) + log(\u2113( \ud835\udc57)).\n5\n",
+    "page_number": 5,
+    "chunk_index": 14,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "21497ac3-a94a-466b-b084-6cfc1e1866c8",
+    "text": "In the simple case of 2 blocks in Section 2.3, the online softmax trick now becomes:\n\ud835\udc5a(1) = rowmax(S(1)) \u2208R\ud835\udc35\ud835\udc5f\n\u2113(1) = rowsum(\ud835\udc52S(1) \u2212\ud835\udc5a(1) ) \u2208R\ud835\udc35\ud835\udc5f\n\u02dc\nO(1) = \ud835\udc52S(1) \u2212\ud835\udc5a(1) V(1) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc51\n\ud835\udc5a(2) = max(\ud835\udc5a(1), rowmax(S(2))) = \ud835\udc5a\n\u2113(2) = \ud835\udc52\ud835\udc5a(1) \u2212\ud835\udc5a(2) \u2113(1) + rowsum(\ud835\udc52S(2) \u2212\ud835\udc5a(2) ) = rowsum(\ud835\udc52S(1) \u2212\ud835\udc5a) + rowsum(\ud835\udc52S(2) \u2212\ud835\udc5a) = \u2113\n\u02dcP(2) = diag(\u2113(2))\u22121\ud835\udc52S(2) \u2212\ud835\udc5a(2)\n\u02dcO(2) = diag(\ud835\udc52\ud835\udc5a(1) \u2212\ud835\udc5a(2) )\u22121 \u02dcO(1) + \ud835\udc52S(2) \u2212\ud835\udc5a(2) V(2) = \ud835\udc52\ud835\udc60(1) \u2212\ud835\udc5aV(1) + \ud835\udc52\ud835\udc60(2) \u2212\ud835\udc5aV(2)\nO(2) = diag(\u2113(2))\u22121 \u02dcO(2) = O.\nWe describe the full FlashAttention-2 forward pass in Algorithm 1.\nAlgorithm 1 FlashAttention-2 forward pass\nRequire: Matrices Q, K, V \u2208R\ud835\udc41\u00d7\ud835\udc51in HBM, block sizes \ud835\udc35\ud835\udc50, \ud835\udc35\ud835\udc5f.\n1: Divide Q into \ud835\udc47\ud835\udc5f=\nl\n\ud835\udc41\n\ud835\udc35\ud835\udc5f\nm\nblocks Q1, . . . , Q\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5f\u00d7 \ud835\udc51each, and divide K, V in to \ud835\udc47\ud835\udc50=\nl\n\ud835\udc41\n\ud835\udc35\ud835\udc50\nm\nblocks\nK1, . . . , K\ud835\udc47\ud835\udc50and V1, . . . , V\ud835\udc47\ud835\udc50, of size \ud835\udc35\ud835\udc50\u00d7 \ud835\udc51each.\n2: Divide the output O \u2208R\ud835\udc41\u00d7\ud835\udc51into \ud835\udc47\ud835\udc5fblocks O\ud835\udc56, . . . , O\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5f\u00d7 \ud835\udc51each, and divide the logsumexp \ud835\udc3f\ninto \ud835\udc47\ud835\udc5fblocks \ud835\udc3f\ud835\udc56, . . . , \ud835\udc3f\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5feach.\n3: for 1 \u2264\ud835\udc56\u2264\ud835\udc47\ud835\udc5fdo\n4:\nLoad Q\ud835\udc56from HBM to on-chip SRAM.\n5:\nOn chip, initialize O(0)\n\ud835\udc56\n= (0)\ud835\udc35\ud835\udc5f\u00d7\ud835\udc51\u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc51, \u2113(0)\n\ud835\udc56\n= (0)\ud835\udc35\ud835\udc5f\u2208R\ud835\udc35\ud835\udc5f, \ud835\udc5a(0)\n\ud835\udc56\n= (\u2212\u221e)\ud835\udc35\ud835\udc5f\u2208R\ud835\udc35\ud835\udc5f.\n6:\nfor 1 \u2264\ud835\udc57\u2264\ud835\udc47\ud835\udc50do\n7:\nLoad K \ud835\udc57, V\ud835\udc57from HBM to on-chip SRAM.\n8:\nOn chip, compute S( \ud835\udc57)\n\ud835\udc56\n= Q\ud835\udc56K\ud835\udc47\n\ud835\udc57\u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50.\n9:\nOn chip, compute \ud835\udc5a( \ud835\udc57)",
+    "page_number": 6,
+    "chunk_index": 15,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6bbf66ff-6b16-4f18-afdd-643d3cc8a273",
+    "text": "\n\ud835\udc56\n= max(\ud835\udc5a( \ud835\udc57\u22121)\n\ud835\udc56\n, rowmax(S( \ud835\udc57)\n\ud835\udc56\n)) \u2208R\ud835\udc35\ud835\udc5f, \u02dcP( \ud835\udc57)\n\ud835\udc56\n= exp(S( \ud835\udc57)\n\ud835\udc56\n\u2212\ud835\udc5a( \ud835\udc57)\n\ud835\udc56\n) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50\n(pointwise), \u2113( \ud835\udc57)\n\ud835\udc56\n= \ud835\udc52\ud835\udc5a\ud835\udc57\u22121\n\ud835\udc56\n\u2212\ud835\udc5a( \ud835\udc57)\n\ud835\udc56\u2113( \ud835\udc57\u22121)\n\ud835\udc56\n+ rowsum(\u02dcP( \ud835\udc57)\n\ud835\udc56\n) \u2208R\ud835\udc35\ud835\udc5f.\n10:\nOn chip, compute O( \ud835\udc57)\n\ud835\udc56\n= diag(\ud835\udc52\ud835\udc5a( \ud835\udc57\u22121)\n\ud835\udc56\n\u2212\ud835\udc5a( \ud835\udc57)\n\ud835\udc56)\u22121O( \ud835\udc57\u22121)\n\ud835\udc56\n+ \u02dcP( \ud835\udc57)\n\ud835\udc56\nV\ud835\udc57.\n11:\nend for\n12:\nOn chip, compute O\ud835\udc56= diag(\u2113(\ud835\udc47\ud835\udc50)\n\ud835\udc56\n)\u22121O(\ud835\udc47\ud835\udc50)\n\ud835\udc56\n.\n13:\nOn chip, compute \ud835\udc3f\ud835\udc56= \ud835\udc5a(\ud835\udc47\ud835\udc50)\n\ud835\udc56\n+ log(\u2113(\ud835\udc47\ud835\udc50)\n\ud835\udc56\n).\n14:\nWrite O\ud835\udc56to HBM as the \ud835\udc56-th block of O.\n15:\nWrite \ud835\udc3f\ud835\udc56to HBM as the \ud835\udc56-th block of \ud835\udc3f.\n16: end for\n17: Return the output O and the logsumexp \ud835\udc3f.\nCausal masking.\nOne common use case of attention is in auto-regressive language modeling, where we\nneed to apply a causal mask to the attention matrix S (i.e., any entry S\ud835\udc56\ud835\udc57with \ud835\udc57> \ud835\udc56is set to \u2212\u221e).\n1. As FlashAttention and FlashAttention-2 already operate by blocks, for any blocks where all\nthe column indices are more than the row indices (approximately half of the blocks for large sequence\nlength), we can skip the computation of that block. This leads to around 1.7-1.8\u00d7 speedup compared\nto attention without the causal mask.\n2. We do not need to apply the causal mask for blocks whose row indices are guaranteed to be strictly less\nthan the column indices. This means that for each row, we only",
+    "page_number": 6,
+    "chunk_index": 16,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "a6c46aaf-49e1-4b81-b7fe-859e80d4604c",
+    "text": " need apply causal mask to 1 block\n(assuming square block).\n6\n",
+    "page_number": 6,
+    "chunk_index": 17,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3f7ce263-2a11-4f5d-92bf-f17a61daccd2",
+    "text": "Correctness, runtime, and memory requirement.\nAs with FlashAttention, Algorithm 1 returns\nthe correct output O = softmax(QK\u22a4)V (with no approximation), using \ud835\udc42(\ud835\udc412\ud835\udc51) FLOPs and requires \ud835\udc42(\ud835\udc41)\nadditional memory beyond inputs and output (to store the logsumexp \ud835\udc3f). The proof is almost the same as\nthe proof of Dao et al. [5, Theorem 1], so we omit it here.\n3.1.2\nBackward pass\nThe backward pass of FlashAttention-2 is almost the same as that of FlashAttention. We make a\nminor tweak to only use the row-wise logsumexp \ud835\udc3finstead of both the row-wise max and row-wise sum of\nexponentials in the softmax. We include the backward pass description in Algorithm 2 for completeness.\nAlgorithm 2 FlashAttention-2 Backward Pass\nRequire: Matrices Q, K, V, O, dO \u2208R\ud835\udc41\u00d7\ud835\udc51in HBM, vector \ud835\udc3f\u2208R\ud835\udc41in HBM, block sizes \ud835\udc35\ud835\udc50, \ud835\udc35\ud835\udc5f.\n1: Divide Q into \ud835\udc47\ud835\udc5f=\nl\n\ud835\udc41\n\ud835\udc35\ud835\udc5f\nm\nblocks Q1, . . . , Q\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5f\u00d7 \ud835\udc51each, and divide K, V in to \ud835\udc47\ud835\udc50=\nl\n\ud835\udc41\n\ud835\udc35\ud835\udc50\nm\nblocks\nK1, . . . , K\ud835\udc47\ud835\udc50and V1, . . . , V\ud835\udc47\ud835\udc50, of size \ud835\udc35\ud835\udc50\u00d7 \ud835\udc51each.\n2: Divide O into \ud835\udc47\ud835\udc5fblocks O\ud835\udc56, . . . , O\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5f\u00d7 \ud835\udc51each, divide dO into \ud835\udc47\ud835\udc5fblocks dO\ud835\udc56, . . . , dO\ud835\udc47\ud835\udc5fof size\n\ud835\udc35\ud835\udc5f\u00d7 \ud835\udc51each, and divide \ud835\udc3finto \ud835\udc47\ud835\udc5fblocks \ud835\udc3f\ud835\udc56, . . . , \ud835\udc3f\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5feach.\n3: Initialize dQ = (0)\ud835\udc41\u00d7\ud835\udc51in HBM and divide it into \ud835\udc47\ud835\udc5fbloc",
+    "page_number": 7,
+    "chunk_index": 18,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6f938bf8-2467-4ac2-9d7b-596851749bda",
+    "text": "ks dQ1, . . . , dQ\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5f\u00d7 \ud835\udc51each. Divide\ndK, dV \u2208R\ud835\udc41\u00d7\ud835\udc51in to \ud835\udc47\ud835\udc50blocks dK1, . . . , dK\ud835\udc47\ud835\udc50and dV1, . . . , dV\ud835\udc47\ud835\udc50, of size \ud835\udc35\ud835\udc50\u00d7 \ud835\udc51each.\n4: Compute \ud835\udc37= rowsum(dO \u25e6O) \u2208R\ud835\udc51(pointwise multiply), write \ud835\udc37to HBM and divide it into \ud835\udc47\ud835\udc5fblocks\n\ud835\udc371, . . . , \ud835\udc37\ud835\udc47\ud835\udc5fof size \ud835\udc35\ud835\udc5feach.\n5: for 1 \u2264\ud835\udc57\u2264\ud835\udc47\ud835\udc50do\n6:\nLoad K \ud835\udc57, V\ud835\udc57from HBM to on-chip SRAM.\n7:\nInitialize dK\ud835\udc57= (0)\ud835\udc35\ud835\udc50\u00d7\ud835\udc51, dV \ud835\udc57= (0)\ud835\udc35\ud835\udc50\u00d7\ud835\udc51on SRAM.\n8:\nfor 1 \u2264\ud835\udc56\u2264\ud835\udc47\ud835\udc5fdo\n9:\nLoad Q\ud835\udc56, O\ud835\udc56, dO\ud835\udc56, dQ\ud835\udc56, \ud835\udc3f\ud835\udc56, \ud835\udc37\ud835\udc56from HBM to on-chip SRAM.\n10:\nOn chip, compute S( \ud835\udc57)\n\ud835\udc56\n= Q\ud835\udc56K\ud835\udc47\n\ud835\udc57\u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50.\n11:\nOn chip, compute P( \ud835\udc57)\n\ud835\udc56\n= exp(S\ud835\udc56\ud835\udc57\u2212\ud835\udc3f\ud835\udc56) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50.\n12:\nOn chip, compute dV \ud835\udc57\u2190dV \ud835\udc57+ (P( \ud835\udc57)\n\ud835\udc56\n)\u22a4dO\ud835\udc56\u2208R\ud835\udc35\ud835\udc50\u00d7\ud835\udc51.\n13:\nOn chip, compute dP( \ud835\udc57)\n\ud835\udc56\n= dO\ud835\udc56V\u22a4\n\ud835\udc57\u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50.\n14:\nOn chip, compute dS( \ud835\udc57)\n\ud835\udc56\n= P( \ud835\udc57)\n\ud835\udc56\n\u25e6(dP( \ud835\udc57)\n\ud835\udc56\n\u2212\ud835\udc37\ud835\udc56) \u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc35\ud835\udc50.\n15:\nLoad dQ\ud835\udc56from HBM to SRAM, then on chip, update dQ\ud835\udc56\u2190dQ\ud835\udc56+ dS( \ud835\udc57)\n\ud835\udc56\nK \ud835\udc57\u2208R\ud835\udc35\ud835\udc5f\u00d7\ud835\udc51, and write back\nto HBM.\n16:\nOn chip, compute dK\ud835\udc57\u2190dK\ud835\udc57+ dS( \ud835\udc57)\n\ud835\udc56\n\u22a4Q\ud835\udc56\u2208R\ud835\udc35\ud835\udc50\u00d7\ud835\udc51.\n17:\nend for\n18:\nWrite dK\ud835\udc57, dV \ud835\udc57to HBM.\n19: end for\n20: Return dQ, dK, dV.\nMulti-query attention and grouped-query attention.\nMulti-query attention (MQA) [15] and grouped-\nquery attention (GQA) [1] are variants of attention where multiple heads of query attend to the same head of\nkey and value, in order to reduce the size of KV cache during",
+    "page_number": 7,
+    "chunk_index": 19,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "8cd95e6c-931a-4910-8914-5aec9d741df5",
+    "text": " inference. Instead of having to duplicate the\nkey and value heads for the computation, we implicitly manipulate the indices into the head to perform the\nsame computation. In the backward pass, we need to sum the gradients dK and dV across different heads\nthat were implicitly duplicated.\n3.2\nParallelism\nThe first version of FlashAttention parallelizes over batch size and number of heads. We use 1 thread\nblock to process one attention head, and there are overall batch size \u00b7 number of heads thread blocks. Each\nthread block is scheduled to run on a streaming multiprocessor (SM), and there are 108 of these SMs on\n7\n",
+    "page_number": 7,
+    "chunk_index": 20,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "9a80a71a-a51d-42aa-92de-425cb6c302a3",
+    "text": "an A100 GPU for example. This scheduling is efficient when this number is large (say \u226580), since we can\neffectively use almost all of the compute resources on the GPU.\nIn the case of long sequences (which usually means small batch sizes or small number of heads), to make\nbetter use of the multiprocessors on the GPU, we now additionally parallelize over the sequence length\ndimension. This results in significant speedup for this regime.\nForward pass.\nWe see that the outer loop (over sequence length) is embarrassingly parallel, and we\nschedule them on different thread blocks that do not need to communicate with each other. We also parallelize\nover the batch dimension and number of heads dimension, as done in FlashAttention. The increased\nparallelism over sequence length helps improve occupancy (fraction of GPU resources being used) when the\nbatch size and number of heads are small, leading to speedup in this case.\nThese ideas of swapping the order of the loop (outer loop over row blocks and inner loop over column\nblocks, instead of the other way round in the original FlashAttention paper), as well as parallelizing\nover the sequence length dimension were first suggested and implemented",
+    "page_number": 8,
+    "chunk_index": 21,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6a7ced37-7af5-470c-b6bc-5a4547929abe",
+    "text": " by Phil Tillet in the Triton [17]\nimplementation.3\nBackward pass.\nNotice that the only shared computation between different column blocks is in update dQ\nin Algorithm 2, where we need to load dQ\ud835\udc56from HBM to SRAM, then on chip, update dQ\ud835\udc56\u2190dQ\ud835\udc56+ dS( \ud835\udc57)\n\ud835\udc56\nK \ud835\udc57,\nand write back to HBM. We thus parallelize over the sequence length dimension as well, and schedule 1\nthread block for each column block of the backward pass. We use atomic adds to communicate between\ndifferent thread blocks to update dQ.\nWe describe the parallelization scheme in Fig. 2.\nFigure 2: In the forward pass (left), we parallelize the workers (thread blocks) where each worker takes care\nof a block of rows of the attention matrix. In the backward pass (right), each worker takes care of a block of\ncolumns of the attention matrix.\n3https://github.com/openai/triton/blob/main/python/tutorials/06-fused-attention.py\n8\n",
+    "page_number": 8,
+    "chunk_index": 22,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "80ae0669-b343-4b47-a9dc-ae4f86b1a10f",
+    "text": "3.3\nWork Partitioning Between Warps\nAs Section 3.2 describe how we schedule thread blocks, even within each thread block, we also have to decide\nhow to partition the work between different warps. We typically use 4 or 8 warps per thread block, and the\npartitioning is described in Fig. 3.\nForward pass.\nFor each block, FlashAttention splits K and V across 4 warps while keeping Q accessible\nby all warps. Each warp multiplies to get a slice of QK\u22a4, then they need to multiply with a slice of V and\ncommunicate to add up the result. This is referred to as the \u201csplit-K\u201d scheme. However, this is inefficient\nsince all warps need to write their intermediate results out to shared memory, synchronize, then add up the\nintermediate results. These shared memory reads/writes slow down the forward pass in FlashAttention.\nIn FlashAttention-2, we instead split Q across 4 warps while keeping K and V accessible by all warps.\nAfter each warp performs matrix multiply to get a slice of QK\u22a4, they just need to multiply with their shared\nslice of V to get their corresponding slice of the output. There is no need for communication between warps.\nThe reduction in shared memory reads/writes yields speedup (Secti",
+    "page_number": 9,
+    "chunk_index": 23,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "00697823-69d2-453d-aeda-0ebc61601b27",
+    "text": "on 4).\n(a) FlashAttention\n(b) FlashAttention-2\nFigure 3: Work partitioning between different warps in the forward pass\nBackward pass.\nSimilarly for the backward pass, we choose to partition the warps to avoid the \u201csplit-K\u201d\nscheme. However, it still requires some synchronization due to the more complicated dependency between all\nthe different inputs and gradients Q, K, V, O, dO, dQ, dK, dV. Nevertheless, avoiding \u201csplit-K\u201d reduces shared\nmemory reads/writes and again yields speedup (Section 4).\nTuning block sizes\nIncreasing block sizes generally reduces shared memory loads/stores, but increases\nthe number of registers required and the total amount of shared memory. Past a certain block size, register\nspilling causes significant slowdown, or the amount of shared memory required is larger than what the GPU\nhas available, and the kernel cannot run at all. Typically we choose blocks of size {64, 128} \u00d7 {64, 128},\ndepending on the head dimension \ud835\udc51and the device shared memory size.\nWe manually tune for each head dimensions since there are essentially only 4 choices for block sizes, but\nthis could benefit from auto-tuning to avoid this manual labor. We leave this to future work.\n4\nEmpirica",
+    "page_number": 9,
+    "chunk_index": 24,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c2ca07f7-97b7-4171-9ed8-53979142a8ae",
+    "text": "l Validation\nWe evaluate the impact of using FlashAttention-2 to train Transformer models.\n\u2022 Benchmarking attention. We measure the runtime of FlashAttention-2 across different sequence\nlengths and compare it to a standard implementation in PyTorch, FlashAttention, and FlashAttention\nin Triton. We confirm that FlashAttention-2 is 1.7-3.0\u00d7 faster than FlashAttention, 1.3-2.5\u00d7\nfaster than FlashAttention in Triton, and 3-10\u00d7 faster than a standard attention implementation.\n9\n",
+    "page_number": 9,
+    "chunk_index": 25,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3e2f5e61-a582-4014-933f-c066a203eef9",
+    "text": "FlashAttention-2 reaches up to 230 TFLOPs/s, 73% of the theoretical maximum TFLOPs/s on A100\nGPUs.\n\u2022 End-to-end training speed When used end-to-end to train GPT-style models of size 1.3B and 2.7B on\nsequence lengths either 2k or 8k, FlashAttention-2 yields up to 1.3\u00d7 speedup compared to FlashAt-\ntention and 2.8\u00d7 speedup compared to a baseline without FlashAttention. FlashAttention-2\nreaches up to 225 TFLOPs/s (72% model FLOPs utilization) per A100 GPU.\n4.1\nBenchmarking Attention\nWe measure the runtime of different attention methods on an A100 80GB SXM4 GPU for different settings\n(without / with causal mask, head dimension 64 or 128). We report the results in Fig. 4, Fig. 5 and Fig. 6,\nshowing that FlashAttention-2 is around 2\u00d7 faster than FlashAttention and FlashAttention in\nxformers (the \u201ccutlass\u201d implementation). FlashAttention-2 is around 1.3-1.5\u00d7 faster than FlashAtten-\ntion in Triton in the forward pass and around 2\u00d7 faster in the backward pass. Compared to a standard\nattention implementation in PyTorch, FlashAttention-2 can be up to 10\u00d7 faster.\nBenchmark setting: we vary the sequence length from 512, 1k, ..., 16k, and set batch size so that the total\nnumber of tokens is 16k. ",
+    "page_number": 10,
+    "chunk_index": 26,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c522dce5-bb7a-4d16-94b7-48133af4bc19",
+    "text": "We set hidden dimension to 2048, and head dimension to be either 64 or 128 (i.e.,\n32 heads or 16 heads). To calculate the FLOPs of the forward pass, we use:\n4 \u00b7 seqlen2 \u00b7 head dimension \u00b7 number of heads.\nWith causal mask, we divide this number by 2 to account for the fact that approximately only half of the\nentries are calculated. To get the FLOPs of the backward pass, we multiply the forward pass FLOPs by 2.5\n(since there are 2 matmuls in the forward pass and 5 matmuls in the backward pass, due to recomputation).\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n36\n40\n43\n45\n46\nOOM\n91\n92\n104\n108\n110\n110\n68\n73\n76\n77\n75\n75\n90\n102\n98\n98\n100\n100\n132\n153\n162\n171\n175\n176\nAttention forward + backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(a) Without causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n53\n67\n76\n79\n86\nOOM\n76\n72\n76\n80\n82\n83\n83\n91\n95\n96\n97\n98\n78\n85\n90\n93\n95\n95\n151\n173\n187\n196\n201\n203\nAttention forward + backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(b) Without causal mask, head dimension 128\n512\n1k\n2k",
+    "page_number": 10,
+    "chunk_index": 27,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "964b79f7-087f-47ba-bbb4-3ba037fc331b",
+    "text": "\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n15\n16\n17\n18\n18\nOOM\n58\n70\n77\n87\n92\n97\n51\n60\n66\n68\n69\n67\n59\n75\n79\n76\n79\n80\n88\n119\n140\n156\n165\n171\nAttention forward + backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(c) With causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n23\n28\n32\n32\n34\nOOM\n55\n62\n69\n76\n80\n83\n58\n72\n82\n87\n91\n92\n50\n61\n68\n74\n78\n80\n99\n133\n155\n173\n182\n189\nAttention forward + backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(d) With causal mask, head dimension 128\nFigure 4: Attention forward + backward speed on A100 GPU\n10\n",
+    "page_number": 10,
+    "chunk_index": 28,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "49e0959f-db54-4bdc-948d-fe1337893b4f",
+    "text": "512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n29\n34\n35\n37\n37\nOOM\n91\n96\n99\n104\n104\n104\n89\n94\n97\n99\n98\n98\n128\n141\n149\n152\n152\n155\n178\n191\n193\n192\n192\n192\nAttention forward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(a) Without causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n42\n56\n60\n63\n67\nOOM\n69\n66\n71\n71\n72\n73\n107\n115\n120\n122\n122\n122\n127\n140\n152\n157\n160\n163\n209\n224\n227\n222\n224\n223\nAttention forward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(b) Without causal mask, head dimension 128\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n10\n10\n10\n10\n10\nOOM\n56\n70\n81\n89\n91\n94\n71\n82\n89\n92\n94\n95\n78\n99\n112\n131\n137\n143\n115\n146\n167\n177\n181\n183\nAttention forward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(c) With causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n15\n18\n19\n19\n19\nOOM\n49\n59\n65\n68\n70\n71\n79\n95\n107\n112\n115\n117\n89\n108\n126\n133\n141\n148\n132\n168\n187\n198\n200\n197\nAttention forward speed (A100 80GB SXM4)\nPy",
+    "page_number": 11,
+    "chunk_index": 29,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "56bf42c7-0df4-4491-8db0-eb267a7e4f28",
+    "text": "torch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(d) With causal mask, head dimension 128\nFigure 5: Attention forward speed on A100 GPU\nJust running the same implementation on H100 GPUs (using no special instructions to make use of new\nfeatures such as TMA and 4th-gen Tensor Cores), we obtain up to 335 TFLOPs/s (Fig. 7). We expect that by\nusing new instructions, we can obtain another 1.5x-2x speedup on H100 GPUs. We leave that to future work.\n4.2\nEnd-to-end Performance\nWe measure the training throughput of GPT-style models with either 1.3B or 2.7B parameters, on 8\u00d7A100\n80GB SXM. As shown in Table 1, FlashAttention-2 yields 2.8\u00d7 speedup compared to a baseline without\nFlashAttention and 1.3\u00d7 speedup compared to FlashAttention-2, reaching up to 225 TFLOPs/s per A100\nGPU.\nNote that we calculate the FLOPs by the formula, following Megatron-LM [16] (and many other papers\nand libraries):\n6 \u00b7 seqlen \u00b7 number of params + 12 \u00b7 number of layers \u00b7 hidden dim \u00b7 seqlen2.\nThe first term accounts for the FLOPs due to weight\u2013input multiplication, and the second term accounts for\nthe FLOPs due to attention. However, one can argue that the second term should be halved, as with cau",
+    "page_number": 11,
+    "chunk_index": 30,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "e5f8632f-01a7-440d-9dc6-897bac8937a3",
+    "text": "sal\nmask we only need to compute approximately half the number of elements in attention. We choose to follow\nthe formula from the literature (without dividing the attention FLOPs by 2) for consistency.\n5\nDiscussion and Future Directions\nFlashAttention-2 is 2\u00d7 faster than FlashAttention, which means that we can train models with 16k\nlonger context for the same price as previously training a 8k context model. We are excited about how this can\n11\n",
+    "page_number": 11,
+    "chunk_index": 31,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "f195b071-c626-45b5-9fd7-ac5bfaa467f2",
+    "text": "512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n39\n43\n48\n49\n51\nOOM\n91\n90\n106\n109\n112\n113\n62\n67\n70\n70\n69\n68\n81\n92\n87\n86\n87\n88\n120\n141\n152\n163\n169\n170\nAttention backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(a) Without causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n59\n73\n86\n88\n97\nOOM\n78\n75\n79\n84\n86\n88\n76\n84\n88\n89\n90\n91\n68\n74\n77\n80\n82\n81\n136\n159\n175\n187\n193\n196\nAttention backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(b) Without causal mask, head dimension 128\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n19\n21\n24\n25\n26\nOOM\n58\n70\n76\n85\n93\n98\n46\n54\n60\n62\n62\n60\n53\n68\n71\n65\n67\n68\n81\n111\n131\n149\n160\n166\nAttention backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformers\nFlashAttention Triton\nFlashAttention-2\n(c) With causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n50\n100\n150\n200\nSpeed (TFLOPs/s)\n30\n37\n43\n45\n49\nOOM\n59\n63\n71\n80\n86\n89\n53\n65\n75\n80\n84\n84\n43\n52\n58\n63\n66\n67\n90\n122\n145\n165\n176\n186\nAttention backward speed (A100 80GB SXM4)\nPytorch\nFlashAttention\nxformer",
+    "page_number": 12,
+    "chunk_index": 32,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c62bf451-ba40-40e9-a8f8-a9992efd6621",
+    "text": "s\nFlashAttention Triton\nFlashAttention-2\n(d) With causal mask, head dimension 128\nFigure 6: Attention backward speed on A100 GPU\nTable 1: Training speed (TFLOPs/s/GPU) of GPT-style models on 8\u00d7A100 GPUs. FlashAttention-2\nreaches up to 225 TFLOPs/s (72% model FLOPs utilization). We compare against a baseline running without\nFlashAttention.\nModel\nWithout FlashAttention\nFlashAttention\nFlashAttention-2\nGPT3-1.3B 2k context\n142 TFLOPs/s\n189 TFLOPs/s\n196 TFLOPs/s\nGPT3-1.3B 8k context\n72 TFLOPS/s\n170 TFLOPs/s\n220 TFLOPs/s\nGPT3-2.7B 2k context\n149 TFLOPs/s\n189 TFLOPs/s\n205 TFLOPs/s\nGPT3-2.7B 8k context\n80 TFLOPs/s\n175 TFLOPs/s\n225 TFLOPs/s\nbe used to understand long books and reports, high resolution images, audio and video. FlashAttention-2\nwill also speed up training, finetuning, and inference of existing models.\nIn the near future, we plan to collaborate with researchers and engineers to make FlashAttention widely\napplicable in different kinds of devices (e.g., H100 GPUs, AMD GPUs), as well as new data types such as\nFP8. As an immediate next step, we plan to optimize FlashAttention-2 for H100 GPUs to use new hardware\nfeatures (TMA, 4th-gen Tensor Cores, fp8). Combining the low-level opt",
+    "page_number": 12,
+    "chunk_index": 33,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "f889b6ab-63ab-4af1-9bba-83322a26e0a3",
+    "text": "imizations in FlashAttention-2 with\nhigh-level algorithmic changes (e.g., local, dilated, block-sparse attention) could allow us to train AI models\nwith much longer context. We are also excited to work with compiler researchers to make these optimization\ntechniques easily programmable.\n12\n",
+    "page_number": 12,
+    "chunk_index": 34,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "a06e7b89-c176-41dc-86b6-b53a705bfcb7",
+    "text": "512\n1k\n2k\n4k\n8k\n16k\nSequence length\n100\n200\n300\nSpeed (TFLOPs/s)\n62\n72\n81\n86\n87\nOOM\n157\n159\n161\n161\n166\n168\n215\n254\n274\n288\n294\n296\nAttention forward + backward speed (H100 80GB SXM5)\nPytorch\nFlashAttention\nFlashAttention-2\n(a) Without causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n100\n200\n300\nSpeed (TFLOPs/s)\n93\n120\n145\n160\n167\nOOM\n127\n127\n128\n131\n137\n139\n248\n294\n320\n326\n335\n338\nAttention forward + backward speed (H100 80GB SXM5)\nPytorch\nFlashAttention\nFlashAttention-2\n(b) Without causal mask, head dimension 128\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n100\n200\n300\nSpeed (TFLOPs/s)\n26\n29\n31\n32\n32\nOOM\n104\n123\n136\n138\n149\n156\n141\n192\n232\n257\n273\n284\nAttention forward + backward speed (H100 80GB SXM5)\nPytorch\nFlashAttention\nFlashAttention-2\n(c) With causal mask, head dimension 64\n512\n1k\n2k\n4k\n8k\n16k\nSequence length\n100\n200\n300\nSpeed (TFLOPs/s)\n40\n50\n57\n61\n63\nOOM\n98\n109\n108\n126\n135\n137\n163\n221\n265\n294\n308\n328\nAttention forward + backward speed (H100 80GB SXM5)\nPytorch\nFlashAttention\nFlashAttention-2\n(d) With causal mask, head dimension 128\nFigure 7: Attention forward + backward speed on H100 GPU\nAcknowledgments\nWe thank Phil Tillet and Daniel Haziza, who have implemented",
+    "page_number": 13,
+    "chunk_index": 35,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "afb55068-0096-4c60-9a4c-5ddccb126fc3",
+    "text": " versions of FlashAttention in Triton [17] and\nthe xformers library [10]. FlashAttention-2 was motivated by exchange of ideas between different ways that\nattention could be implemented. We are grateful to the Nvidia CUTLASS team (especially Vijay Thakkar, Cris\nCecka, Haicheng Wu, and Andrew Kerr) for their CUTLASS library, in particular the CUTLASS 3.x release,\nwhich provides clean abstractions and powerful building blocks for the implementation of FlashAttention-2.\nWe thank Driss Guessous for integrating FlashAttention to PyTorch. FlashAttention-2 has benefited\nfrom helpful discussions with Phil Wang, Markus Rabe, James Bradbury, Young-Jun Ko, Julien Launay,\nDaniel Hesslow, Micha\u00ebl Benesty, Horace He, Ashish Vaswani, and Erich Elsen. Thanks for Stanford CRFM\nand Stanford NLP for the compute support. We thank Dan Fu and Christopher R\u00e9 for their collaboration,\nconstructive feedback, and constant encouragement on this line of work of designing hardware-efficient\nalgorithms. We thank Albert Gu and Beidi Chen for their helpful suggestions on early drafts of this technical\nreport.\nReferences\n[1] Joshua Ainslie, James Lee-Thorp, Michiel de Jong, Yury Zemlyanskiy, Federico Lebr\u00f3n, and Sum",
+    "page_number": 13,
+    "chunk_index": 36,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c425e5df-5e67-4e4b-944c-7d1cebc2c98e",
+    "text": "it\nSanghai. Gqa: Training generalized multi-query transformer models from multi-head checkpoints. arXiv\npreprint arXiv:2305.13245, 2023.\n[2] Iz Beltagy, Matthew E Peters, and Arman Cohan. Longformer: The long-document transformer. arXiv\npreprint arXiv:2004.05150, 2020.\n13\n",
+    "page_number": 13,
+    "chunk_index": 37,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "2121c195-19e5-498e-8a7b-80c75f776387",
+    "text": "[3] Beidi Chen, Tri Dao, Eric Winsor, Zhao Song, Atri Rudra, and Christopher R\u00e9. Scatterbrain: Unifying\nsparse and low-rank attention. In Advances in Neural Information Processing Systems (NeurIPS), 2021.\n[4] Krzysztof Marcin Choromanski, Valerii Likhosherstov, David Dohan, Xingyou Song, Andreea Gane,\nTamas Sarlos, Peter Hawkins, Jared Quincy Davis, Afroz Mohiuddin, Lukasz Kaiser, et al. Rethinking\nattention with performers. In International Conference on Learning Representations (ICLR), 2020.\n[5] Tri Dao, Daniel Y. Fu, Stefano Ermon, Atri Rudra, and Christopher R\u00e9. FlashAttention: Fast and\nmemory-efficient exact attention with IO-awareness. In Advances in Neural Information Processing\nSystems, 2022.\n[6] Zhe Jia and Peter Van Sandt. Dissecting the Ampere GPU architecture via microbenchmarking. GPU\nTechnology Conference, 2021.\n[7] Zhe Jia, Marco Maggioni, Benjamin Staiger, and Daniele P Scarpazza. Dissecting the nvidia Volta GPU\narchitecture via microbenchmarking. arXiv preprint arXiv:1804.06826, 2018.\n[8] Angelos Katharopoulos, Apoorv Vyas, Nikolaos Pappas, and Fran\u00e7ois Fleuret. Transformers are RNNs:\nFast autoregressive transformers with linear attention. In International Conferen",
+    "page_number": 14,
+    "chunk_index": 38,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "2c0f2f43-1b2d-4a9b-8184-d23d58c445b5",
+    "text": "ce on Machine Learning,\npages 5156\u20135165. PMLR, 2020.\n[9] Nikita Kitaev, \u0141ukasz Kaiser, and Anselm Levskaya. Reformer: The efficient transformer. In The\nInternational Conference on Machine Learning (ICML), 2020.\n[10] Benjamin Lefaudeux, Francisco Massa, Diana Liskovich, Wenhan Xiong, Vittorio Caggiano, Sean Naren,\nMin Xu, Jieru Hu, Marta Tintore, Susan Zhang, Patrick Labatut, and Daniel Haziza. xformers: A modular\nand hackable transformer modelling library. https://github.com/facebookresearch/xformers, 2022.\n[11] Maxim Milakov and Natalia Gimelshein. Online normalizer calculation for softmax. arXiv preprint\narXiv:1805.02867, 2018.\n[12] OpenAI. Gpt-4 technical report. ArXiv, abs/2303.08774, 2023.\n[13] Markus N Rabe and Charles Staats. Self-attention does not need \ud835\udc42(\ud835\udc5b2) memory. arXiv preprint\narXiv:2112.05682, 2021.\n[14] Aurko Roy, Mohammad Saffar, Ashish Vaswani, and David Grangier. Efficient content-based sparse\nattention with routing transformers. Transactions of the Association for Computational Linguistics, 9:\n53\u201368, 2021.\n[15] Noam Shazeer.\nFast transformer decoding:\nOne write-head is all you need.\narXiv preprint\narXiv:1911.02150, 2019.\n[16] Mohammad Shoeybi, Mostofa Patwary, Ra",
+    "page_number": 14,
+    "chunk_index": 39,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "ee6345d7-b868-4ea4-b49a-9447c968c78c",
+    "text": "ul Puri, Patrick LeGresley, Jared Casper, and Bryan Catanzaro.\nMegatron-LM: Training multi-billion parameter language models using model parallelism. arXiv preprint\narXiv:1909.08053, 2019.\n[17] Philippe Tillet, Hsiang-Tsung Kung, and David Cox. Triton: an intermediate language and compiler for\ntiled neural network computations. In Proceedings of the 3rd ACM SIGPLAN International Workshop\non Machine Learning and Programming Languages, pages 10\u201319, 2019.\n[18] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, \u0141ukasz\nKaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing\nsystems, 30, 2017.\n[19] Sinong Wang, Belinda Z Li, Madian Khabsa, Han Fang, and Hao Ma. Linformer: Self-attention with\nlinear complexity. arXiv preprint arXiv:2006.04768, 2020.\n[20] Manzil Zaheer, Guru Guruganesh, Kumar Avinava Dubey, Joshua Ainslie, Chris Alberti, Santiago\nOntanon, Philip Pham, Anirudh Ravula, Qifan Wang, Li Yang, et al. Big bird: Transformers for longer\nsequences. Advances in Neural Information Processing Systems, 33, 2020.\n14\n",
+    "page_number": 14,
+    "chunk_index": 40,
+    "paper_id": "flashattention-2-faster-attention-with-better-parallelism-and-work-partitioning",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3607b8c0-e686-48af-8aa7-2993d74ffbbe",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20251\nPhysics-Informed Machine Learning for\nTransformer Condition Monitoring \u2013 Part I:\nBasic Concepts, Neural Networks, and Variants\nJose I. Aizpurua, Senior Member, IEEE\nAbstract\u2014Power transformers are critical assets in\npower networks, whose reliability directly impacts grid\nresilience and stability. Traditional condition monitoring\napproaches, often rule-based or purely physics-based,\nstruggle with uncertainty, limited data availability, and\nthe complexity of modern operating conditions. Recent\nadvances in machine learning (ML) provide powerful\ntools to complement and extend these methods, enabling\nmore accurate diagnostics, prognostics, and control. In\nthis two-part series, we examine the role of Neural\nNetworks (NNs) and their extensions in transformer\ncondition monitoring and health management tasks. This\nfirst paper introduces the basic concepts of NNs, explores\nConvolutional Neural Networks (CNNs) for condition\nmonitoring using diverse data modalities, and discusses\nthe integration of NN concepts within the Reinforcement\nLearning (RL) paradigm for decision-making an",
+    "page_number": 1,
+    "chunk_index": 0,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "ac472ca4-b460-406a-b828-543082d23a1a",
+    "text": "d control.\nFinally, perspectives on emerging research directions are\nalso provided.\nIndex Terms\u2014Transformer, On-Load Tap Changer\n(OLTC), inrush current, Neural Networks, Convolutional\nNeural Networks, Reinforcement Learning, Prognostics &\nHealth Management (PHM).\nI. Introduction\nT\nRANSFORMERS are key components in the\nreliable operation of the power grid. Conse-\nquently, monitoring their health is essential to avoid\ncostly failures and unplanned outages, especially in\ncritical facilities such as nuclear power plants. Over\nthe past decade, I have developed and deployed\nmachine learning (ML) solutions for transformer\ndiagnostics and prognostics in industrial contexts [1].\nMost of the developed solutions have been focused\non Prognostics & Health Management (PHM) ap-\nJ. Aizpurua is with the University of the Basque Country\n(UPV/EHU), Faculty of Informatics, Department of Computer\nScience and Artificial Intelligence, Donostia - San Sebastian,\nSpain.\n978-84-XX-XXXXX-X /25 \u00a9 2025 Red iNtransf\n\u201c\u00a9 2025 IEEE. Personal use of this material is permitted.\nPermission from IEEE must be obtained for all other uses, in\nany current or future media, including reprinting/republishing\nthis material for",
+    "page_number": 1,
+    "chunk_index": 1,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "d759cd3a-d5d3-46f7-a091-54d6d7826fc0",
+    "text": " advertising or promotional purposes, creating\nnew collective works, for resale or redistribution to servers or\nlists, or reuse of any copyrighted component of this work in\nother works.\u201d\nplications. PHM is a health management paradigm\nthat integrates different predictive methodologies to\nimprove the reliability of engineering components\nand systems [2]. PHM is at the heart of modern\ncondition monitoring technology, where sensor data,\nphysics knowledge, and engineering expertise are\ncombined to develop anomaly detection, diagnostics,\nprognostics, and maintenance planning tools.\nUnder the umbrella of PHM methods for elec-\ntrical transformers, several data-driven and hy-\nbrid approaches have been developed, including a\ndata analytics suite [3], insulation lifetime prog-\nnostics through ML and state-space filtering [4],\nand diagnostic models using Dissolved Gas Analysis\n(DGA) data with Bayesian Networks [5]. The latter\nwas further enhanced through the integration of\nuncertainty-aware ensemble strategies [6]. Engineers\noften need to simplify the decision-making process\nthrough a single health indicator, and in this direc-\ntion, a composite health index was also proposed\nto integrate pre",
+    "page_number": 1,
+    "chunk_index": 2,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "1763c599-a683-43dc-b1da-aca4ee0e8f8a",
+    "text": "dictions from multiple transformer\nsubsystems [7].\nThe combination of ML and physics-based models,\ntogether with uncertainty quantification (UQ), has\nbeen a central element in most of these solutions.\nUQ is essential for decision-making, particularly in\nprognostics, where Remaining Useful Life (RUL)\npredictions must incorporate uncertainty estimates.\nUsing probabilistic forecasting methodologies, a hy-\nbrid physics\u2013ML method for transformer ageing\nprediction under renewable energy operation was de-\nveloped in [8]. The physics-based model served as the\nbaseline, while the probabilistic component learned\nand corrected its residual bias. A comprehensive\nstudy of these probabilistic forecasting methods and\ntheir validation can be found in [1].\nBeyond insulation ageing, transformer magnetiza-\ntion and inrush current phenomena have also been\ninvestigated. Based on the Jiles\u2013Atherton model for\nhysteresis curve modelling, a metaheuristics-based\napproach was proposed to estimate the underlying\npartial differential equation (PDE) parameters [9].\narXiv:2512.22190v1  [cs.LG]  20 Dec 2025\n",
+    "page_number": 1,
+    "chunk_index": 3,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "1b5046fe-875c-4d80-b86e-7e371f613826",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20252\nThis framework was later extended toward trans-\nformer inrush minimization strategies, integrating\nthe hysteresis model with a transformer electrical\nmodel in a Reinforcement Learning (RL) setup for\noptimal control [10].\nMotivated by the need for cost-effective and non-\ninvasive monitoring, recent work has also explored\nthe use of acoustic signals and ML for On-Load\nTap Changer (OLTC) monitoring [11]. This line of\nresearch demonstrates the potential of combining\nsignal processing and data-driven techniques for\ntransformer subsystem diagnostics.\nGiven the wide range of ML-based solutions pro-\nposed for transformer health management, this tuto-\nrial aims to provide a unified and accessible overview\nof Neural Network (NN)-based methods. NNs are\nchosen as the central modelling framework because\nmany of their variants, such as Convolutional NNs\nand Reinforcement Learning agents, are natural ex-\ntensions of the same underlying principles.\nThe increasing penetration of Renewable Energy\nSources (RESs) has also affected transformer health.\nTheir stochastic nature and the varia",
+    "page_number": 2,
+    "chunk_index": 4,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "9a9d8cb2-f19f-402c-b604-a8ae9f6c2a0d",
+    "text": "bility they\nintroduce to grid operations have motivated the\ndevelopment of complementary solutions, including:\n(i) feature selection for improved forecasting [12];\n(ii) surrogate modelling for transformer thermal\ndynamics [13]; and (iii) analysis of the impact of\nextreme events on transformer ageing [14]. However,\nthese applications and broader maintenance planning\napproaches (e.g., [15]) are beyond the scope of this\ntutorial.\nThis paper introduces the fundamentals of ML\nmethods for transformer condition monitoring, with\na focus on Neural Networks and their extensions.\nPart I presents the foundations of Neural Networks,\nincluding fully connected (feedforward) architec-\ntures, Convolutional Neural Networks (CNNs), and\ntheir integration within the Reinforcement Learning\n(RL) paradigm for transformer control. Part II builds\nupon these foundations by introducing Physics-\nInformed Neural Networks (PINNs) and Bayesian\nmethods for uncertainty quantification. Together, the\ntwo parts aim to provide researchers and practition-\ners with a coherent framework for developing data-\ne\ufb00icient, physics-consistent, and uncertainty-aware\nmodels for transformer health monitoring and asset\nmanagement.\nT",
+    "page_number": 2,
+    "chunk_index": 5,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "42718f6b-6278-4e66-8cc8-fd0067634bce",
+    "text": "he remainder of this document is organized as\nfollows. Section II introduces the basic concepts of\nNeural Networks. Section III presents Convolutional\nNeural Networks for structured data. Section IV\ndiscusses Reinforcement Learning for transformer\ncontrol, and finally, Section V concludes with per-\nspectives for future research.\nII. Neural Networks\nA. Basic Concepts\nArtificial Neural Networks (NNs) are computa-\ntional models inspired by the structure and func-\ntioning of biological neurons [16]. The most basic\narchitecture, known as a feedforward neural network\nor multilayer perceptron (MLP), consists of an input\nlayer, one or more hidden layers, and an output layer,\nas illustrated in Fig. 1.\n\u03c3\n\u03c3\n\u03c3\n\u03c3\nLoss\n(MSE / CE)\nInput\nLayer\nHidden\nLayer\nOutput\nLayer\nFig. 1. Multilayer Perceptron (MLP) with activation functions\nin the hidden layer and a loss function at the output.\nEach neuron receives an input vector X, applies\na linear transformation with weights W and bias b,\nand passes the result through a nonlinear activation\nfunction \u03c3(\u00b7). Formally, a fully connected (FC) layer\nis defined as:\nFC(X) = \u03c3(XW + b)\n(1)\nwhere X\n\u2208Rn\u00d7c is the input with n samples\nof dimension c, W \u2208Rc\u00d7c\u2032 is the we",
+    "page_number": 2,
+    "chunk_index": 6,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "fa378ef4-e6ee-46ca-a252-de4b65dd5e13",
+    "text": "ight matrix,\nand b \u2208Rc\u2032 is the bias vector. The parameter c\u2032\ndetermines the number of neurons (or the width) in\nthe layer. The nonlinear activation function \u03c3(\u00b7) al-\nlows the network to approximate complex, nonlinear\nrelationships.\nAmong the various activation functions used in\npractice (e.g., ReLU, sigmoid, tanh), this tutorial\nemploys the softplus function,\n\u03c3(s) = log(1 + exp(s))\n(2)\nwhich is smooth, always positive, and avoids dead\n(or inactive) neurons that can occur with other\nactivation functions such as ReLU.\nTraining a Neural Network involves optimizing the\nparameters {Wk, bk}L\nk=1 across L layers to minimize\na loss function that quantifies the difference between\npredictions and true outputs. For regression tasks,\nthe mean squared error (MSE) is a common choice:\n",
+    "page_number": 2,
+    "chunk_index": 7,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "4732dff9-7ad2-4d05-803a-2db5fc52dff2",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20253\nL = 1\nn\nn\nX\ni=1\n\u0000yi \u2212f(xi)\n\u00012,\n(3)\nwhere f(xi) is the network prediction for the input\nxi. The parameters are optimized through gradient-\nbased algorithms such as stochastic gradient descent\n(SGD), with gradients e\ufb00iciently computed using the\nbackpropagation algorithm.\nBackpropagation applies the chain rule of calculus\nto propagate the loss gradient backward through\nthe layers, allowing all network parameters to be\nupdated simultaneously. This mechanism enables\nNeural Networks to e\ufb00iciently learn complex input\u2013\noutput mappings from data.\nB. Learning Tasks. Classification and Regression\nNeural Networks can be tailored to different su-\npervised learning tasks, primarily classification and\nregression.\n\u2022 Classification: The goal is to assign an input to\none of several categories. In transformer condi-\ntion monitoring, an example is fault type iden-\ntification from Dissolved Gas Analysis (DGA).\nTraditional methods such as Duval\u2019s triangle\nrely on threshold rules, whereas NNs can learn\nprobabilistic and nonlinear decision boundaries,\nimproving fault classification accuracy.",
+    "page_number": 3,
+    "chunk_index": 8,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "198347fb-6b13-4a35-a1d6-fd6e5eb01a5c",
+    "text": "\n\u2022 Regression: The network predicts continuous\nvalues. For transformers, regression can be used\nto predict oil temperature or estimate remaining\nuseful life (RUL) of insulation based on opera-\ntional history.\nThe choice of the output activation function and\nloss function depends on the problem type. For\ninstance, classification problems commonly employ a\nsoftmax output with categorical cross-entropy loss:\nL = \u2212\nK\nX\nk=1\nyk log(pk),\n(4)\nwhere pk is the predicted probability of class k, and\nyk is the one-hot encoded true label. In contrast,\nregression tasks typically use a linear output layer\nand the MSE loss defined in Eq. (3).\nC. Transformer Applications\nNeural Networks have been successfully applied to\na range of transformer asset management and con-\ndition monitoring tasks within the PHM framework.\nSome representative applications include:\n\u2022 Fault diagnostics from sensor data (e.g., DGA)\nusing fully connected NNs to identify gas ratios\nand fault categories [5].\n\u2022 Prognostics and Remaining Useful Life (RUL)\nprediction of insulation degradation from oper-\national data [4].\n\u2022 Ensemble learning strategies that combine mul-\ntiple models trained on different datasets to\nimprove robustne",
+    "page_number": 3,
+    "chunk_index": 9,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "4c443d1f-1849-4c80-ad0d-c2d3a3761525",
+    "text": "ss and accuracy in diagnostics\n[6].\nNeural Networks provide a flexible and expressive\nmodeling framework capable of capturing complex\nnonlinear relationships. However, they also exhibit\nlimitations, including a tendency to overfit when\ntraining data are scarce, limited interpretability,\nand the need for careful regularization to ensure\ngeneralization [16].\nMotivated by the need to better handle structured\nand high-dimensional data such as images and time\u2013\nfrequency representations, specialized architectures\nhave been proposed, such as Convolutional Neural\nNetworks (CNNs), which are introduced in the fol-\nlowing section.\nIII. Convolutional Neural Networks\nA. Motivation: Why Specialized Architectures?\nIn transformer monitoring, data come in diverse\nforms: gas concentration vectors, temperature time\nseries, high-frequency acoustic signals, or thermal\nimages. Conventional feedforward Neural Networks\n(MLPs) process each input feature independently\nand thus fail to exploit local structure or spatiotem-\nporal correlations. However, in many cases, these cor-\nrelations carry essential diagnostic information, such\nas bursts in the frequency domain, thermal hotspots,\nor waveform patterns, cru",
+    "page_number": 3,
+    "chunk_index": 10,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "9de7858c-2142-48a8-a929-c363536a6501",
+    "text": "cial for identifying specific\nfault conditions.\nTable III-A summarizes typical transformer moni-\ntoring data sources, their structure, and representa-\ntive patterns.\nTABLE I\nData types used in transformer monitoring and their\ncharacteristic patterns\nSource\nFormat\nPatterns\nDGA\nLow-dimensional vectors\nGas ratios\nLoad, temperature\n1D time series\nTrends, seasonal effects\nOLTC acoustics, vibration\nWaveforms (20 kHz\u20131 MHz)\nTime-frequency bursts\nIR/thermal imaging\n2D images\nSpatial hot-spots\nConvolutional Neural Networks (CNNs) are de-\nsigned to capture such localized and hierarchical\npatterns. Instead of fully connected layers, CNNs\nemploy learnable filters (kernels) that slide across the\ninput domain, detecting meaningful features, such\nas edges, bursts, or hotspots, independent of their\nposition. These spatially shared filters enable e\ufb00icient\nlearning from high-dimensional, structured data [17].\n",
+    "page_number": 3,
+    "chunk_index": 11,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c6f2d518-ebb4-42ad-b34c-0c26b83995eb",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20254\nB. CNN Fundamentals: Local Filters and Feature\nHierarchies\nConsider an input tensor X\n\u2208Rh\u00d7w\u00d7c, rep-\nresenting an image of height h, width w, and c\nchannels (e.g., grayscale or RGB). A convolutional\nfilter K \u2208Rkh\u00d7kw\u00d7c produces an output feature map\nY via the convolution operation:\nY (k)\ni,j = \u03c3\n X\nu,v,c\nK(k)\nu,v,c \u00b7 Xi+u,j+v,c + b(k)\n!\n,\n(5)\nwhere \u03c3(\u00b7) is a nonlinear activation function (typ-\nically ReLU), and b(k) is a bias term for the k-th\nfeature map.\nAs an illustrative example, a 3 \u00d7 3 filter can be\ndefined as:\nK =\n\uf8ee\n\uf8f0\n\u22121\n\u22121\n\u22121\n0\n0\n0\n1\n1\n1\n\uf8f9\n\uf8fb\n(6)\nThis kernel acts as a vertical edge detector, empha-\nsizing horizontal transitions in the input image. The\nconvolution is performed by sliding the kernel over\nthe input region, computing element-wise products,\nsumming them, and applying the activation function:\nYi,j = \u03c3\n 2\nX\nu=0\n2\nX\nv=0\nKu,v \u00b7 Xi+u,j+v + b\n!\n.\n(7)\nDuring training, CNNs automatically learn a di-\nverse set of filters that respond to different features\u2014\nedges, textures, or frequency transitions. Shallow\nlayers capture low-level details, while deeper layers\n",
+    "page_number": 4,
+    "chunk_index": 12,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6d216480-8da3-4faa-ac94-764068ae6664",
+    "text": "learn higher-level abstractions such as characteristic\nOLTC acoustic patterns or thermal fault signatures.\nKey benefits of CNNs include:\n\u2022 Parameter e\ufb00iciency. The same kernel detects a\nfeature across the entire input, reducing param-\neters and improving generalization.\n\u2022 Spatio-temporal information. Filters operate on\nspatial or temporal neighborhoods, detecting\nmeaningful patterns.\n\u2022 Hierarchical abstraction. Stacked layers con-\nstruct features from low-level edges to complex\npatterns.\n\u2022 Pooling operations. Downsampling (e.g., max-\npooling) reduces dimensionality while preserving\ndominant features.\nAlthough CNNs are commonly associated with\n2-D image data, they are also applicable to 1-D\nsignals such as vibration or acoustic recordings using\n1-D convolutions. Alternatively, transforming time\nseries into 2-D time\u2013frequency representations (e.g.,\nspectrograms) allows CNNs to leverage their full\nspatial feature extraction capabilities.\nC. From Time Series to Images: Spectrograms for\nAcoustic Monitoring\nIn the context of transformer diagnostics, partic-\nularly On-Load Tap Changer (OLTC) monitoring,\nacoustic signals contain information about electri-\ncal and mechanical events. The fre",
+    "page_number": 4,
+    "chunk_index": 13,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "72cdd8a3-4af7-4aee-afa1-17a7c31b36c1",
+    "text": "quency content\nof these signals varies over time (i.e., they are\nnon-stationary), which motivates the use of time\u2013\nfrequency analysis.\nA widely used method for this purpose is the\n(discrete) Short-Time Fourier Transform (STFT),\nwhich decomposes a signal into overlapping time-\nlocalized frequency components:\nS(t, f) =\n\f\f\f\f\f\nL\u22121\nX\nn=0\nx[n + t] \u00b7 w[n] \u00b7 e\u2212j2\u03c0fn/L\n\f\f\f\f\f ,\n(8)\nwhere x[n] is the discrete-time input signal obtained\nwith respect to a sampling rate Fs, w[n] is a window\nfunction (e.g., Hamming or Hann) of length L, t\ndenotes the time index (window shift), f is the\nfrequency bin index. The window length L deter-\nmines the temporal resolution (i.e. L/Fs seconds).\nFor simplicity, the hop size (window shift step), is\nomitted.\nBy sliding the analysis window over time, the\nSTFT\nyields\na\ntwo-dimensional\nrepresentation,\nknown as the spectrogram:\nSpectrogram(t, f) = 20 log10 (|S(t, f)|) .\n(9)\nLog-scaling enhances perceptual relevance and dy-\nnamic range. In practice, Mel-scaled spectrograms\nare often employed to mimic human auditory per-\nception, particularly effective for identifying low-\nfrequency variations critical to OLTC event detec-\ntion.\nThis transformation enables CNNs to pr",
+    "page_number": 4,
+    "chunk_index": 14,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "a9c5074f-1c9d-484b-8acd-1f0a3c16b21d",
+    "text": "ocess au-\ndio data as images, learning discriminative patterns\nfrom the spectrograms for event classification or\nanomaly detection.\nD. Case Study: CNN-Based OLTC Acoustic Moni-\ntoring\nIn [11], a CNN architecture was developed to\ndetect OLTC operational states from acoustic record-\nings sampled at 48 kHz. Fig. 2 illustrates the CNN\nstructure.\nThe model input consists of Mel spectrograms\ncorresponding to 360 ms audio segments (17\u00d71024\n",
+    "page_number": 4,
+    "chunk_index": 15,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c3d00412-bf49-4f5a-bef1-e30ae8e87d36",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20255\nFig. 2.\nSchematics of the CNN architecture. The numbers\na \u00d7 b \u00d7 c inside the Conv2D boxes indicate the kernel size and\nthe number of filters [11].\nsamples). The CNN classifies each segment into one\nof the OLTC states defined in Table II. Fig. 3(a)\nshows the test environment, Fig. 3(b) depicts the\nvoltage regulation control scheme, and Fig. 3(c)\npresents the segmented acoustic signature corre-\nsponding to one OLTC transition.\nTABLE II\nSegmentation of transformer OLTC states.\nState\nDescription\n#1\nIdle state and motor operation\n#2\nMotor starts\n#3\nGeneva drive activation\n#4\nTap selector stops and end of Geneva drive\n#5\nDiverter switch operation\n#6\nMotor stops\n#7\nEvents associated with the mechanical braking\nprocess\nThe proposed approach achieved over 98% clas-\nsification accuracy on unseen audio signals, demon-\nstrating the strong feature extraction capability of\nCNNs for high-dimensional acoustic data. Compared\nto traditional feature-engineered machine learning\nmodels, CNNs exhibited superior adaptability and\ngeneralization across varying acoustic environments\n[11].\nThe ",
+    "page_number": 5,
+    "chunk_index": 16,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3a8675b7-550a-4a21-b29d-3f1823789d7c",
+    "text": "model\u2019s robustness was further evaluated\nunder both synthetic and real noise conditions.\nWhile the CNN maintained high accuracy in the\npresence of synthetic noise, real-world tests revealed\nsensitivity to background humming, requiring a pre-\nprocessing denoising step for optimal performance.\nThese findings underscore the importance of noise-\nrobust preprocessing in practical deployments.\nCNNs thus extend Neural Networks to structured\ndata, enabling hierarchical feature extraction from\ncomplex sensor signals. Their ability to generalize\nacross noise conditions and learn diagnostic rep-\nresentations makes them a key enabler for future\ntransformer health monitoring solutions.\nIV. Reinforcement Learning for Transformer\nControl\nTransiting towards Prognostics and Health Man-\nagement (PHM) solutions that integrate predictive\ninformation requires coupling condition assessment\nwith optimal decision-making. One example would\nbe the use of insulation ageing predictions to plan\ncost-effective maintenance actions. In this direction,\nReinforcement Learning (RL) provides a framework\nthat enables adaptive, data-driven control by learn-\ning from interaction with the system [18]. Rather\nthan focusin",
+    "page_number": 5,
+    "chunk_index": 17,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "1ccb962b-c3e7-41a0-87c5-59455a23d114",
+    "text": "g on maintenance scheduling, this sec-\ntion illustrates how RL can be used for transformer\nactuation control, specifically for minimizing inrush\ncurrent during energization\u2014a phenomenon that\ndirectly contributes to accelerated ageing.\nA. Motivation: Adaptive Control with Neural Poli-\ncies\nTraditional control strategies for transformers,\nsuch as fixed switching sequences, often rely on\nstatic settings. While these methods are effective\nunder nominal steady-state conditions, they cannot\neasily adapt to varying load profiles, fluctuating\ngrid conditions, or complex operational trade-offs.\nMoreover, these rule-based systems rarely integrate\nreal-time health signals or system feedback in a\nprincipled manner.\nRL provides a data-driven alternative for sequen-\ntial decision-making. Instead of pre-defined rules, an\nRL agent learns optimal control strategies through\ninteraction with an environment, which may be a\ndetailed simulator or, eventually, a real operating\nenvironment. RL agents can dynamically adapt to\ncontext, achieving objectives such as minimizing\ninrush currents, reducing thermal stress, or improv-\ning lifetime utilization. Namely they learn to take\nactions that maximize a cumul",
+    "page_number": 5,
+    "chunk_index": 18,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6d77042e-d73c-4d35-9739-2ef0411cc864",
+    "text": "ative reward function,\ncapturing both short-term performance and long-\nterm effects. Neural networks are typically used to\nrepresent the agent\u2019s decision policy, making RL\nanother extension of NNs toward control.\nFig.\n4\nillustrates\nthe\nclassical\nRL\nagent\u2013\nenvironment interaction loop. At each time step t,\nthe agent observes the environment state st, selects\nan action at, and receives a scalar reward rt+1 and a\nnew state st+1 from the environment. The goal is to\nlearn a policy \u03c0(at|st) that maximizes the expected\ncumulative reward.\nThe motivations to use RL in transformer health\nand control include: (i) the ability to learn from inter-\naction without requiring labeled datasets or expert\nheuristics, (ii) the use of simulators (environment)\nto explore long-term effects safely, and (iii) the\npotential to balance multiple, sometimes conflicting,\nobjectives via the design of custom reward functions\n(e.g., mechanical wear versus voltage quality).\n",
+    "page_number": 5,
+    "chunk_index": 19,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "5639eca7-cdc4-47fb-a3e0-5b213525b0e8",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20256\nFig. 3. (a) ELIN test environment (b) control scheme with acoustic sources; (c) segmented audio signal [11].\nat\nAction\nrt\nReward\nst\nState\nAgent\nEnvironment\nrt+1\nst+1\nFig. 4. Agent\u2013environment interaction in reinforcement learn-\ning. The agent learns an optimal policy through repeated\ninteraction with the environment.\nB. RL Fundamentals: Control as a Markov Decision\nProcess\nFormally, an RL problem is modeled as a Markov\nDecision Process (MDP), defined by the tuple\n(S, A, P, R, \u03b3), where:\n\u2022 S: Set of possible system states (e.g., trans-\nformer fluxes, grid voltage, ambient tempera-\nture).\n\u2022 A: Set of available actions (e.g., energization\nangle, tap changer positions).\n\u2022 P(s\u2032|s, a): State transition probabilities, defining\nsystem dynamics.\n\u2022 R(s, a): Reward function that quantifies the\ndesirability of each action.\n\u2022 \u03b3 \u2208[0, 1]: Discount factor that determines the\nimportance of future rewards.\nThe agent selects actions according to a policy\n\u03c0(at|st), often represented by a Neural Network, to\nmaximize the expected cumulative reward over time.\nIn most deep RL implementations",
+    "page_number": 6,
+    "chunk_index": 20,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "97b63436-c9cb-47a3-918a-462a6a91cb90",
+    "text": ", Neural Networks\nserve as policy approximators (actor), value estima-\ntors (critic), or both. These function approximators\nallow generalization across high-dimensional state\nspaces.\nC. Case Study: Minimizing Inrush Current via Neu-\nral Control\nA critical application of RL in transformers is the\nmitigation of inrush current during energization. Due\nto residual magnetic flux in the core, inappropriate\ncircuit breaker closing instants can cause inrush\ncurrents several times above nominal levels, leading\nto mechanical stress, false protection operation, and\nvoltage dips. In this context, classical rule-based\ncontrol is often insu\ufb00icient, and this makes it a\nnatural candidate for RL methods.\nTo address this, an RL agent can be trained in sim-\nulation to determine the optimal energization instant\n(i.e., circuit breaker closing angle) that minimizes\ninrush current. The environment includes a trans-\nformer model receiving as inputs the three-phase\nremanent flux values (\u03d51, \u03d52, \u03d53) and the selected\nswitching angle (action). It outputs the peak inrush\ncurrent Imax, which is used to compute the reward:\nr =\n(\n\u2212Imax,\nif Imax > 1,\n1 \u2212Imax,\notherwise.\n(10)\nThis incentivizes the agent to find ene",
+    "page_number": 6,
+    "chunk_index": 21,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "e826d2b1-d443-4d70-9105-2d296979f3ae",
+    "text": "rgization\nstrategies that keep inrush below the rated current\n(1 pu). The diagram in Fig. 5 shows the inputs and\noutput of the environment.\n\u03a61, \u03a62, \u03a63 \n\u03b1 closing\nImax\nEnvironment\nTransformer Model\nFig. 5. Transformer simulation environment. Inputs: remanent\nfluxes and closing angle. Output: peak inrush current [10].\nAfter training, the agent receives state observa-\ntions (e.g., flux and timing) and outputs the optimal\nclosing angle that minimizes inrush. The learned\npolicy is evaluated in the simulation environment,\nas shown in Fig. 6.\nIn [10], multiple RL algorithms were benchmarked,\nincluding Deep Q-Networks (DQN) with linear and\n",
+    "page_number": 6,
+    "chunk_index": 22,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "6df981ea-3bda-4923-832d-bb15f6c308ec",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20257\n\u03b1 closing\n\u03a61 \nSimulation\nImax\n\u03b1 opening\n\u03a62 \n\u03a63 \nOutput\nInput\nHidden\nlayer\nlayers\nlayer\nFig. 6. Evaluation stage: trained policy maps state to closing\nangle. Simulation outputs inrush current [10].\nexponential \u03f5-greedy decay, and Proximal Policy Op-\ntimization (PPO). Fig. 7 compares the distribution\nof peak inrush currents for these approaches. While\nDQN with linear decay occasionally exceeds the\nrated limit, PPO and DQN with exponential decay\nshow more consistent and safer performance.\nFig. 7.\nDistribution of peak inrush currents for different\nRL algorithms. PPO yields the lowest mean and variance,\nachieving safer energization behavior [10].\nReinforcement Learning extends Neural Networks\nbeyond predictive modeling into sequential decision-\nmaking, where the focus is not only on estimating\nstates but also on learning control strategies that\noptimize long-term objectives. For transformers, this\ncase study demonstrates how neural agents can\neffectively control transformer behavior to minimize\ninrush current.\nAs high-fidelity simulators and hybrid physics\u2013\nML environments",
+    "page_number": 7,
+    "chunk_index": 23,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "e8da9ad2-0d35-49d8-8eed-e14c89437e69",
+    "text": " become more available, RL-based\ncontrol will increasingly integrate physical models\nand uncertainty estimates. Such hybrid models can\nenable safe RL, where operational constraints and\nphysics laws guide exploration, paving the way\ntoward autonomous and health-aware transformer\ncontrol.\nV. Conclusions\nIn this first part of the tutorial, we have provided\nan overview of machine learning solutions for trans-\nformer condition monitoring based on Neural Net-\nworks (NNs) and their main variants. The focus was\nplaced on understanding the basic building blocks\nof NNs, their adaptation to structured data through\nConvolutional Neural Networks (CNNs), and their\nintegration into control-oriented frameworks via Re-\ninforcement Learning (RL).\nNNs serve as the foundation of most deep learning\narchitectures and provide a powerful means of learn-\ning nonlinear relationships directly from data. CNNs\nextend these capabilities by e\ufb00iciently processing\nstructured signals, such as acoustic and thermal\nmeasurements, enabling robust event detection and\nfeature extraction for On-Load Tap Changer (OLTC)\nmonitoring. RL, on the other hand, generalizes the\nrole of NNs from prediction to decision-making,\nallowi",
+    "page_number": 7,
+    "chunk_index": 24,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "c7d2a9f7-54cb-4afd-94d2-d95877b3e787",
+    "text": "ng control policies to be learned directly from\ninteraction with the system, as demonstrated in the\ninrush current minimization case study.\nFuture research will likely advance in several direc-\ntions. Audio-based monitoring shows strong poten-\ntial for cost-effective condition assessment, though\nimproving robustness to noise remains an open chal-\nlenge. Another promising direction is the integra-\ntion of self-supervised learning to enable adaptive\ndiagnosis of previously unseen operating patterns.\nFor Reinforcement Learning, combining decision-\nmaking strategies with Remaining Useful Life (RUL)\nprediction models can pave the way for predictive,\ncost-effective maintenance scheduling.\nPart II of this series will extend these Neural Net-\nwork approaches toward physics-informed methods\nand uncertainty quantification, essential components\nfor robust decision-making under sparse or uncertain\ndata.\nTogether, Parts I and II aim to provide a coher-\nent view of how emerging AI paradigms, ranging\nfrom deep neural networks to physics-informed and\nprobabilistic models, can contribute to the next\ngeneration of reliable, explainable, and data-e\ufb00icient\nsolutions for power transformer monitoring an",
+    "page_number": 7,
+    "chunk_index": 25,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "dff5a6c8-bfe1-4500-b28c-fc2dfa6f2655",
+    "text": "d asset\nmanagement.\nAcknowledgements\nI am grateful to all my collaborators and mentors,\nespecially Vic Catterson, Stephen McArthur, and\nBrian Stewart. I would also like to thank Xose M.\nLopez-Fernandez for the invitation to present this\ntutorial at the ARWTr 2025 conference. In this Part\nI, I would like to acknowledge my collaborators\n",
+    "page_number": 7,
+    "chunk_index": 26,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "f8978d7d-962a-4a12-bc80-b7c322a115dc",
+    "text": "2025 8TH INTERNATIONAL ADVANCED RESEARCH WORKSHOP ON TRANSFORMERS (ARWTR) \u2013 BAIONA - SPAIN, (12)13-15 OCTOBER 20258\non OLTC audio monitoring: Adnan Secic, E\u00f1aut\nMuxika, Unai Garro, and Igor Kuzle, as well as on\nRL based solutions, including Manex Barrenetxea\nand Jone Ugarte.\nThis work has been partially funded by the\nSpanish State Research Agency through the Ram\u00f3n\ny Cajal Fellowship (grant No. RYC2022-037300-\nI)\nand\nProyectos\nGeneraci\u00f3n\nde\nConocimiento\n(grant No. PID2024-156284OA-I00), co-funded by\nMCIU/AEI/10.13039/501100011033 and FSE+.\nReferences\n[1] J. Aizpurua, B. Stewart, S. McArthur, M. Penalba,\nM. Barrenetxea, E. Muxika, and J. Ringwood, \u201cProba-\nbilistic forecasting informed failure prognostics framework\nfor improved rul prediction under uncertainty: A trans-\nformer case study,\u201d Reliability Engineering & System\nSafety, vol. 226, p. 108676, 2022.\n[2] J. Aizpurua, B. Stewart, and S. McArthur, \u201cPrognostics\n& health management oriented data analytics suite for\ntransformer health monitoring,\u201d Transformers Magazine,\npp. 1\u20139, Nov. 2022, published in Special Issue - ML & AI.\n[3] J. Aizpurua, V. Catterson, B. Stewart, S. McArthur,\nB. Lambert, B. Ampofo, G. Pereira, and J. Cross, \u201cDe",
+    "page_number": 8,
+    "chunk_index": 27,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "f7877433-b9e3-4643-ae1d-2d57a7ffef13",
+    "text": "ter-\nmining appropriate data analytics for transformer health\nmonitoring,\u201d in 10th International Topical Meeting on\nNuclear Plant Instrumentation, Control and Human Ma-\nchine Interface Technologies.\nUnited States: American\nNuclear Society, 2017, pp. 1\u201311.\n[4] J. I. Aizpurua, S. D. J. McArthur, B. G. Stewart, B. Lam-\nbert, J. G. Cross, and V. M. Catterson, \u201cAdaptive power\ntransformer lifetime predictions through machine learning\nand uncertainty modeling in nuclear power plants,\u201d IEEE\nTransactions on Industrial Electronics, vol. 66, no. 6, pp.\n4726\u20134737, 2019.\n[5] J. I. Aizpurua, V. M. Catterson, B. G. Stewart, S. D. J.\nMcArthur, B. Lambert, B. Ampofo, G. Pereira, and J. G.\nCross, \u201cPower transformer dissolved gas analysis through\nbayesian networks and hypothesis testing,\u201d IEEE Trans-\nactions on Dielectrics and Electrical Insulation, vol. 25,\nno. 2, pp. 494\u2013506, 2018.\n[6] J. I. Aizpurua, V. M. Catterson, B. G. Stewart, S. D. J.\nMcArthur, B. Lambert, and J. G. Cross, \u201cUncertainty-\naware fusion of probabilistic classifiers for improved trans-\nformer diagnostics,\u201d IEEE Transactions on Systems, Man,\nand Cybernetics: Systems, vol. 51, no. 1, pp. 621\u2013633,\n2021.\n[7] J. Aizpurua, B. Stewart, ",
+    "page_number": 8,
+    "chunk_index": 28,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "3e6eded9-b059-4d67-a141-1090332b5805",
+    "text": "S. McArthur, B. Lambert,\nJ. Cross, and V. Catterson, \u201cImproved power transformer\ncondition monitoring under uncertainty through soft\ncomputing and probabilistic health index,\u201d Applied Soft\nComputing, vol. 85, p. 105530, 2019.\n[8] J. I. Aizpurua, I. Ramirez, I. Lasa, L. d. Rio, A. Ortiz, and\nB. G. Stewart, \u201cHybrid transformer prognostics frame-\nwork for enhanced probabilistic predictions in renewable\nenergy applications,\u201d IEEE Transactions on Power Deliv-\nery, vol. 38, no. 1, pp. 599\u2013609, 2023.\n[9] J. Ugarte Valdivielso, J. I. Aizpurua, and M. B. I\u00f1arra,\n\u201cUncertainty distribution assessment of jiles-atherton pa-\nrameter estimation for inrush current studies,\u201d IEEE\nTransactions on Power Delivery, vol. 39, no. 4, pp. 2275\u2013\n2285, 2024.\n[10] J. U. Valdivielso, J. I. Aizpurua, M. Barrenetxea, and\nB. G. Stewart, \u201cReinforcement learning-based controlled\nswitching\napproach\nfor\ninrush\ncurrent\nminimization\nin\npower\ntransformers,\u201d\n2025.\n[Online].\nAvailable:\nhttps://arxiv.org/abs/2503.11398\n[11] A. Secic, J. I. Aizpurua, U. Garro, E. Muxika, and\nI. Kuzle, \u201cTransformer oltc operation monitoring frame-\nwork through acoustic signal processing and convolutional\nneural networks,\u201d IEEE Transactions o",
+    "page_number": 8,
+    "chunk_index": 29,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "404ff8c6-2ec3-40f6-8f05-56abd50ba36c",
+    "text": "n Instrumentation\nand Measurement, vol. 74, pp. 1\u201314, 2025.\n[12] I. Ramirez, J. I. Aizpurua, I. Lasa, and L. del Rio,\n\u201cProbabilistic feature selection for improved asset lifetime\nestimation in renewables. application to transformers in\nphotovoltaic power plants,\u201d Engineering Applications of\nArtificial Intelligence, vol. 131, p. 107841, 2024.\n[13] J. I. Aizpurua, R. Pe\u00f1a-Alzola, J. Olano, I. Ramirez,\nI. Lasa, L. del Rio, and T. Dragicevic, \u201cProbabilistic\nmachine learning aided transformer lifetime prediction\nframework for wind energy systems,\u201d International Jour-\nnal of Electrical Power & Energy Systems, vol. 153, p.\n109352, 2023.\n[14] N. N. S\u00e1nchez-Pozo, E. Vanem, H. Bloomfield, and J. I.\nAizpurua, \u201cA probabilistic risk assessment framework for\nthe impact assessment of extreme events on renewable\npower plant components,\u201d Renewable Energy, vol. 240,\np. 122168, 2025.\n[15] J. Aizpurua, V. Catterson, Y. Papadopoulos, F. Chi-\nacchio,\nand\nD.\nD\u2019Urso,\n\u201cSupporting\ngroup\nmainte-\nnance through prognostics-enhanced dynamic depend-\nability prediction,\u201d Reliability Engineering & System\nSafety, vol. 168, pp. 171\u2013188, 2017, special Issue. Main-\ntenance Modelling.\n[16] S. Scardapane, Alice\u2019s Advent",
+    "page_number": 8,
+    "chunk_index": 30,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
+  },
+  {
+    "chunk_id": "b66221d1-13f3-4f50-8d4d-0bf98387175d",
+    "text": "ures in a Differentiable\nWonderland\n\u2013\nVolume\nI,\n2024.\n[Online].\nAvailable:\nhttps://arxiv.org/abs/2404.17625\n[17] Z. Li, F. Liu, W. Yang, S. Peng, and J. Zhou, \u201cA survey\nof convolutional neural networks: Analysis, applications,\nand prospects,\u201d IEEE Transactions on Neural Networks\nand Learning Systems, vol. 33, no. 12, pp. 6999\u20137019,\n2022.\n[18] R. S. Sutton and A. G. Barto, Reinforcement Learning:\nAn Introduction, 2nd ed.\nA Bradford Book, 2015.\n",
+    "page_number": 8,
+    "chunk_index": 31,
+    "paper_id": "physics-informed-machine-learning-for-transformer-condition-monitoring-part-i-basic-concepts-neural-networks-and-variants",
+    "user_id": "local_user"
   }
 ]
