@@ -14,6 +14,10 @@ from app.architecture.execution_flow_service import (
     ExecutionFlowService,
 )
 
+from app.architecture.context_expander import (
+    ContextExpander,
+)
+
 from app.llm.base import BaseLLM
 
 from app.prompts.architecture_prompt import (
@@ -37,8 +41,12 @@ class ArchitectureReasoningService:
         execution_flow_service: (
             ExecutionFlowService
         ),
+        context_expander: (
+            ContextExpander
+        ),
         llm: BaseLLM,
     ) -> None:
+
         self.code_retrieval_service = (
             code_retrieval_service
         )
@@ -51,6 +59,10 @@ class ArchitectureReasoningService:
             execution_flow_service
         )
 
+        self.context_expander = (
+            context_expander
+        )
+
         self.llm = llm
 
     def extract_section(
@@ -58,7 +70,9 @@ class ArchitectureReasoningService:
         text: str,
         section: str,
     ) -> str:
+
         marker = f"{section}:"
+
         if marker not in text:
             return ""
 
@@ -101,6 +115,7 @@ class ArchitectureReasoningService:
         self,
         content: str,
     ) -> list[str]:
+
         if not content:
             return []
 
@@ -146,6 +161,23 @@ class ArchitectureReasoningService:
             )
         )
 
+        graph_files = set(
+            relevant_files
+        )
+
+        for item in (
+            flow_context["symbols"]
+        ):
+            graph_files.update(
+                item["imports"]
+            )
+
+        relevant_files = (
+            self.context_expander.expand(
+                list(graph_files)
+            )
+        )
+
         relevant_symbols = list(
             dict.fromkeys(
                 symbol.symbol_name
@@ -175,19 +207,50 @@ class ArchitectureReasoningService:
             for chunk in code_chunks
         )
 
-        flow_text = "\n".join(
-            (
-                f"SYMBOL: "
-                f"{item['symbol']}\n"
-                f"FILE: "
-                f"{item['file']}\n"
-                f"IMPORTS: "
-                f"{', '.join(item['imports'])}"
+        symbol_flow = []
+
+        for item in (
+            flow_context["symbols"]
+        ):
+            symbol_flow.append(
+                (
+                    f"SYMBOL: "
+                    f"{item['symbol']}\n"
+                    f"FILE: "
+                    f"{item['file']}\n"
+                    f"IMPORTS: "
+                    f"{', '.join(item['imports'])}\n"
+                    f"CALLS: "
+                    f"{', '.join(item['calls'])}"
+                )
             )
-            for item in (
-                flow_context[
-                    "symbols"
-                ]
+
+        execution_flow = []
+
+        for path in (
+            flow_context[
+                "execution_paths"
+            ]
+        ):
+            execution_flow.append(
+                (
+                    f"SYMBOL: "
+                    f"{path['symbol']}\n"
+                    f"FILE: "
+                    f"{path['file']}\n"
+                    f"CALLS: "
+                    f"{', '.join(path['calls'])}"
+                )
+            )
+
+        flow_text = (
+            "SYMBOL RELATIONSHIPS\n\n"
+            + "\n\n".join(
+                symbol_flow
+            )
+            + "\n\nEXECUTION PATHS\n\n"
+            + "\n\n".join(
+                execution_flow
             )
         )
 
@@ -225,9 +288,7 @@ class ArchitectureReasoningService:
             self.parse_bullet_section(
                 self.extract_section(
                     reasoning,
-                    (
-                        "EXECUTION_STEPS"
-                    ),
+                    "EXECUTION_STEPS",
                 )
             )
         )
@@ -236,9 +297,7 @@ class ArchitectureReasoningService:
             self.parse_bullet_section(
                 self.extract_section(
                     reasoning,
-                    (
-                        "ENGINEERING_NOTES"
-                    ),
+                    "ENGINEERING_NOTES",
                 )
             )
         )
@@ -247,9 +306,7 @@ class ArchitectureReasoningService:
             self.parse_bullet_section(
                 self.extract_section(
                     reasoning,
-                    (
-                        "MODIFICATION_POINTS"
-                    ),
+                    "MODIFICATION_POINTS",
                 )
             )
         )
@@ -257,9 +314,7 @@ class ArchitectureReasoningService:
         detailed_reasoning = (
             self.extract_section(
                 reasoning,
-                (
-                    "DETAILED_REASONING"
-                ),
+                "DETAILED_REASONING",
             )
         )
 
@@ -271,7 +326,7 @@ class ArchitectureReasoningService:
                     relevant_symbols
                 )
             )
-            / 10,
+            / 10
         )
 
         return ArchitectureInsight(

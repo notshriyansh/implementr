@@ -134,6 +134,10 @@ from app.architecture.architecture_reasoning_service import (
     ArchitectureReasoningService,
 )
 
+from app.architecture.context_expander import (
+    ContextExpander,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -191,6 +195,12 @@ repository_graph = (
     RepositoryGraph()
 )
 
+context_expander = (
+    ContextExpander(
+        graph=repository_graph,
+    )
+)
+
 repository_analyzer = (
     RepositoryAnalyzer(
         graph=repository_graph,
@@ -223,6 +233,9 @@ architecture_reasoning_service = (
         ),
         execution_flow_service=(
             execution_flow_service
+        ),
+        context_expander=(
+            context_expander
         ),
         llm=llm,
     )

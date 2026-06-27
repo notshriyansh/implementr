@@ -10,7 +10,7 @@ class ContextExpander:
     ) -> None:
         self.graph = graph
 
-    def expand_files(
+    def expand(
         self,
         files: list[str],
     ) -> list[str]:
@@ -18,12 +18,15 @@ class ContextExpander:
         expanded = set(files)
 
         for file in files:
+
             imports = (
                 self.graph.get_related_files(
                     file
                 )
             )
 
-            expanded.update(imports)
+            expanded.update(
+                imports
+            )
 
         return list(expanded)
