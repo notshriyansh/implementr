@@ -63,7 +63,7 @@ export default function RepositoryPage() {
 
       {structureQuery.data && (
         <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-12">
-          <div className="xl:col-span-4">
+          <div className="xl:col-span-5">
             <RepositoryTree
               files={structureQuery.data.files}
               onSelect={(file) => {
@@ -74,7 +74,7 @@ export default function RepositoryPage() {
             />
           </div>
 
-          <div className="xl:col-span-8">
+          <div className="xl:col-span-7">
             <RepositoryCodeViewer file={selectedFile} />
           </div>
         </div>
