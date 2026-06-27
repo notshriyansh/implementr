@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { useAppStore } from "@/stores/app-store";
+
 interface Props {
   onAnalyze: (question: string) => void;
   loading?: boolean;
@@ -12,6 +14,20 @@ interface Props {
 
 export function HybridQuery({ onAnalyze, loading }: Props) {
   const [question, setQuestion] = useState("");
+
+  const addRecentQuestion = useAppStore((state) => state.addRecentQuestion);
+
+  const setWorkspaceQuestion = useAppStore(
+    (state) => state.setWorkspaceQuestion,
+  );
+
+  function handleSubmit() {
+    if (!question) return;
+
+    setWorkspaceQuestion(question);
+    addRecentQuestion(question);
+    onAnalyze(question);
+  }
 
   return (
     <div className="rounded-3xl border border-border/50 bg-card/50 backdrop-blur-sm p-8">
@@ -24,10 +40,7 @@ export function HybridQuery({ onAnalyze, loading }: Props) {
           placeholder="How can I integrate Uniformer into this repository?"
         />
 
-        <Button
-          onClick={() => onAnalyze(question)}
-          disabled={!question || loading}
-        >
+        <Button onClick={handleSubmit} disabled={!question || loading}>
           Analyze
         </Button>
       </div>

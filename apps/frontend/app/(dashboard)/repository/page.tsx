@@ -16,6 +16,7 @@ import { PageContainer } from "@/components/shared/page-container";
 import { useRepositoryIngestion } from "@/hooks/use-repository-ingestion";
 import { useRepositoryStructure } from "@/hooks/use-repository-structure";
 import { useRepositorySearch } from "@/hooks/use-repository-search";
+import { useAppStore } from "@/stores/app-store";
 
 export default function RepositoryPage() {
   const [repoPath, setRepoPath] = useState("");
@@ -29,8 +30,21 @@ export default function RepositoryPage() {
 
   const searchQueryResult = useRepositorySearch(searchQuery);
 
+  const setSelectedRepository = useAppStore(
+    (state) => state.setSelectedRepository,
+  );
+
+  const addRecentRepository = useAppStore((state) => state.addRecentRepository);
+
+  const setSelectedFileStore = useAppStore((state) => state.setSelectedFile);
+
   async function handleAnalyze(path: string) {
     setRepoPath(path);
+
+    setSelectedRepository(path);
+
+    addRecentRepository(path);
+
     await ingestMutation.mutateAsync(path);
   }
 
@@ -52,7 +66,11 @@ export default function RepositoryPage() {
           <div className="xl:col-span-4">
             <RepositoryFileList
               files={structureQuery.data.files}
-              onSelect={setSelectedFile}
+              onSelect={(file) => {
+                setSelectedFile(file);
+
+                setSelectedFileStore(file);
+              }}
             />
           </div>
 

@@ -13,6 +13,7 @@ import { ResearchHeader } from "@/components/research/research-header";
 import { PaperSearchBar } from "@/components/research/paper-search-bar";
 import { PaperTable } from "@/components/research/paper-table";
 import { RecentPapersTable } from "@/components/research/recent-papers-table";
+import { useAppStore } from "@/stores/app-store";
 
 import { useDebounce } from "@/hooks/use-debounce";
 import { usePaperSearch } from "@/hooks/use-paper-search";
@@ -37,6 +38,10 @@ export default function ResearchPage() {
 
   const papers = useMemo(() => data?.papers ?? [], [data]);
 
+  const setSelectedPaper = useAppStore((state) => state.setSelectedPaper);
+
+  const addRecentPaper = useAppStore((state) => state.addRecentPaper);
+
   async function handleIngest(paper: Paper) {
     try {
       setIngestingPaper(paper.pdf_url);
@@ -47,6 +52,10 @@ export default function ResearchPage() {
         pdfUrl: paper.pdf_url,
         paperId,
       });
+
+      setSelectedPaper(paper);
+
+      addRecentPaper(paper);
 
       toast.success(`${paper.title} ingested successfully`);
     } catch (error) {

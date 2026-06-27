@@ -9,9 +9,14 @@ import { HybridQuery } from "@/components/workspace/hybrid-query";
 import { HybridResult } from "@/components/workspace/hybrid-result";
 
 import { useHybridAnalysis } from "@/hooks/use-hybrid-analysis";
+import { useAppStore } from "@/stores/app-store";
 
 export default function WorkspacePage() {
   const mutation = useHybridAnalysis();
+
+  const selectedPaper = useAppStore((state) => state.selectedPaper);
+
+  const selectedRepository = useAppStore((state) => state.selectedRepository);
 
   return (
     <PageContainer>
@@ -43,6 +48,28 @@ export default function WorkspacePage() {
           </Badge>
         </div>
       </section>
+
+      {(selectedPaper || selectedRepository) && (
+        <div className="mt-8 rounded-3xl border border-border/50 bg-card/40 p-6">
+          <h3 className="mb-4 font-medium">Active Context</h3>
+
+          <div className="space-y-2 text-sm">
+            {selectedPaper && (
+              <div>
+                <span className="text-muted-foreground">Paper:</span>{" "}
+                {selectedPaper.title}
+              </div>
+            )}
+
+            {selectedRepository && (
+              <div>
+                <span className="text-muted-foreground">Repository:</span>{" "}
+                {selectedRepository}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <HybridQuery
         onAnalyze={(question) => mutation.mutate(question)}
