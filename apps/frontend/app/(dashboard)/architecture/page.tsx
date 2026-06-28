@@ -4,6 +4,7 @@ import { ArchitectureQuery } from "@/components/architecture/architecture-query"
 import { ArchitectureResult } from "@/components/architecture/architecture-result";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageContainer } from "@/components/shared/page-container";
+import { ContextPanel } from "@/components/context/context-panel";
 
 import { useArchitectureAnalysis } from "@/hooks/use-architecture-analysis";
 
@@ -27,10 +28,14 @@ export default function ArchitecturePage() {
         </p>
       </section>
 
-      <ArchitectureQuery
-        onAnalyze={(query) => mutation.mutate(query)}
-        loading={mutation.isPending}
-      />
+      <ContextPanel />
+
+      <div className="mt-8">
+        <ArchitectureQuery
+          onAnalyze={(query) => mutation.mutate(query)}
+          loading={mutation.isPending}
+        />
+      </div>
 
       {!mutation.data && (
         <div className="mt-10">

@@ -1,4 +1,5 @@
 import { ArchitectureInsight } from "@/types/repository";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   result: ArchitectureInsight;
@@ -7,39 +8,32 @@ interface Props {
 export function ArchitectureResult({ result }: Props) {
   return (
     <div className="space-y-6">
-      <div className="border rounded-xl p-6">
-        <h2 className="font-semibold mb-3">Summary</h2>
+      <div className="rounded-3xl border border-border/50 bg-card/40 p-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-semibold">Summary</h2>
 
-        <p>{result.summary}</p>
+          <Badge>{Math.round(result.confidence * 100)}%</Badge>
+        </div>
+
+        <p className="leading-7 text-muted-foreground">{result.summary}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Section title="Relevant Files" items={result.relevant_files} />
 
         <Section title="Relevant Symbols" items={result.relevant_symbols} />
-
-        <Section title="Execution Steps" items={result.execution_steps} />
-
-        <Section
-          title="Modification Points"
-          items={result.modification_points}
-        />
       </div>
 
-      <div className="border rounded-xl p-6">
-        <h2 className="font-semibold mb-3">Engineering Notes</h2>
+      <Section title="Execution Flow" items={result.execution_steps} />
 
-        <ul className="space-y-2">
-          {result.engineering_notes.map((note) => (
-            <li key={note}>• {note}</li>
-          ))}
-        </ul>
-      </div>
+      <Section title="Modification Points" items={result.modification_points} />
 
-      <div className="border rounded-xl p-6">
-        <h2 className="font-semibold mb-3">Reasoning</h2>
+      <Section title="Engineering Notes" items={result.engineering_notes} />
 
-        <p>{result.reasoning}</p>
+      <div className="rounded-3xl border border-border/50 bg-card/40 p-8">
+        <h2 className="mb-4 font-semibold">Reasoning</h2>
+
+        <p className="leading-7 text-muted-foreground">{result.reasoning}</p>
       </div>
     </div>
   );
@@ -47,12 +41,23 @@ export function ArchitectureResult({ result }: Props) {
 
 function Section({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="border rounded-xl p-6">
-      <h3 className="font-semibold mb-3">{title}</h3>
+    <div className="rounded-3xl border border-border/50 bg-card/40 p-6">
+      <h2 className="mb-4 font-semibold">{title}</h2>
 
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {items.map((item) => (
-          <li key={item}>{item}</li>
+          <li
+            key={item}
+            className="
+              rounded-xl
+              bg-muted/20
+              px-3
+              py-2
+              text-sm
+            "
+          >
+            {item}
+          </li>
         ))}
       </ul>
     </div>
