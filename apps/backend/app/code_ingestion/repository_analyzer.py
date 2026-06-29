@@ -11,13 +11,19 @@ from app.architecture.repository_graph import (
     RepositoryGraph,
 )
 
+from app.code_ingestion.repository_scanner import (
+    RepositoryScanner,
+)
+
 
 class RepositoryAnalyzer:
     def __init__(
         self,
         graph: RepositoryGraph,
+        scanner: RepositoryScanner,
     ) -> None:
         self.graph = graph
+        self.scanner = scanner
 
     def analyze(
         self,
@@ -27,7 +33,15 @@ class RepositoryAnalyzer:
 
         files = []
 
-        for file in root.rglob("*.py"):
+        files_to_analyze = [
+            file
+            for file in self.scanner.scan(
+                repo_path
+            )
+            if file.suffix == ".py"
+        ]
+
+        for file in files_to_analyze:
             if any(
                 ignored in file.parts
                 for ignored in [

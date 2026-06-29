@@ -10,52 +10,97 @@ export function RepositoryCodeViewer({ file }: Props) {
     return (
       <EmptyState
         title="No file selected"
-        description="Choose a repository file from the explorer to inspect imports, classes and functions."
+        description="Select a file from the repository explorer."
       />
     );
   }
 
   return (
-    <div className="rounded-3xl border border-border/50 bg-card/40 backdrop-blur-sm p-6">
-      <h2 className="font-semibold text-lg">{file.path}</h2>
+    <div
+      className="
+        rounded-3xl
+        border
+        border-border/50
+        bg-card/40
+        p-6
+      "
+    >
+      <div className="border-b border-border/50 pb-5">
+        <h2 className="break-all font-semibold">{file.path}</h2>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <div className="rounded-full bg-muted px-3 py-1 text-xs">
+            {file.imports.length} imports
+          </div>
+
+          <div className="rounded-full bg-muted px-3 py-1 text-xs">
+            {file.functions.length} functions
+          </div>
+
+          <div className="rounded-full bg-muted px-3 py-1 text-xs">
+            {file.classes.length} classes
+          </div>
+        </div>
+      </div>
 
       <div className="mt-6 space-y-6">
-        <section className="rounded-xl bg-muted/20 p-4">
-          <h3 className="mb-3 font-medium">Imports</h3>
+        <Section
+          title={`Imports (${file.imports.length})`}
+          items={file.imports}
+          emptyMessage="No imports detected"
+        />
 
-          <ul className="space-y-2">
-            {file.imports.map((item) => (
-              <li key={item} className="font-mono text-sm">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </section>
+        <Section
+          title={`Functions (${file.functions.length})`}
+          items={file.functions}
+          emptyMessage="No functions detected"
+        />
 
-        <section className="rounded-xl bg-muted/20 p-4">
-          <h3 className="mb-3 font-medium">Functions</h3>
-
-          <ul className="space-y-2">
-            {file.functions.map((item) => (
-              <li key={item} className="font-mono text-sm">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="rounded-xl bg-muted/20 p-4">
-          <h3 className="mb-3 font-medium">Classes</h3>
-
-          <ul className="space-y-2">
-            {file.classes.map((item) => (
-              <li key={item} className="font-mono text-sm">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </section>
+        <Section
+          title={`Classes (${file.classes.length})`}
+          items={file.classes}
+          emptyMessage="No classes detected"
+        />
       </div>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  items,
+  emptyMessage,
+}: {
+  title: string;
+  items: string[];
+  emptyMessage: string;
+}) {
+  return (
+    <div className="rounded-xl bg-muted/20 p-4">
+      <h3 className="mb-3 font-medium">{title}</h3>
+
+      {items.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+      ) : (
+        <ul className="space-y-2">
+          {items.map((item) => (
+            <li
+              key={item}
+              className="
+                break-all
+                rounded-lg
+                bg-background/50
+                px-3
+                py-2
+                font-mono
+                text-sm
+              "
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

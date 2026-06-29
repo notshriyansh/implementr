@@ -24,7 +24,6 @@ export function CodeChunkViewer({ chunk }: Props) {
         border
         border-border/50
         bg-card/40
-        backdrop-blur-sm
       "
     >
       <div
@@ -35,26 +34,31 @@ export function CodeChunkViewer({ chunk }: Props) {
           py-4
         "
       >
-        <div className="font-medium break-all">{chunk.file_path}</div>
+        <div className="break-all font-medium">{chunk.file_path}</div>
 
-        <div className="mt-1 flex gap-4 text-xs text-muted-foreground">
-          <span>{chunk.language}</span>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <span className="rounded-full bg-muted px-3 py-1 text-xs">
+            {chunk.language}
+          </span>
 
-          <span>
-            Lines {chunk.start_line} - {chunk.end_line}
+          <span className="rounded-full bg-muted px-3 py-1 text-xs">
+            Lines {chunk.start_line}-{chunk.end_line}
           </span>
         </div>
       </div>
 
-      <pre
-        className="
-          overflow-x-auto
-          p-6
-          text-sm
-        "
-      >
-        <code>{chunk.content}</code>
-      </pre>
+      <div className="max-h-212.5 overflow-auto">
+        <pre
+          className="
+            p-6
+            font-mono
+            text-sm
+            leading-6
+          "
+        >
+          <code>{chunk.content}</code>
+        </pre>
+      </div>
     </div>
   );
 }

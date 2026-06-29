@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronRight, ChevronDown, Folder, FileCode } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  FileCode,
+  FileJson,
+  FileType,
+  FileText,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { FileNode } from "@/types/repository";
@@ -15,6 +23,22 @@ interface Props {
 
 export function TreeNode({ node, onSelect, selectedFile }: Props) {
   const [open, setOpen] = useState(false);
+
+  function getFileIcon(filename: string) {
+    if (filename.endsWith(".ts") || filename.endsWith(".tsx")) {
+      return <FileType className="h-4 w-4" />;
+    }
+
+    if (filename.endsWith(".py")) {
+      return <FileCode className="h-4 w-4" />;
+    }
+
+    if (filename.endsWith(".json")) {
+      return <FileJson className="h-4 w-4" />;
+    }
+
+    return <FileText className="h-4 w-4" />;
+  }
 
   if (node.type === "file") {
     const active = node.file?.path === selectedFile;
@@ -33,10 +57,14 @@ export function TreeNode({ node, onSelect, selectedFile }: Props) {
           text-left
           text-sm
           transition-colors
-          ${active ? "bg-muted font-medium" : "hover:bg-muted/30"}
+          ${
+            active
+              ? "border-l-2 border-primary bg-muted font-medium"
+              : "hover:bg-muted/30"
+          }
         `}
       >
-        <FileCode className="h-4 w-4 text-muted-foreground" />
+        <div className="text-muted-foreground">{getFileIcon(node.name)}</div>
 
         <span className="truncate">{node.name}</span>
       </button>

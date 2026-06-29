@@ -9,29 +9,45 @@ export function ArchitectureResult({ result }: Props) {
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-border/50 bg-card/40 p-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold">Summary</h2>
+        <div className="mb-5 flex items-center justify-between">
+          <h2 className="font-semibold">Architecture Summary</h2>
 
           <Badge>{Math.round(result.confidence * 100)}%</Badge>
+        </div>
+
+        <div className="mb-5 h-2 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-foreground transition-all"
+            style={{
+              width: `${Math.round(result.confidence * 100)}%`,
+            }}
+          />
         </div>
 
         <p className="leading-7 text-muted-foreground">{result.summary}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Section title="Relevant Files" items={result.relevant_files} />
+        <CardSection
+          title="Relevant Files"
+          items={result.relevant_files}
+          monospace
+        />
 
-        <Section title="Relevant Symbols" items={result.relevant_symbols} />
+        <CardSection title="Relevant Symbols" items={result.relevant_symbols} />
       </div>
 
-      <Section title="Execution Flow" items={result.execution_steps} />
+      <ExecutionTimeline steps={result.execution_steps} />
 
-      <Section title="Modification Points" items={result.modification_points} />
+      <CardSection
+        title="Modification Points"
+        items={result.modification_points}
+      />
 
-      <Section title="Engineering Notes" items={result.engineering_notes} />
+      <CardSection title="Engineering Notes" items={result.engineering_notes} />
 
       <div className="rounded-3xl border border-border/50 bg-card/40 p-8">
-        <h2 className="mb-4 font-semibold">Reasoning</h2>
+        <h2 className="mb-4 font-semibold">Engineering Reasoning</h2>
 
         <p className="leading-7 text-muted-foreground">{result.reasoning}</p>
       </div>
@@ -39,27 +55,80 @@ export function ArchitectureResult({ result }: Props) {
   );
 }
 
-function Section({ title, items }: { title: string; items: string[] }) {
+function CardSection({
+  title,
+  items,
+  monospace = false,
+}: {
+  title: string;
+  items: string[];
+  monospace?: boolean;
+}) {
   return (
     <div className="rounded-3xl border border-border/50 bg-card/40 p-6">
       <h2 className="mb-4 font-semibold">{title}</h2>
 
-      <ul className="space-y-3">
+      <div className="space-y-3">
         {items.map((item) => (
-          <li
+          <div
             key={item}
-            className="
+            className={`
               rounded-xl
               bg-muted/20
-              px-3
-              py-2
+              px-4
+              py-3
               text-sm
-            "
+              ${monospace ? "font-mono" : ""}
+            `}
           >
             {item}
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
+    </div>
+  );
+}
+
+function ExecutionTimeline({ steps }: { steps: string[] }) {
+  return (
+    <div className="rounded-3xl border border-border/50 bg-card/40 p-6">
+      <h2 className="mb-6 font-semibold">Execution Flow</h2>
+
+      <div className="space-y-4">
+        {steps.map((step, index) => (
+          <div key={step} className="flex gap-4">
+            <div
+              className="
+                flex
+                h-8
+                w-8
+                shrink-0
+                items-center
+                justify-center
+                rounded-full
+                bg-muted
+                text-sm
+                font-medium
+              "
+            >
+              {index + 1}
+            </div>
+
+            <div
+              className="
+                rounded-xl
+                bg-muted/20
+                px-4
+                py-3
+                text-sm
+                flex-1
+              "
+            >
+              {step}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

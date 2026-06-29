@@ -1,6 +1,6 @@
 import { FileNode } from "@/types/repository";
 
-import { RepositoryStat } from "./repository-stats";
+import { RepositoryStat } from "./repository-stat";
 
 interface Props {
   files: FileNode[];
@@ -34,10 +34,29 @@ export function RepositoryDashboard({ files }: Props) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <RepositoryStat label="Files" value={files.length} />
-        <RepositoryStat label="Functions" value={totalFunctions} />
-        <RepositoryStat label="Classes" value={totalClasses} />
-        <RepositoryStat label="Imports" value={totalImports} />
+        <RepositoryStat
+          label="Files"
+          value={files.length}
+          description="Indexed repository files"
+        />
+
+        <RepositoryStat
+          label="Functions"
+          value={totalFunctions}
+          description="Detected functions"
+        />
+
+        <RepositoryStat
+          label="Classes"
+          value={totalClasses}
+          description="Detected classes"
+        />
+
+        <RepositoryStat
+          label="Imports"
+          value={totalImports}
+          description="Dependency references"
+        />
       </div>
 
       <div
@@ -59,17 +78,36 @@ export function RepositoryDashboard({ files }: Props) {
                 flex
                 items-center
                 justify-between
+                gap-4
                 rounded-xl
                 bg-muted/20
                 px-4
                 py-3
               "
             >
-              <span className="font-mono text-sm">{file.path}</span>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">
+                  {file.path.split(/[\\/]/).pop()}
+                </div>
 
-              <span className="text-sm text-muted-foreground">
+                <div className="truncate text-xs text-muted-foreground">
+                  {file.path}
+                </div>
+              </div>
+
+              <div
+                className="
+                  shrink-0
+                  rounded-full
+                  bg-background
+                  px-3
+                  py-1
+                  text-xs
+                  text-muted-foreground
+                "
+              >
                 {file.functions.length + file.classes.length} symbols
-              </span>
+              </div>
             </div>
           ))}
         </div>
