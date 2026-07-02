@@ -1,3 +1,6 @@
+from pathlib import Path
+from fastapi import HTTPException
+
 from fastapi import APIRouter, Depends
 
 from app.code_ingestion.ingestion_service import (
@@ -81,3 +84,53 @@ async def analyze_repository(
     )
 
     return result.model_dump()
+
+
+@router.get("/file")
+async def get_file_content(
+    repo_path: str,
+    file_path: str,
+) -> dict:
+    
+    
+    try:
+        base_dir = Path(repo_path).resolve()
+        target_file = (base_dir / file_path).resolve()
+        
+        if not str(target_file).startswith(str(base_dir)):
+            raise HTTPException(status_code=400, detail="Invalid file path (path traversal detected)")
+            
+        if not target_file.is_file():
+            raise HTTPException(status_code=404, detail="File not found")
+            
+        content = target_file.read_text(encoding="utf-8")
+        size_bytes = target_file.stat().st_size
+        line_count = len(content.splitlines())
+        
+        ext = target_file.suffix.lower()
+        language_map = {
+            ".py": "python",
+            ".ts": "typescript",
+            ".tsx": "typescript",
+            ".js": "javascript",
+            ".jsx": "javascript",
+            ".json": "json",
+            ".md": "markdown",
+            ".html": "html",
+            ".css": "css",
+            ".rs": "rust",
+            ".go": "go",
+        }
+        language = language_map.get(ext, "plaintext")
+        
+        return {
+            "path": file_path,
+            "content": content,
+            "language": language,
+            "size_bytes": size_bytes,
+            "line_count": line_count
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

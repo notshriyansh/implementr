@@ -216,6 +216,7 @@ context_expander = (
 repository_analyzer = (
     RepositoryAnalyzer(
         graph=repository_graph,
+        scanner=RepositoryScanner(),
     )
 )
 
