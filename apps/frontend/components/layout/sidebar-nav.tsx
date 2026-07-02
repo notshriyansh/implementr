@@ -10,8 +10,8 @@ export function SidebarNav() {
 
   return (
     <aside className="w-64 border-r bg-background">
-      <div className="h-16 border-b flex items-center px-6">
-        <span className="font-semibold tracking-tight text-lg">IMPLEMENTR</span>
+      <div className="h-13 border-b flex items-center px-6">
+        <span className="font-semibold tracking-tight text-sm">IMPLEMENTR</span>
       </div>
 
       <nav className="flex flex-col gap-1 p-4">

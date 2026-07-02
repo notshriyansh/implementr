@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function LoadingSkeleton() {
   return (
-    <div className="rounded-3xl border overflow-hidden">
+    <div className="rounded-xl border overflow-hidden">
       {Array.from({ length: 6 }).map((_, index) => (
         <div key={index} className="grid grid-cols-12 gap-4 px-6 py-6 border-b">
           <div className="col-span-7 space-y-3">

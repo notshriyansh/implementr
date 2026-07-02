@@ -26,7 +26,7 @@ export function TopNavigation() {
             key={item.href}
             href={item.href}
             className={cn(
-              "group relative text-xs uppercase tracking-[0.18em] transition-colors duration-300",
+              "group relative text-xs uppercase tracking-[0.12em] font-medium transition-colors duration-300",
               active
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",

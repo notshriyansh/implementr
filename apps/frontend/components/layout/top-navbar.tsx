@@ -12,8 +12,8 @@ export function TopNavbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-4 lg:gap-8 px-4 sm:px-6 lg:px-8">
-        <div className="shrink-0 text-lg font-bold tracking-tight">
+      <div className="mx-auto flex h-13 max-w-360 items-center gap-4 lg:gap-8 px-4 sm:px-6 lg:px-8">
+        <div className="shrink-0 text-sm font-semibold tracking-tight">
           IMPLEMENTR
         </div>
 
@@ -26,14 +26,14 @@ export function TopNavbar() {
             onClick={() => setOpen(true)}
             className="
               flex
-              h-11
+              h-9
               w-full
               max-w-xl
               items-center
               gap-3
-              rounded-2xl
+              rounded-xl
               border
-              border-border/60
+              border-border
               bg-background
               px-4
               "
@@ -55,11 +55,11 @@ export function TopNavbar() {
             hidden
             md:flex
             shrink-0
-            rounded-full
+            rounded-lg
             px-5
             "
         >
-          Launch Workspace
+          New Session
         </Button>
       </div>
     </header>
