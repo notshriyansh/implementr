@@ -17,30 +17,32 @@ export function HybridResult({ result }: Props) {
     >
       <div
         className="
-          rounded-3xl
-          bg-card/40
+          rounded-xl
+          bg-card
           border
-          border-border/50
+          border-border
           p-8
           "
       >
-        <h2 className="font-semibold mb-3">Implementation Summary</h2>
-
-        <p className="text-muted-foreground">{result.summary}</p>
-      </div>
-
-      <div
-        className="
-          rounded-3xl
-          bg-muted/20
-          p-6
-          "
-      >
-        <div className="flex items-center justify-between">
-          <span className="font-medium">Confidence</span>
-
-          <Badge>{Math.round(result.confidence * 100)}%</Badge>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="font-semibold text-lg">Implementation Summary</h2>
+          <Badge variant="outline" className="font-mono bg-background">
+            {Math.round(result.confidence * 100)}% Confident
+          </Badge>
         </div>
+
+        <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-muted">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${Math.round(result.confidence * 100)}%` }}
+            transition={{ duration: 1, delay: 0.2 }}
+            className="h-full rounded-full bg-foreground"
+          />
+        </div>
+
+        <p className="text-muted-foreground leading-relaxed">
+          {result.summary}
+        </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -49,38 +51,42 @@ export function HybridResult({ result }: Props) {
         <Section title="Relevant Symbols" items={result.relevant_symbols} />
       </div>
 
-      <div className="border rounded-xl p-6">
-        <h2 className="font-semibold mb-4">Implementation Steps</h2>
+      <div className="rounded-xl border border-border bg-card p-8">
+        <h2 className="font-semibold mb-6">Implementation Plan</h2>
 
-        <ol className="space-y-3">
+        <div className="space-y-4">
           {result.implementation_steps.map((step, index) => (
-            <li key={index} className="flex gap-3">
-              <span className="font-mono text-muted-foreground">
-                {index + 1}.
-              </span>
-
-              <span>{step}</span>
-            </li>
+            <div key={index} className="flex gap-4">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold text-muted-foreground">
+                {index + 1}
+              </div>
+              <div className="flex-1 rounded-xl bg-muted/30 px-5 py-4 text-sm leading-relaxed">
+                {step}
+              </div>
+            </div>
           ))}
-        </ol>
+        </div>
       </div>
 
-      <div className="border rounded-xl p-6">
-        <h2 className="font-semibold mb-4">Risks</h2>
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="rounded-xl border border-border bg-card p-8">
+          <h2 className="font-semibold mb-5 text-amber-500/90">Identified Risks</h2>
+          <ul className="space-y-3">
+            {result.risks.map((risk) => (
+              <li key={risk} className="flex gap-3 text-sm text-muted-foreground leading-relaxed">
+                <span className="text-amber-500/50 mt-1">•</span>
+                <span>{risk}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-        <ul className="space-y-2">
-          {result.risks.map((risk) => (
-            <li key={risk} className="text-muted-foreground">
-              • {risk}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="border rounded-xl p-6">
-        <h2 className="font-semibold mb-4">Engineering Reasoning</h2>
-
-        <p className="leading-7 text-muted-foreground">{result.reasoning}</p>
+        <div className="rounded-xl border border-border bg-card p-8">
+          <h2 className="font-semibold mb-5">Engineering Reasoning</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {result.reasoning}
+          </p>
+        </div>
       </div>
     </motion.div>
   );
@@ -88,7 +94,7 @@ export function HybridResult({ result }: Props) {
 
 function Section({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="rounded-3xl border border-border/50 bg-card/40 backdrop-blur-sm p-6">
+    <div className="rounded-xl border border-border bg-card p-6">
       <h2 className="mb-4 font-semibold">{title}</h2>
 
       <ul className="space-y-2">

@@ -8,6 +8,6 @@ export function useRepositorySearch(query: string) {
   return useQuery({
     queryKey: ["repository-search", query],
     queryFn: () => searchRepository(query),
-    enabled: query.length > 1,
+    enabled: query.trim().length > 1,
   });
 }

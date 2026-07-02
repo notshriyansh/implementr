@@ -12,17 +12,18 @@ export function ContextPanel() {
   return (
     <div
       className="
-        rounded-3xl
+        rounded-xl
         border
-        border-border/50
-        bg-card/40
-        p-6
-        backdrop-blur-sm
+        border-border
+        bg-card
+        p-5
       "
     >
-      <h3 className="mb-5 font-semibold">Active Context</h3>
+      <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Active Context
+      </h3>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <ContextItem
           icon={<FileText className="h-4 w-4" />}
           label="Paper"
@@ -61,7 +62,7 @@ function ContextItem({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl bg-muted/20 p-4">
+    <div className="rounded-lg bg-muted/50 p-4">
       <div className="flex items-center gap-2 text-muted-foreground text-sm">
         {icon}
         {label}

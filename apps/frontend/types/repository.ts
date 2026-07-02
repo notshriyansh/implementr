@@ -54,3 +54,11 @@ export interface HybridAnalysisResponse {
   confidence: number;
   reasoning: string;
 }
+
+export interface FileContent {
+  path: string;
+  content: string;
+  language: string;
+  size_bytes: number;
+  line_count: number;
+}

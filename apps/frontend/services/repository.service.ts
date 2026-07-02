@@ -27,3 +27,11 @@ export async function searchRepository(query: string) {
 
   return response.data;
 }
+
+export async function fetchFileContent(repoPath: string, filePath: string) {
+  const response = await apiClient.get("/repository/file", {
+    params: { repo_path: repoPath, file_path: filePath },
+  });
+
+  return response.data;
+}

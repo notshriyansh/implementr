@@ -30,7 +30,7 @@ export function HybridQuery({ onAnalyze, loading }: Props) {
   }
 
   return (
-    <div className="rounded-3xl border border-border/50 bg-card/50 backdrop-blur-sm p-8">
+    <div className="rounded-xl border border-border bg-card p-8">
       <h2 className="font-semibold mb-4">Ask an Implementation Question</h2>
 
       <div className="flex gap-3">
