@@ -1,18 +1,17 @@
 export function RepositoryHeader() {
   return (
-    <div className="mb-10">
-      <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
-        02 · REPOSITORY
+    <div className="flex items-center gap-4">
+      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-xs font-semibold">
+        02
       </div>
-
-      <h1 className="text-5xl font-semibold tracking-tight">
-        Repository Explorer
-      </h1>
-
-      <p className="mt-4 text-muted-foreground max-w-2xl">
-        Analyze repository structure, search code, inspect symbols, and
-        understand architecture.
-      </p>
+      <div>
+        <h1 className="text-sm font-medium leading-none">
+          Repository Explorer
+        </h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          Analyze structure, search code, inspect symbols
+        </p>
+      </div>
     </div>
   );
 }

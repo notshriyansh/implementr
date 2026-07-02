@@ -14,20 +14,21 @@ export function RepositoryIngestForm({ onAnalyze, loading }: Props) {
   const [path, setPath] = useState("");
 
   return (
-    <div className="rounded-3xl border border-border/50 bg-card/50 backdrop-blur-sm p-6">
-      <h2 className="font-semibold mb-4">Analyze Repository</h2>
+    <div className="flex items-center gap-2">
+      <Input
+        value={path}
+        onChange={(e) => setPath(e.target.value)}
+        placeholder="C:/Projects/implementr"
+        className="h-9 w-75 text-sm"
+      />
 
-      <div className="flex gap-3">
-        <Input
-          value={path}
-          onChange={(e) => setPath(e.target.value)}
-          placeholder="C:/Projects/implementr"
-        />
-
-        <Button onClick={() => onAnalyze(path)} disabled={loading || !path}>
-          Analyze
-        </Button>
-      </div>
+      <Button
+        size="sm"
+        onClick={() => onAnalyze(path)}
+        disabled={loading || !path}
+      >
+        Analyze
+      </Button>
     </div>
   );
 }

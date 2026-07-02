@@ -7,7 +7,7 @@ interface Props {
 
 export function RepositoryFileList({ files, onSelect }: Props) {
   return (
-    <div className="rounded-3xl overflow-hidden bg-card/40 backdrop-blur-sm border border-border/50">
+    <div className="rounded-xl overflow-hidden bg-card border border-border">
       <div className="px-4 py-3 border-b font-medium">Files</div>
 
       <div className="max-h-162.5 overflow-y-auto">

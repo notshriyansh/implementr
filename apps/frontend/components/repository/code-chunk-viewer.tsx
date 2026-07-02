@@ -19,17 +19,15 @@ export function CodeChunkViewer({ chunk }: Props) {
   return (
     <div
       className="
-        overflow-hidden
-        rounded-3xl
-        border
-        border-border/50
-        bg-card/40
+        h-full
+        w-full
+        bg-background
       "
     >
       <div
         className="
           border-b
-          border-border/50
+          border-border
           px-5
           py-4
         "

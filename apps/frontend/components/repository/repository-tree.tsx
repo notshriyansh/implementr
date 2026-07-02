@@ -31,12 +31,9 @@ export function RepositoryTree({ files, onSelect, selectedFile }: Props) {
   return (
     <div
       className="
-        rounded-3xl
-        border
-        border-border/50
-        bg-card/40
-        backdrop-blur-sm
-        overflow-hidden
+        h-full
+        w-full
+        bg-card
       "
     >
       <div className="flex items-center justify-between border-b px-4 py-3">

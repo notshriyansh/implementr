@@ -9,10 +9,10 @@ export function SymbolList({ title, symbols }: Props) {
   return (
     <div
       className="
-        rounded-2xl
+        rounded-lg
         border
-        border-border/50
-        bg-card/30
+        border-border
+        bg-card
         p-5
       "
     >

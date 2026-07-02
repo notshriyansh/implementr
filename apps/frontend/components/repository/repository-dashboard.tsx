@@ -32,8 +32,8 @@ export function RepositoryDashboard({ files }: Props) {
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="space-y-6 p-6">
+      <div className="grid gap-4 grid-cols-1">
         <RepositoryStat
           label="Files"
           value={files.length}
@@ -61,10 +61,10 @@ export function RepositoryDashboard({ files }: Props) {
 
       <div
         className="
-          rounded-3xl
+          rounded-xl
           border
-          border-border/50
-          bg-card/40
+          border-border
+          bg-card
           p-6
         "
       >

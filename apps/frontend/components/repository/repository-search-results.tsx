@@ -9,11 +9,9 @@ export function RepositorySearchResults({ results, onSelect }: Props) {
   return (
     <div
       className="
-        overflow-hidden
-        rounded-3xl
-        border
-        border-border/50
-        bg-card/40
+        h-full
+        w-full
+        bg-card
       "
     >
       <div
@@ -22,7 +20,7 @@ export function RepositorySearchResults({ results, onSelect }: Props) {
           items-center
           justify-between
           border-b
-          border-border/50
+          border-border
           px-5
           py-4
         "

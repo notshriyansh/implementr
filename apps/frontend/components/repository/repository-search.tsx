@@ -22,7 +22,7 @@ export function RepositorySearch({ onSearch }: Props) {
         onSearch(value);
       }}
       placeholder="Search repository..."
-      className="h-11"
+      className="h-9 w-62.5 text-sm"
     />
   );
 }

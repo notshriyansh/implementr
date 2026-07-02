@@ -18,10 +18,10 @@ function MetricCard({ label, value }: { label: string; value: number }) {
   return (
     <div
       className="
-        rounded-2xl
+        rounded-lg
         border
-        border-border/50
-        bg-card/40
+        border-border
+        bg-card
         p-4
       "
     >

@@ -8,10 +8,10 @@ export function RepositoryStat({ label, value, description }: Props) {
   return (
     <div
       className="
-        rounded-3xl
+        rounded-xl
         border
-        border-border/50
-        bg-card/40
+        border-border
+        bg-card
         p-6
       "
     >
