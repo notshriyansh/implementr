@@ -7,6 +7,10 @@ from app.concepts.concept_service import (
     ConceptService,
 )
 
+from app.core.dependencies import (
+    concept_index,
+)
+
 from app.code_retrieval.symbol_retrieval_service import (
     SymbolRetrievalService,
 )
@@ -51,3 +55,17 @@ async def debug_concepts(
             symbols=symbols,
         )
     )
+
+@router.get("/index")
+async def concept_index_debug():
+
+    concepts = (
+        concept_index.all()
+    )
+
+    return {
+        "total_concepts": len(
+            concepts
+        ),
+        "concepts": concepts,
+    }

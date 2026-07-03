@@ -19,6 +19,12 @@ from app.code_retrieval.symbol_retrieval_service import (
 from app.schemas.code_symbol import (
     CodeSymbol,
 )
+from app.concepts.concept_service import (
+    ConceptService,
+)
+from app.concepts.concept_index import (
+    ConceptIndex,
+)
 
 
 class CodeIngestionService:
@@ -35,6 +41,12 @@ class CodeIngestionService:
         symbol_retrieval_service: (
             SymbolRetrievalService
         ),
+        concept_service: (
+            ConceptService
+        ),
+        concept_index: (
+            ConceptIndex
+        ),
     ) -> None:
         self.scanner = scanner
 
@@ -50,6 +62,14 @@ class CodeIngestionService:
 
         self.symbol_retrieval_service = (
             symbol_retrieval_service
+        )
+
+        self.concept_service = (
+            concept_service
+        )
+
+        self.concept_index = (
+            concept_index
         )
 
     async def ingest_repository(
@@ -87,6 +107,20 @@ class CodeIngestionService:
             all_symbols.extend(
                 symbols
             )
+
+            for symbol in symbols:
+
+                concepts = (
+                    self.concept_service
+                    .symbol_to_concepts(
+                        symbol
+                    )
+                )
+
+                for concept in concepts:
+                    self.concept_index.add(
+                        concept
+                    )
 
         await (
             self.retrieval_service

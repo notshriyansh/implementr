@@ -16,6 +16,10 @@ from app.schemas.code_symbol import (
     CodeSymbol,
 )
 
+from app.concepts.constants import (
+    IGNORED_CONCEPTS,
+)
+
 
 class ConceptService:
     def __init__(
@@ -41,8 +45,10 @@ class ConceptService:
         concepts = []
 
         for part in parts:
-
-            if len(part) < 3:
+            if (
+                len(part) < 3
+                or part.lower() in IGNORED_CONCEPTS
+            ):
                 continue
 
             concepts.append(

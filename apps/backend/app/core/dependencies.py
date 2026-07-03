@@ -150,6 +150,10 @@ from app.concepts.concept_service import (
     ConceptService,
 )
 
+from app.concepts.concept_index import (
+    ConceptIndex,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -273,6 +277,10 @@ concept_service = (
             concept_matcher
         ),
     )
+)
+
+concept_index = (
+    ConceptIndex()
 )
 
 hybrid_agent = (
@@ -490,6 +498,12 @@ def get_code_ingestion_service(
         ),
         symbol_retrieval_service=(
             symbol_retrieval_service
+        ),
+        concept_service=(
+            concept_service
+        ),
+        concept_index=(
+            concept_index
         ),
     )
 
