@@ -332,6 +332,10 @@ def get_ingestion_service(
     )
 
 
+def get_concept_service(
+) -> ConceptService:
+    return concept_service
+
 def get_rag_chat_service(
 ) -> RAGChatService:
     return RAGChatService(

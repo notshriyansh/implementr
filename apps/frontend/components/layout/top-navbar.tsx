@@ -45,7 +45,7 @@ export function TopNavbar() {
             </span>
 
             <kbd className="ml-auto shrink-0 rounded-md border bg-muted px-2 py-1 text-xs">
-              ⌘K
+              ⌘ K
             </kbd>
           </button>
         </div>

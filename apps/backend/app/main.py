@@ -39,6 +39,9 @@ from app.api.routes.symbols import (
 from app.api.routes.architecture import (
     router as architecture_router,
 )
+from app.api.routes.concepts import (
+    router as concepts_router,
+)
 
 setup_logging()
 
@@ -118,6 +121,11 @@ app.include_router(
 app.include_router(
     architecture_router,
     prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    concepts_router,
+    prefix="/api/v1",
 )
 
 
