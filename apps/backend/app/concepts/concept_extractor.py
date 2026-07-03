@@ -1,7 +1,11 @@
 import re
 
-from app.concepts.concept import (
+from app.schemas.concept import (
     Concept,
+)
+
+from app.concepts.concept_keywords import (
+    CONCEPT_KEYWORDS,
 )
 
 
@@ -12,25 +16,26 @@ class ConceptExtractor:
         source: str,
     ) -> list[Concept]:
 
-        matches = re.findall(
-            r"\b[A-Z][A-Za-z0-9_]+\b",
-            text,
-        )
+        text = text.lower()
 
-        concepts = {}
+        concepts: dict[str, int] = {}
 
-        for match in matches:
+        for keyword in CONCEPT_KEYWORDS:
 
-            if match not in concepts:
-                concepts[match] = 0
+            matches = re.findall(
+                rf"\b{re.escape(keyword)}\w*\b",
+                text,
+            )
 
-            concepts[match] += 1
+            if matches:
+                concepts[keyword] = len(
+                    matches
+                )
 
         return [
             Concept(
                 name=name,
                 source=source,
-                description="",
                 occurrences=count,
             )
             for name, count in concepts.items()

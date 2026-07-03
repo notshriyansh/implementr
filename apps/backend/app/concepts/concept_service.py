@@ -1,9 +1,19 @@
+import re
+
+from app.schemas.concept import (
+    Concept,
+)
+
 from app.concepts.concept_extractor import (
     ConceptExtractor,
 )
 
 from app.concepts.concept_matcher import (
     ConceptMatcher,
+)
+
+from app.schemas.code_symbol import (
+    CodeSymbol,
 )
 
 
@@ -18,11 +28,43 @@ class ConceptService:
 
         self.matcher = matcher
 
+    def symbol_to_concepts(
+        self,
+        symbol: CodeSymbol,
+    ) -> list[Concept]:
+
+        parts = re.findall(
+            r"[A-Z]?[a-z]+",
+            symbol.symbol_name,
+        )
+
+        concepts = []
+
+        for part in parts:
+
+            if len(part) < 3:
+                continue
+
+            concepts.append(
+                Concept(
+                    name=part.lower(),
+                    source="repository",
+                    file_path=(
+                        symbol.file_path
+                    ),
+                    symbol_name=(
+                        symbol.symbol_name
+                    ),
+                )
+            )
+
+        return concepts
+
     def build_concept_map(
         self,
         paper_text: str,
-        code_text: str,
-    ) -> list[dict]:
+        symbols: list[CodeSymbol],
+    ) -> dict:
 
         paper_concepts = (
             self.extractor.extract(
@@ -31,14 +73,28 @@ class ConceptService:
             )
         )
 
-        repo_concepts = (
-            self.extractor.extract(
-                code_text,
-                source="repository",
+        repository_concepts = []
+
+        for symbol in symbols:
+
+            repository_concepts.extend(
+                self.symbol_to_concepts(
+                    symbol
+                )
+            )
+
+        matches = (
+            self.matcher.match(
+                paper_concepts,
+                repository_concepts,
             )
         )
 
-        return self.matcher.match(
-            paper_concepts,
-            repo_concepts,
-        )
+        return {
+            "paper_concepts":
+                paper_concepts,
+            "repository_concepts":
+                repository_concepts,
+            "matches":
+                matches,
+        }
