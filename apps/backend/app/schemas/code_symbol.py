@@ -9,3 +9,4 @@ class CodeSymbol(BaseModel):
     code: str
     start_line: int
     end_line: int
+    importance: int = 1

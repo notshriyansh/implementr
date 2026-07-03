@@ -11,7 +11,7 @@ class SymbolVectorStore:
         self,
         embedding_dimension: int = 384,
     ) -> None:
-        self.index = faiss.IndexFlatL2(
+        self.index = faiss.IndexFlatIP(
             embedding_dimension
         )
 
@@ -24,10 +24,17 @@ class SymbolVectorStore:
         embeddings: np.ndarray,
         symbols: list[CodeSymbol],
     ) -> None:
+
+        embeddings = embeddings.astype(
+            "float32"
+        )
+
+        faiss.normalize_L2(
+            embeddings
+        )
+
         self.index.add(
-            embeddings.astype(
-                "float32"
-            )
+            embeddings
         )
 
         self.symbols.extend(
@@ -39,24 +46,62 @@ class SymbolVectorStore:
         query_embedding: np.ndarray,
         k: int = 5,
     ) -> list[CodeSymbol]:
-        _, indices = self.index.search(
+
+        query_embedding = (
             query_embedding.astype(
                 "float32"
-            ),
-            k,
+            )
         )
 
-        results = []
+        faiss.normalize_L2(
+            query_embedding
+        )
 
-        for idx in indices[0]:
+        scores, indices = (
+            self.index.search(
+                query_embedding,
+                k,
+            )
+        )
+
+        scored_results: list[
+            tuple[float, CodeSymbol]
+        ] = []
+
+        for position, idx in enumerate(
+            indices[0]
+        ):
+
             if (
-                idx != -1
-                and idx < len(
+                idx == -1
+                or idx >= len(
                     self.symbols
                 )
             ):
-                results.append(
-                    self.symbols[idx]
-                )
+                continue
 
-        return results
+            symbol = self.symbols[idx]
+
+            final_score = (
+                float(
+                    scores[0][position]
+                )
+                * symbol.importance
+            )
+
+            scored_results.append(
+                (
+                    final_score,
+                    symbol,
+                )
+            )
+
+        scored_results.sort(
+            key=lambda x: x[0],
+            reverse=True,
+        )
+
+        return [
+            symbol
+            for _, symbol in scored_results
+        ]

@@ -1,9 +1,15 @@
 import ast
 import uuid
+
 from pathlib import Path
 
 from app.schemas.code_symbol import (
     CodeSymbol,
+)
+
+from app.code_ingestion.symbol_constants import (
+    STOP_SYMBOLS,
+    HIGH_VALUE_SUFFIXES,
 )
 
 
@@ -34,7 +40,8 @@ class SymbolExtractor:
         symbols = []
 
         for node in ast.walk(tree):
-            if isinstance(
+
+            if not isinstance(
                 node,
                 (
                     ast.FunctionDef,
@@ -42,39 +49,58 @@ class SymbolExtractor:
                     ast.ClassDef,
                 ),
             ):
-                start = node.lineno
+                continue
 
-                end = getattr(
+            if node.name in STOP_SYMBOLS:
+                continue
+
+            start = node.lineno
+
+            end = getattr(
+                node,
+                "end_lineno",
+                start,
+            )
+
+            code = "\n".join(
+                lines[start - 1 : end]
+            )
+
+            symbol_type = (
+                "class"
+                if isinstance(
                     node,
-                    "end_lineno",
-                    start,
+                    ast.ClassDef,
                 )
+                else "function"
+            )
 
-                code = "\n".join(
-                    lines[start - 1 : end]
-                )
+            importance = 1
 
-                symbol_type = (
-                    "class"
-                    if isinstance(
-                        node,
-                        ast.ClassDef,
-                    )
-                    else "function"
-                )
+            if symbol_type == "class":
+                importance += 2
 
-                symbols.append(
-                    CodeSymbol(
-                        symbol_id=str(
-                            uuid.uuid4()
-                        ),
-                        file_path=str(path),
-                        symbol_name=node.name,
-                        symbol_type=symbol_type,
-                        code=code,
-                        start_line=start,
-                        end_line=end,
-                    )
+            if any(
+                node.name.endswith(
+                    suffix
                 )
+                for suffix in HIGH_VALUE_SUFFIXES
+            ):
+                importance += 3
+
+            symbols.append(
+                CodeSymbol(
+                    symbol_id=str(
+                        uuid.uuid4()
+                    ),
+                    file_path=str(path),
+                    symbol_name=node.name,
+                    symbol_type=symbol_type,
+                    code=code,
+                    start_line=start,
+                    end_line=end,
+                    importance=importance,
+                )
+            )
 
         return symbols

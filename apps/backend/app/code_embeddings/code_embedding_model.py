@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -17,22 +18,59 @@ class CodeEmbeddingModel:
             model_name
         )
 
+    def symbol_to_text(
+        self,
+        symbol: Any,
+    ) -> str:
+        return (
+            f"Symbol Name: {symbol.symbol_name}\n"
+            f"Symbol Type: {symbol.symbol_type}\n"
+            f"File: {Path(symbol.file_path).stem}"
+        )
+
     def embed_chunks(
         self,
         chunks: list[Any],
     ) -> np.ndarray:
-        texts = [
-            chunk.content
+
+        texts: list[str] = []
+
+        for chunk in chunks:
+
             if hasattr(
                 chunk,
+                "symbol_name",
+            ):
+                texts.append(
+                    self.symbol_to_text(
+                        chunk
+                    )
+                )
+
+            elif hasattr(
+                chunk,
                 "content",
-            )
-            else chunk.code
-            for chunk in chunks
-        ]
+            ):
+                texts.append(
+                    chunk.content
+                )
+
+            elif hasattr(
+                chunk,
+                "code",
+            ):
+                texts.append(
+                    chunk.code
+                )
+
+            else:
+                texts.append(
+                    str(chunk)
+                )
 
         embeddings = self.model.encode(
-            texts
+            texts,
+            normalize_embeddings=True,
         )
 
         return np.array(
@@ -45,7 +83,8 @@ class CodeEmbeddingModel:
         query: str,
     ) -> np.ndarray:
         embedding = self.model.encode(
-            [query]
+            [query],
+            normalize_embeddings=True,
         )
 
         return np.array(
