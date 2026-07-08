@@ -29,6 +29,7 @@ class RepositoryAnalyzer:
         self,
         repo_path: str,
     ) -> RepositoryMap:
+
         root = Path(repo_path)
 
         files = []
@@ -42,6 +43,7 @@ class RepositoryAnalyzer:
         ]
 
         for file in files_to_analyze:
+
             if any(
                 ignored in file.parts
                 for ignored in [
@@ -59,9 +61,22 @@ class RepositoryAnalyzer:
 
                 tree = ast.parse(source)
 
+                parent_map = {}
+
+                for parent in ast.walk(tree):
+                    for child in ast.iter_child_nodes(
+                        parent
+                    ):
+                        parent_map[
+                            child
+                        ] = parent
+
                 imports = []
+
                 functions = []
+
                 classes = []
+
                 relative_path = str(
                     file.relative_to(root)
                 )
@@ -94,25 +109,50 @@ class RepositoryAnalyzer:
                         ),
                     ):
 
+                        parent = (
+                            parent_map.get(
+                                node
+                            )
+                        )
+
+                        if isinstance(
+                            parent,
+                            ast.ClassDef,
+                        ):
+                            qualified_name = (
+                                f"{parent.name}."
+                                f"{node.name}"
+                            )
+                        else:
+                            qualified_name = (
+                                node.name
+                            )
+
                         functions.append(
-                            node.name
+                            qualified_name
                         )
 
                         self.graph.add_symbol(
-                            symbol_name=node.name,
-                            file_path=str(
-                                file.relative_to(root)
+                            symbol_name=(
+                                qualified_name
+                            ),
+                            file_path=(
+                                relative_path
                             ),
                         )
 
-                        for child in ast.walk(node):
+                        for child in ast.walk(
+                            node
+                        ):
 
                             if isinstance(
                                 child,
                                 ast.Call,
                             ):
 
-                                called_name = None
+                                called_name = (
+                                    None
+                                )
 
                                 if isinstance(
                                     child.func,
@@ -131,24 +171,28 @@ class RepositoryAnalyzer:
                                     )
 
                                 if called_name:
+
                                     self.graph.add_call(
-                                        caller=node.name,
-                                        callee=called_name,
+                                        caller=(
+                                            qualified_name
+                                        ),
+                                        callee=(
+                                            called_name
+                                        ),
                                     )
 
                     elif isinstance(
                         node,
                         ast.ClassDef,
                     ):
+
                         classes.append(
                             node.name
                         )
 
                         self.graph.add_symbol(
                             symbol_name=node.name,
-                            file_path=str(
-                                file.relative_to(root)
-                            ),
+                            file_path=relative_path,
                         )
 
                 self.graph.add_file(

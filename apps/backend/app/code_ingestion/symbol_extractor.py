@@ -35,6 +35,14 @@ class SymbolExtractor:
         except Exception:
             return []
 
+        parent_map = {}
+
+        for parent in ast.walk(tree):
+            for child in ast.iter_child_nodes(
+                parent
+            ):
+                parent_map[child] = parent
+
         lines = source.splitlines()
 
         symbols = []
@@ -75,13 +83,37 @@ class SymbolExtractor:
                 else "function"
             )
 
+            if symbol_type == "function":
+
+                parent = parent_map.get(
+                    node
+                )
+
+                if isinstance(
+                    parent,
+                    ast.ClassDef,
+                ):
+                    symbol_name = (
+                        f"{parent.name}."
+                        f"{node.name}"
+                    )
+                else:
+                    symbol_name = (
+                        node.name
+                    )
+
+            else:
+                symbol_name = (
+                    node.name
+                )
+
             importance = 1
 
             if symbol_type == "class":
                 importance += 2
 
             if any(
-                node.name.endswith(
+                symbol_name.endswith(
                     suffix
                 )
                 for suffix in HIGH_VALUE_SUFFIXES
@@ -94,7 +126,7 @@ class SymbolExtractor:
                         uuid.uuid4()
                     ),
                     file_path=str(path),
-                    symbol_name=node.name,
+                    symbol_name=symbol_name,
                     symbol_type=symbol_type,
                     code=code,
                     start_line=start,
