@@ -25,6 +25,9 @@ from app.concepts.concept_service import (
 from app.concepts.concept_index import (
     ConceptIndex,
 )
+from app.code_ingestion.repository_analyzer import (
+    RepositoryAnalyzer,
+)
 
 
 class CodeIngestionService:
@@ -32,21 +35,12 @@ class CodeIngestionService:
         self,
         scanner: RepositoryScanner,
         chunker: CodeChunker,
-        retrieval_service: (
-            CodeRetrievalService
-        ),
-        symbol_extractor: (
-            SymbolExtractor
-        ),
-        symbol_retrieval_service: (
-            SymbolRetrievalService
-        ),
-        concept_service: (
-            ConceptService
-        ),
-        concept_index: (
-            ConceptIndex
-        ),
+        retrieval_service: CodeRetrievalService,
+        symbol_extractor: SymbolExtractor,
+        symbol_retrieval_service: SymbolRetrievalService,
+        concept_service: ConceptService,
+        concept_index: ConceptIndex,
+        repository_analyzer: RepositoryAnalyzer,
     ) -> None:
         self.scanner = scanner
 
@@ -72,10 +66,19 @@ class CodeIngestionService:
             concept_index
         )
 
+        self.repository_analyzer = (
+        repository_analyzer
+    )
+
     async def ingest_repository(
         self,
         repo_path: str,
     ) -> list[CodeChunk]:
+        
+        self.repository_analyzer.analyze(
+            repo_path
+        )
+
         files = self.scanner.scan(
             repo_path
         )

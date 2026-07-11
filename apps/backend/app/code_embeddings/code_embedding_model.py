@@ -68,10 +68,24 @@ class CodeEmbeddingModel:
                     str(chunk)
                 )
 
+        print("TEXT COUNT:", len(texts))
+
         embeddings = self.model.encode(
             texts,
             normalize_embeddings=True,
         )
+
+        embeddings = np.array(
+            embeddings,
+            dtype="float32",
+        )
+
+        print(
+            "EMBEDDING SHAPE:",
+            embeddings.shape,
+        )
+
+        return embeddings
 
         return np.array(
             embeddings,

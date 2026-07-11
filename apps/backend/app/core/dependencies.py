@@ -154,6 +154,7 @@ from app.concepts.concept_index import (
     ConceptIndex,
 )
 
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -426,6 +427,10 @@ def get_benchmark_runner(
     )
 
 
+def get_repository_graph(
+) -> RepositoryGraph:
+    return repository_graph
+
 def get_repository_scanner(
 ) -> RepositoryScanner:
     return RepositoryScanner()
@@ -504,6 +509,9 @@ def get_code_ingestion_service(
         ),
         concept_index=(
             concept_index
+        ),
+        repository_analyzer=(
+            repository_analyzer
         ),
     )
 

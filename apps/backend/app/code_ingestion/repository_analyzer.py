@@ -145,41 +145,60 @@ class RepositoryAnalyzer:
                             node
                         ):
 
-                            if isinstance(
+                            if not isinstance(
                                 child,
                                 ast.Call,
                             ):
+                                continue
 
+                            called_name = None
+
+                            if isinstance(
+                                child.func,
+                                ast.Name,
+                            ):
                                 called_name = (
-                                    None
+                                    child.func.id
                                 )
 
-                                if isinstance(
-                                    child.func,
-                                    ast.Name,
+                            elif isinstance(
+                                child.func,
+                                ast.Attribute,
+                            ):
+
+                                if (
+                                    isinstance(
+                                        child.func.value,
+                                        ast.Name,
+                                    )
+                                    and child.func.value.id
+                                    == "self"
                                 ):
                                     called_name = (
-                                        child.func.id
+                                        f"{parent.name}."
+                                        f"{child.func.attr}"
+                                        if isinstance(
+                                            parent,
+                                            ast.ClassDef,
+                                        )
+                                        else child.func.attr
                                     )
 
-                                elif isinstance(
-                                    child.func,
-                                    ast.Attribute,
-                                ):
+                                else:
                                     called_name = (
                                         child.func.attr
                                     )
 
-                                if called_name:
+                            if called_name:
 
-                                    self.graph.add_call(
-                                        caller=(
-                                            qualified_name
-                                        ),
-                                        callee=(
-                                            called_name
-                                        ),
-                                    )
+                                self.graph.add_call(
+                                    caller=(
+                                        qualified_name
+                                    ),
+                                    callee=(
+                                        called_name
+                                    ),
+                                )
 
                     elif isinstance(
                         node,

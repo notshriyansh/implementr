@@ -10,18 +10,32 @@ class RepositoryReasoner:
     ):
         self.graph = graph
 
-    def trace(
+    def trace_symbol(
         self,
-        file_path: str,
+        symbol_name: str,
     ) -> dict:
 
-        imports = (
-            self.graph.get_related_files(
-                file_path
-            )
-        )
-
         return {
-            "entry_file": file_path,
-            "imports": imports,
+            "symbol": symbol_name,
+            "file": (
+                self.graph.get_symbol_file(
+                    symbol_name
+                )
+            ),
+            "calls": (
+                self.graph.get_called_symbols(
+                    symbol_name
+                )
+            ),
+            "called_by": (
+                self.graph.get_callers(
+                    symbol_name
+                )
+            ),
+            "execution_path": (
+                self.graph.trace_execution_path(
+                    symbol_name,
+                    depth=3,
+                )
+            ),
         }

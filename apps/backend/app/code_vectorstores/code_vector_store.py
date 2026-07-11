@@ -28,6 +28,11 @@ class CodeVectorStore:
             "float32"
         )
 
+        print(
+            "VECTOR STORE RECEIVED:",
+            embeddings.shape,
+        )
+
         faiss.normalize_L2(
             embeddings
         )

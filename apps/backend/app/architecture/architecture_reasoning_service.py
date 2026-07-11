@@ -221,7 +221,9 @@ class ArchitectureReasoningService:
                     f"IMPORTS: "
                     f"{', '.join(item['imports'])}\n"
                     f"CALLS: "
-                    f"{', '.join(item['calls'])}"
+                    f"{', '.join(item['calls'])}\n"
+                    f"CALLED BY: "
+                    f"{', '.join(item['called_by'])}"
                 )
             )
 

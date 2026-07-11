@@ -79,6 +79,12 @@ class ExecutionFlowService:
                             symbol.symbol_name
                         )
                     ),
+                    "called_by": (
+                        self.graph
+                        .get_callers(
+                            symbol.symbol_name
+                        )
+                    ),
                 }
             )
 

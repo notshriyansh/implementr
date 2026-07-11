@@ -14,6 +14,10 @@ class RepositoryGraph:
             defaultdict(set)
         )
 
+        self.reverse_call_graph = (
+            defaultdict(set)
+        )
+
     def add_file(
         self,
         file_path: str,
@@ -37,9 +41,14 @@ class RepositoryGraph:
         caller: str,
         callee: str,
     ) -> None:
+
         self.call_graph[
             caller
         ].add(callee)
+
+        self.reverse_call_graph[
+            callee
+        ].add(caller)
 
     def get_related_files(
         self,
@@ -64,6 +73,17 @@ class RepositoryGraph:
     ) -> list[str]:
         return list(
             self.call_graph.get(
+                symbol_name,
+                [],
+            )
+        )
+
+    def get_callers(
+        self,
+        symbol_name: str,
+    ) -> list[str]:
+        return list(
+            self.reverse_call_graph.get(
                 symbol_name,
                 [],
             )
@@ -98,6 +118,12 @@ class RepositoryGraph:
                 )
             )
 
+            callers = (
+                self.get_callers(
+                    symbol
+                )
+            )
+
             results.append(
                 {
                     "symbol": symbol,
@@ -107,6 +133,7 @@ class RepositoryGraph:
                         )
                     ),
                     "calls": callees,
+                    "called_by": callers,
                 }
             )
 
