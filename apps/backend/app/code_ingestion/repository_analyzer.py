@@ -166,6 +166,9 @@ class RepositoryAnalyzer:
                                 ast.Attribute,
                             ):
 
+                                #
+                                # self.method()
+                                #
                                 if (
                                     isinstance(
                                         child.func.value,
@@ -182,6 +185,32 @@ class RepositoryAnalyzer:
                                             ast.ClassDef,
                                         )
                                         else child.func.attr
+                                    )
+
+                                elif (
+                                    isinstance(
+                                        child.func.value,
+                                        ast.Attribute,
+                                    )
+                                    and isinstance(
+                                        child.func.value.value,
+                                        ast.Name,
+                                    )
+                                    and child.func.value.value.id
+                                    == "self"
+                                ):
+                                    called_name = (
+                                        f"{child.func.value.attr}."
+                                        f"{child.func.attr}"
+                                    )
+
+                                elif isinstance(
+                                    child.func.value,
+                                    ast.Name,
+                                ):
+                                    called_name = (
+                                        f"{child.func.value.id}."
+                                        f"{child.func.attr}"
                                     )
 
                                 else:

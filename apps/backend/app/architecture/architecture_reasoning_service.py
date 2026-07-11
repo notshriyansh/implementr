@@ -85,7 +85,10 @@ class ArchitectureReasoningService:
 
         next_sections = [
             "SUMMARY:",
-            "EXECUTION_STEPS:",
+            "ENTRYPOINTS:",
+            "EXECUTION_FLOW:",
+            "AFFECTED_FILES:",
+            "MODIFICATION_ORDER:",
             "ENGINEERING_NOTES:",
             "MODIFICATION_POINTS:",
             "DETAILED_REASONING:",
@@ -286,6 +289,42 @@ class ArchitectureReasoningService:
             )
         )
 
+        entrypoints = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    reasoning,
+                    "ENTRYPOINTS",
+                )
+            )
+        )
+
+        execution_flow_steps = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    reasoning,
+                    "EXECUTION_FLOW",
+                )
+            )
+        )
+
+        affected_files = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    reasoning,
+                    "AFFECTED_FILES",
+                )
+            )
+        )
+
+        modification_order = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    reasoning,
+                    "MODIFICATION_ORDER",
+                )
+            )
+        )
+
         execution_steps = (
             self.parse_bullet_section(
                 self.extract_section(
@@ -334,23 +373,18 @@ class ArchitectureReasoningService:
         return ArchitectureInsight(
             query=query,
             summary=summary,
-            relevant_files=(
-                relevant_files
-            ),
-            relevant_symbols=(
-                relevant_symbols
-            ),
-            execution_steps=(
-                execution_steps
-            ),
-            engineering_notes=(
-                engineering_notes
-            ),
-            modification_points=(
-                modification_points
-            ),
+            relevant_files=relevant_files,
+            relevant_symbols=relevant_symbols,
+
+            entrypoints=entrypoints,
+            execution_flow=execution_flow_steps,
+            affected_files=affected_files,
+            modification_order=modification_order,
+
+            execution_steps=execution_steps,
+            engineering_notes=engineering_notes,
+            modification_points=modification_points,
+
             confidence=confidence,
-            reasoning=(
-                detailed_reasoning
-            ),
+            reasoning=detailed_reasoning,
         )

@@ -18,6 +18,14 @@ class ArchitectureInsight(
 
     modification_points: list[str]
 
+    entrypoints: list[str]
+
+    execution_flow: list[str]
+
+    affected_files: list[str]
+
+    modification_order: list[str]
+
     confidence: float
 
     reasoning: str

@@ -44,21 +44,23 @@ EXECUTION FLOW CONTEXT
 TASKS
 ================================================
 
-1. Explain the repository architecture
-relevant to the question.
+1. Explain repository architecture.
 
-2. Explain the execution flow step-by-step.
+2. Identify likely entrypoints.
 
-3. Identify the most important files.
+3. Explain execution flow.
 
-4. Identify important functions/classes/symbols.
+4. Identify affected files.
 
-5. Explain engineering reasoning ONLY using
-repository evidence.
+5. Identify modification order.
 
-6. Suggest safe modification points if relevant.
+6. Explain engineering reasoning.
 
-7. If information is missing, explicitly state:
+7. Suggest safe modification points.
+
+8. Never invent repository components.
+
+9. If information is missing say:
 "Repository context insufficient."
 
 ================================================
@@ -71,6 +73,18 @@ SUMMARY:
 EXECUTION_STEPS:
 - ...
 - ...
+- ...
+
+ENTRYPOINTS:
+- ...
+
+EXECUTION_FLOW:
+- ...
+
+AFFECTED_FILES:
+- ...
+
+MODIFICATION_ORDER:
 - ...
 
 ENGINEERING_NOTES:
