@@ -42,6 +42,9 @@ from app.api.routes.architecture import (
 from app.api.routes.concepts import (
     router as concepts_router,
 )
+from app.api.routes.reproduction import (
+    router as reproduction_router,
+)
 
 setup_logging()
 
@@ -126,6 +129,10 @@ app.include_router(
 app.include_router(
     concepts_router,
     prefix="/api/v1",
+)
+
+app.include_router(
+    reproduction_router,
 )
 
 

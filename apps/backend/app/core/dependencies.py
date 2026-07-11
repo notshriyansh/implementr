@@ -154,6 +154,9 @@ from app.concepts.concept_index import (
     ConceptIndex,
 )
 
+from app.reproduction.research_reproduction_service import (
+    ResearchReproductionService,
+)
 
 embedding_model = (
     SentenceTransformerEmbeddingModel()
@@ -259,7 +262,20 @@ architecture_reasoning_service = (
     )
 )
 
-
+research_reproduction_service = (
+    ResearchReproductionService(
+        retrieval_service=(
+            retrieval_service
+        ),
+        code_retrieval_service=(
+            code_retrieval_service
+        ),
+        architecture_service=(
+            architecture_reasoning_service
+        ),
+        llm=llm,
+    )
+)
 
 concept_extractor = (
     ConceptExtractor()
@@ -523,3 +539,9 @@ def get_architecture_reasoning_service(
 def get_context_expander(
 ) -> ContextExpander:
     return context_expander
+
+def get_research_reproduction_service(
+) -> ResearchReproductionService:
+    return (
+        research_reproduction_service
+    )
