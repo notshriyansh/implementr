@@ -18,21 +18,31 @@ from app.prompts.reproduction_prompt import (
     REPRODUCTION_PROMPT,
 )
 
+from app.concepts.concept_service import (
+    ConceptService,
+)
+
+
+from app.reproduction.gap_analyzer import (
+    GapAnalyzer,
+)
+
+from app.code_retrieval.symbol_retrieval_service import (
+    SymbolRetrievalService,
+)
+
 from app.llm.base import BaseLLM
 
 
 class ResearchReproductionService:
     def __init__(
         self,
-        retrieval_service: (
-            RetrievalService
-        ),
-        code_retrieval_service: (
-            CodeRetrievalService
-        ),
-        architecture_service: (
-            ArchitectureReasoningService
-        ),
+        retrieval_service: RetrievalService,
+        code_retrieval_service: CodeRetrievalService,
+        symbol_retrieval_service: SymbolRetrievalService,
+        architecture_service: ArchitectureReasoningService,
+        concept_service: ConceptService,
+        gap_analyzer: GapAnalyzer,
         llm: BaseLLM,
     ) -> None:
 
@@ -49,6 +59,18 @@ class ResearchReproductionService:
         )
 
         self.llm = llm
+
+        self.symbol_retrieval_service = (
+            symbol_retrieval_service
+        )
+
+        self.concept_service = (
+            concept_service
+        )
+
+        self.gap_analyzer = (
+            gap_analyzer
+        )
 
     def extract_section(
         self,
@@ -71,6 +93,9 @@ class ResearchReproductionService:
         next_sections = [
             "PAPER_SUMMARY:",
             "REPOSITORY_TARGETS:",
+            "CONCEPT_MAPPINGS:",
+            "ARCHITECTURE_GAPS:",
+            "IMPLEMENTATION_STEPS:",
             "REQUIRED_CHANGES:",
             "TRAINING_CHANGES:",
             "EVALUATION_CHANGES:",
@@ -129,6 +154,45 @@ class ResearchReproductionService:
             )
         )
 
+        if not paper_chunks:
+            return ResearchReproductionPlan(
+                paper_summary=(
+                    "No paper context available."
+                ),
+                repository_targets=[],
+                required_changes=[],
+                training_changes=[],
+                evaluation_changes=[],
+                benchmark_tasks=[],
+                success_criteria=[],
+                risks=[
+                    "Paper must be ingested first."
+                ],
+                confidence=0.0,
+            )
+        
+        paper_context = "\n\n".join(
+            chunk.text
+            for chunk in paper_chunks
+        ).strip()
+
+        if not paper_context:
+            return ResearchReproductionPlan(
+                paper_summary=(
+                    "No paper context available."
+                ),
+                repository_targets=[],
+                required_changes=[],
+                training_changes=[],
+                evaluation_changes=[],
+                benchmark_tasks=[],
+                success_criteria=[],
+                risks=[
+                    "Paper must be ingested first."
+                ],
+                confidence=0.0,
+            )
+
         code_chunks = (
             await self.code_retrieval_service.retrieve(
                 query=question,
@@ -136,16 +200,16 @@ class ResearchReproductionService:
             )
         )
 
-        architecture = (
-            await self.architecture_service.analyze(
-                question
+        symbols = await (
+            self.symbol_retrieval_service.retrieve(
+                query=question,
+                k=25,
             )
         )
 
-        paper_context = (
-            "\n\n".join(
-                chunk.text
-                for chunk in paper_chunks
+        architecture = (
+            await self.architecture_service.analyze(
+                question
             )
         )
 
@@ -163,17 +227,77 @@ class ResearchReproductionService:
             architecture.reasoning
         )
 
+        concept_map = (
+            self.concept_service
+            .build_concept_map(
+                paper_text=paper_context,
+                symbols=symbols,
+            )
+        )
+
+        paper_concepts = [
+            concept.name
+            for concept in (
+                concept_map[
+                    "paper_concepts"
+                ]
+            )
+        ]
+
+        repo_concepts = [
+            concept.name
+            for concept in (
+                concept_map[
+                    "repository_concepts"
+                ]
+            )
+        ]
+
+        semantic_matches = (
+            concept_map["matches"]
+        )
+
+        concept_mappings = [
+            (
+                f"{match.paper_concept}"
+                f" -> "
+                f"{match.repository_concept}"
+                f" ({match.similarity})"
+            )
+            for match in semantic_matches
+        ]
+
+        architecture_gaps = (
+            self.gap_analyzer.analyze(
+                paper_concepts,
+                repo_concepts,
+            )
+        )
+
         prompt = (
             REPRODUCTION_PROMPT.format(
                 question=question,
-                paper_context=(
-                    paper_context
+                paper_context=paper_context,
+                repository_context=repository_context,
+                architecture_context=architecture_context,
+                paper_concepts="\n".join(
+                    f"- {concept}"
+                    for concept in paper_concepts
                 ),
-                repository_context=(
-                    repository_context
+
+                repo_concepts="\n".join(
+                    f"- {concept}"
+                    for concept in repo_concepts
                 ),
-                architecture_context=(
-                    architecture_context
+
+                concept_mappings="\n".join(
+                    f"- {mapping}"
+                    for mapping in concept_mappings
+                ),
+
+                architecture_gaps="\n".join(
+                    f"- {gap}"
+                    for gap in architecture_gaps
                 ),
             )
         )
@@ -198,6 +322,24 @@ class ResearchReproductionService:
                     (
                         "REPOSITORY_TARGETS"
                     ),
+                )
+            )
+        )
+
+        concept_mappings = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    response,
+                    "CONCEPT_MAPPINGS",
+                )
+            )
+        )
+
+        implementation_steps = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    response,
+                    "IMPLEMENTATION_STEPS",
                 )
             )
         )
@@ -269,14 +411,11 @@ class ResearchReproductionService:
         confidence = min(
             1.0,
             (
-                len(
-                    repository_targets
-                )
-                + len(
-                    required_changes
-                )
+                len(repository_targets)
+                + len(concept_mappings)
+                + len(implementation_steps)
             )
-            / 10,
+            / 15,
         )
 
         return (
@@ -286,6 +425,15 @@ class ResearchReproductionService:
                 ),
                 repository_targets=(
                     repository_targets
+                ),
+                concept_mappings=(
+                    concept_mappings
+                ),
+                architecture_gaps=(
+                    architecture_gaps
+                ),
+                implementation_steps=(
+                    implementation_steps
                 ),
                 required_changes=(
                     required_changes
