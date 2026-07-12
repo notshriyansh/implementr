@@ -21,3 +21,9 @@ class ResearchReproductionPlan(
     risks: list[str]
 
     confidence: float
+
+    concept_mappings: list[str]
+
+    architecture_gaps: list[str]
+
+    implementation_steps: list[str]

@@ -158,6 +158,10 @@ from app.reproduction.research_reproduction_service import (
     ResearchReproductionService,
 )
 
+from app.reproduction.gap_analyzer import (
+    GapAnalyzer,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -262,20 +266,6 @@ architecture_reasoning_service = (
     )
 )
 
-research_reproduction_service = (
-    ResearchReproductionService(
-        retrieval_service=(
-            retrieval_service
-        ),
-        code_retrieval_service=(
-            code_retrieval_service
-        ),
-        architecture_service=(
-            architecture_reasoning_service
-        ),
-        llm=llm,
-    )
-)
 
 concept_extractor = (
     ConceptExtractor()
@@ -298,6 +288,35 @@ concept_service = (
 
 concept_index = (
     ConceptIndex()
+)
+
+
+gap_analyzer = (
+    GapAnalyzer()
+)
+
+research_reproduction_service = (
+    ResearchReproductionService(
+        retrieval_service=(
+            retrieval_service
+        ),
+        code_retrieval_service=(
+            code_retrieval_service
+        ),
+        symbol_retrieval_service=(
+            symbol_retrieval_service
+        ),
+        architecture_service=(
+            architecture_reasoning_service
+        ),
+        concept_service=(
+            concept_service
+        ),
+        gap_analyzer=(
+            gap_analyzer
+        ),
+        llm=llm,
+    )
 )
 
 hybrid_agent = (
@@ -360,6 +379,11 @@ def get_ingestion_service(
 def get_concept_service(
 ) -> ConceptService:
     return concept_service
+
+def get_gap_analyzer(
+):
+    return gap_analyzer
+
 
 def get_rag_chat_service(
 ) -> RAGChatService:
