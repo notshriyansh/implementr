@@ -162,6 +162,10 @@ from app.reproduction.gap_analyzer import (
     GapAnalyzer,
 )
 
+from app.blueprints.implementation_blueprint_service import (
+    ImplementationBlueprintService,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -314,6 +318,15 @@ research_reproduction_service = (
         ),
         gap_analyzer=(
             gap_analyzer
+        ),
+        llm=llm,
+    )
+)
+
+implementation_blueprint_service = (
+    ImplementationBlueprintService(
+        reproduction_service=(
+            research_reproduction_service
         ),
         llm=llm,
     )
@@ -569,3 +582,6 @@ def get_research_reproduction_service(
     return (
         research_reproduction_service
     )
+
+def get_implementation_blueprint_service():
+    return implementation_blueprint_service

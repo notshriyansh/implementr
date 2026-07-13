@@ -46,6 +46,10 @@ from app.api.routes.reproduction import (
     router as reproduction_router,
 )
 
+from app.api.routes.blueprints import (
+    router as blueprints_router
+)
+
 setup_logging()
 
 settings = get_settings()
@@ -133,6 +137,10 @@ app.include_router(
 
 app.include_router(
     reproduction_router,
+)
+
+app.include_router(
+    blueprints_router
 )
 
 
