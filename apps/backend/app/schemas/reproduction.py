@@ -27,3 +27,7 @@ class ResearchReproductionPlan(
     architecture_gaps: list[str]
 
     implementation_steps: list[str]
+
+    modification_targets: list[str]
+
+    gap_to_symbol_mapping: list[str]

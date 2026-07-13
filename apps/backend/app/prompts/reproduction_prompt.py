@@ -7,7 +7,8 @@ can be reproduced inside the provided repository.
 You MUST use the provided repository context.
 
 Do NOT invent files, services, training pipelines,
-or infrastructure that do not exist.
+symbols, architectures, or infrastructure that
+do not exist in the provided repository context.
 
 If repository evidence is insufficient,
 explicitly state:
@@ -37,6 +38,12 @@ ARCHITECTURE CONTEXT
 ================================================
 
 {architecture_context}
+
+================================================
+RELEVANT SYMBOLS
+================================================
+
+{symbols_context}
 
 ================================================
 PAPER CONCEPTS
@@ -87,6 +94,31 @@ TASKS
 
 10. Identify engineering risks.
 
+11. Identify exact repository symbols that
+    should be modified.
+
+Rules:
+
+- Use ONLY symbols listed in RELEVANT SYMBOLS.
+- Do NOT invent symbol names.
+- Every modification target MUST reference
+  a symbol from RELEVANT SYMBOLS.
+- Only include symbols that are directly
+  involved in reproducing the paper.
+- Do NOT include utility functions,
+  helper methods, logging functions,
+  built-in functions, or unrelated symbols.
+- If no valid symbol exists, return:
+  Repository context insufficient.
+
+12. For each modification target provide:
+    - Symbol name
+    - File path
+    - Reason for modification
+
+13. Map architecture gaps to the repository
+    symbols that would address those gaps.
+
 ================================================
 OUTPUT FORMAT
 ================================================
@@ -105,6 +137,24 @@ ARCHITECTURE_GAPS:
 
 IMPLEMENTATION_STEPS:
 - ...
+
+MODIFICATION_TARGETS:
+
+- SYMBOL: <symbol name>
+  FILE: <file path>
+  REASON: <why this symbol must change>
+
+- SYMBOL: <symbol name>
+  FILE: <file path>
+  REASON: <why this symbol must change>
+
+GAP_TO_SYMBOL_MAPPING:
+
+- GAP: <architecture gap>
+  SYMBOL: <symbol name>
+
+- GAP: <architecture gap>
+  SYMBOL: <symbol name>
 
 REQUIRED_CHANGES:
 - ...

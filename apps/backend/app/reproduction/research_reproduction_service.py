@@ -96,6 +96,8 @@ class ResearchReproductionService:
             "CONCEPT_MAPPINGS:",
             "ARCHITECTURE_GAPS:",
             "IMPLEMENTATION_STEPS:",
+            "MODIFICATION_TARGETS:",
+            "GAP_TO_SYMBOL_MAPPING:",
             "REQUIRED_CHANGES:",
             "TRAINING_CHANGES:",
             "EVALUATION_CHANGES:",
@@ -227,6 +229,15 @@ class ResearchReproductionService:
             architecture.reasoning
         )
 
+        symbols_context = "\n".join(
+            (
+                f"{symbol.symbol_name} "
+                f"({symbol.symbol_type}) "
+                f"in {symbol.file_path}"
+            )
+            for symbol in symbols
+        )
+
         concept_map = (
             self.concept_service
             .build_concept_map(
@@ -280,21 +291,19 @@ class ResearchReproductionService:
                 paper_context=paper_context,
                 repository_context=repository_context,
                 architecture_context=architecture_context,
+                symbols_context=symbols_context,
                 paper_concepts="\n".join(
                     f"- {concept}"
                     for concept in paper_concepts
                 ),
-
                 repo_concepts="\n".join(
                     f"- {concept}"
                     for concept in repo_concepts
                 ),
-
                 concept_mappings="\n".join(
                     f"- {mapping}"
                     for mapping in concept_mappings
                 ),
-
                 architecture_gaps="\n".join(
                     f"- {gap}"
                     for gap in architecture_gaps
@@ -340,6 +349,24 @@ class ResearchReproductionService:
                 self.extract_section(
                     response,
                     "IMPLEMENTATION_STEPS",
+                )
+            )
+        )
+
+        modification_targets = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    response,
+                    "MODIFICATION_TARGETS",
+                )
+            )
+        )
+
+        gap_to_symbol_mapping = (
+            self.parse_bullet_section(
+                self.extract_section(
+                    response,
+                    "GAP_TO_SYMBOL_MAPPING",
                 )
             )
         )
@@ -434,6 +461,12 @@ class ResearchReproductionService:
                 ),
                 implementation_steps=(
                     implementation_steps
+                ),
+                modification_targets=(
+                    modification_targets
+                ),
+                gap_to_symbol_mapping=(
+                    gap_to_symbol_mapping
                 ),
                 required_changes=(
                     required_changes
