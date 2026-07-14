@@ -21,6 +21,7 @@ import { useHybridAnalysis } from "@/hooks/use-hybrid-analysis";
 import { useReproductionPlan } from "@/hooks/use-reproduction-plan";
 import { useBlueprint } from "@/hooks/use-blueprint";
 import { useBlueprintEvaluation } from "@/hooks/use-blueprint-evaluation";
+import { WorkspacePipeline } from "@/components/workspace/workspace-pipeline";
 
 export default function WorkspacePage() {
   const [question, setQuestion] = useState("");
@@ -56,6 +57,15 @@ export default function WorkspacePage() {
       </section>
 
       <ContextPanel />
+
+      <div className="mt-8">
+        <WorkspacePipeline
+          hybridReady={!!hybridMutation.data}
+          reproductionReady={!!reproductionMutation.data}
+          blueprintReady={!!blueprintMutation.data}
+          evaluationReady={!!evaluationMutation.data}
+        />
+      </div>
 
       <div className="mt-8">
         <HybridQuery
