@@ -137,10 +137,12 @@ app.include_router(
 
 app.include_router(
     reproduction_router,
+    prefix=settings.api_v1_prefix,
 )
 
 app.include_router(
-    blueprints_router
+    blueprints_router,
+    prefix=settings.api_v1_prefix,
 )
 
 

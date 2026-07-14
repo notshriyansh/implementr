@@ -10,7 +10,9 @@ const items = [
   { number: "02", label: "Repository", href: "/repository" },
   { number: "03", label: "Architecture", href: "/architecture" },
   { number: "04", label: "Workspace", href: "/workspace" },
-  { number: "05", label: "Evaluation", href: "/evaluation" },
+  { number: "05", label: "Reproduction", href: "/reproduction" },
+  { number: "06", label: "Blueprints", href: "/blueprints" },
+  { number: "07", label: "Evaluation", href: "/evaluation" },
 ];
 
 export function TopNavigation() {
