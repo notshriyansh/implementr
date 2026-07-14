@@ -28,6 +28,10 @@ from app.observability.tracing import (
     trace_execution,
 )
 
+from app.cache.memory_cache import (
+    MemoryCache,
+)
+
 
 class ArchitectureReasoningService:
     def __init__(
@@ -45,6 +49,7 @@ class ArchitectureReasoningService:
             ContextExpander
         ),
         llm: BaseLLM,
+        cache: MemoryCache,
     ) -> None:
 
         self.code_retrieval_service = (
@@ -64,6 +69,8 @@ class ArchitectureReasoningService:
         )
 
         self.llm = llm
+
+        self.cache = cache
 
     def extract_section(
         self,
@@ -135,6 +142,17 @@ class ArchitectureReasoningService:
         self,
         query: str,
     ) -> ArchitectureInsight:
+        
+        cache_key = (
+            f"architecture:{query}"
+        )
+
+        cached = self.cache.get(
+            cache_key
+        )
+
+        if cached:
+            return cached
 
         code_chunks = await (
             self.code_retrieval_service
@@ -370,21 +388,25 @@ class ArchitectureReasoningService:
             / 10
         )
 
-        return ArchitectureInsight(
+        result = ArchitectureInsight(
             query=query,
             summary=summary,
             relevant_files=relevant_files,
             relevant_symbols=relevant_symbols,
-
             entrypoints=entrypoints,
             execution_flow=execution_flow_steps,
             affected_files=affected_files,
             modification_order=modification_order,
-
             execution_steps=execution_steps,
             engineering_notes=engineering_notes,
             modification_points=modification_points,
-
             confidence=confidence,
             reasoning=detailed_reasoning,
         )
+
+        self.cache.set(
+            cache_key,
+            result,
+        )
+
+        return result

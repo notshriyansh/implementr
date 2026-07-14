@@ -33,6 +33,10 @@ from app.code_retrieval.symbol_retrieval_service import (
 
 from app.llm.base import BaseLLM
 
+from app.cache.memory_cache import (
+    MemoryCache,
+)
+
 
 class ResearchReproductionService:
     def __init__(
@@ -44,6 +48,7 @@ class ResearchReproductionService:
         concept_service: ConceptService,
         gap_analyzer: GapAnalyzer,
         llm: BaseLLM,
+        cache: MemoryCache,
     ) -> None:
 
         self.retrieval_service = (
@@ -71,6 +76,8 @@ class ResearchReproductionService:
         self.gap_analyzer = (
             gap_analyzer
         )
+
+        self.cache = cache
 
     def extract_section(
         self,
@@ -148,6 +155,17 @@ class ResearchReproductionService:
         self,
         question: str,
     ) -> ResearchReproductionPlan:
+        
+        cache_key = (
+            f"reproduction:{question}"
+        )
+
+        cached = self.cache.get(
+            cache_key
+        )
+
+        if cached:
+            return cached
 
         paper_chunks = (
             await self.retrieval_service.retrieve(
@@ -445,7 +463,7 @@ class ResearchReproductionService:
             / 15,
         )
 
-        return (
+        result = (
             ResearchReproductionPlan(
                 paper_summary=(
                     paper_summary
@@ -487,3 +505,10 @@ class ResearchReproductionService:
                 confidence=confidence,
             )
         )
+
+        self.cache.set(
+            cache_key,
+            result,
+        )
+
+        return result

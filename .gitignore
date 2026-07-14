@@ -65,6 +65,9 @@ coverage.xml
 # Implementr runtime data
 data/
 
+# Implementr generated vector store
+apps/backend/data/vector_store/
+
 # Vector stores
 *.index
 *.faiss

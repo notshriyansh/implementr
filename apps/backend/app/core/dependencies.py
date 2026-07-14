@@ -166,6 +166,10 @@ from app.blueprints.implementation_blueprint_service import (
     ImplementationBlueprintService,
 )
 
+from app.cache.memory_cache import (
+    MemoryCache,
+)
+
 embedding_model = (
     SentenceTransformerEmbeddingModel()
 )
@@ -176,6 +180,10 @@ vector_store = (
 
 llm = (
     GroqLLM()
+)
+
+memory_cache = (
+    MemoryCache()
 )
 
 conversation_memory = (
@@ -267,6 +275,7 @@ architecture_reasoning_service = (
             context_expander
         ),
         llm=llm,
+        cache=memory_cache,
     )
 )
 
@@ -320,6 +329,7 @@ research_reproduction_service = (
             gap_analyzer
         ),
         llm=llm,
+        cache=memory_cache,
     )
 )
 
