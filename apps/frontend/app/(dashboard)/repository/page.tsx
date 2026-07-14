@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CodeChunk, FileNode } from "@/types/repository";
 
 import { RepositoryHeader } from "@/components/repository/repository-header";
@@ -20,14 +20,34 @@ import { useAppStore } from "@/stores/app-store";
 import { useDebounce } from "@/hooks/use-debounce";
 
 export default function RepositoryPage() {
-  const [repoPath, setRepoPath] = useState("");
+  const selectedRepository = useAppStore((state) => state.selectedRepository);
+
+  const [repoPath, setRepoPath] = useState(selectedRepository ?? "");
   const [selectedFile, setSelectedFile] = useState<FileNode>();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedChunk, setSelectedChunk] = useState<CodeChunk>();
 
+  const blueprintTargetFile = useAppStore((state) => state.blueprintTargetFile);
+
   const ingestMutation = useRepositoryIngestion();
   const structureQuery = useRepositoryStructure(repoPath, !!repoPath);
-  
+
+  useEffect(() => {
+    if (!blueprintTargetFile || !structureQuery.data || selectedFile) {
+      return;
+    }
+
+    const file = structureQuery.data.files.find(
+      (f) =>
+        f.path.replaceAll("\\", "/") ===
+        blueprintTargetFile.replaceAll("\\", "/"),
+    );
+
+    if (file) {
+      setSelectedFile(file);
+    }
+  }, [blueprintTargetFile, structureQuery.data, selectedFile]);
+
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const searchQueryResult = useRepositorySearch(debouncedSearchQuery);
 

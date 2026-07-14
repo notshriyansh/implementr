@@ -15,6 +15,8 @@ export const useAppStore = create<AppState & AppActions>()(
       recentQuestions: [],
       workspaceQuestion: undefined,
       commandOpen: false,
+      blueprintTargetFile: undefined,
+      blueprintTargetSymbol: undefined,
 
       setSelectedPaper: (paper) =>
         set({
@@ -56,6 +58,16 @@ export const useAppStore = create<AppState & AppActions>()(
           workspaceQuestion: question,
         }),
 
+      setBlueprintTargetFile: (file) =>
+        set({
+          blueprintTargetFile: file,
+        }),
+
+      setBlueprintTargetSymbol: (symbol) =>
+        set({
+          blueprintTargetSymbol: symbol,
+        }),
+
       setCommandOpen: (open) =>
         set({
           commandOpen: open,
@@ -78,7 +90,9 @@ export const useAppStore = create<AppState & AppActions>()(
         recentRepositories: state.recentRepositories,
         recentQuestions: state.recentQuestions,
         workspaceQuestion: state.workspaceQuestion,
+        blueprintTargetFile: state.blueprintTargetFile,
+        blueprintTargetSymbol: state.blueprintTargetSymbol,
       }),
-    }
-  )
+    },
+  ),
 );

@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 
 import { ImplementationBlueprint } from "@/types/repository";
 
+import { OpenFileButton } from "./open-file-button";
+
 interface Props {
   result: ImplementationBlueprint;
 }
@@ -45,7 +47,14 @@ export function BlueprintResult({ result }: Props) {
             </Badge>
           </div>
 
-          <h3 className="font-mono text-sm mb-4">{step.file_path}</h3>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h3 className="font-mono text-sm break-all">{step.file_path}</h3>
+
+            <OpenFileButton
+              filePath={step.file_path}
+              symbolName={step.symbol_name}
+            />
+          </div>
 
           <p className="mb-6 text-muted-foreground">{step.reason}</p>
 

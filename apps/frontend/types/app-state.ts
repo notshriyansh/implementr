@@ -11,6 +11,8 @@ export interface AppState {
   recentQuestions: string[];
   workspaceQuestion?: string;
   commandOpen: boolean;
+  blueprintTargetFile?: string;
+  blueprintTargetSymbol?: string;
 }
 
 export interface AppActions {
@@ -24,4 +26,6 @@ export interface AppActions {
   setWorkspaceQuestion: (question: string) => void;
   setCommandOpen: (open: boolean) => void;
   clearWorkspace: () => void;
+  setBlueprintTargetFile: (file: string) => void;
+  setBlueprintTargetSymbol: (symbol: string) => void;
 }
