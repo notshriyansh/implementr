@@ -19,7 +19,7 @@ export function TopNavigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-10">
+    <nav className="flex items-center gap-6 xl:gap-8">
       {items.map((item) => {
         const active = pathname.startsWith(item.href);
 
@@ -28,7 +28,7 @@ export function TopNavigation() {
             key={item.href}
             href={item.href}
             className={cn(
-              "group relative text-xs uppercase tracking-[0.12em] font-medium transition-colors duration-300",
+              "group relative text-[11px] uppercase tracking-[0.08em] font-medium transition-colors duration-300",
               active
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",

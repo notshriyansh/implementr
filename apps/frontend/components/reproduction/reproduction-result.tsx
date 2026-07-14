@@ -1,4 +1,8 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { ResearchReproductionPlan } from "@/types/repository";
 
@@ -18,7 +22,7 @@ export function ReproductionResult({ result }: Props) {
           </Badge>
         </div>
 
-        <div className="mb-6 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-muted">
           <div
             className="h-full bg-foreground transition-all duration-1000"
             style={{
@@ -32,47 +36,110 @@ export function ReproductionResult({ result }: Props) {
         </p>
       </div>
 
-      <Section title="Concept Mappings" items={result.concept_mappings} />
+      <div className="rounded-xl border border-border bg-card p-8">
+        <Tabs defaultValue="concepts">
+          <TabsList>
+            <TabsTrigger value="concepts">Concept Analysis</TabsTrigger>
 
-      <Section title="Architecture Gaps" items={result.architecture_gaps} />
+            <TabsTrigger value="repository">Repository Impact</TabsTrigger>
 
-      <Section title="Repository Targets" items={result.repository_targets} />
+            <TabsTrigger value="implementation">
+              Implementation Plan
+            </TabsTrigger>
 
-      <Section
-        title="Modification Targets"
-        items={result.modification_targets}
-      />
+            <TabsTrigger value="outcomes">Outcome Analysis</TabsTrigger>
+          </TabsList>
 
-      <Section
-        title="Implementation Steps"
-        items={result.implementation_steps}
-      />
+          <TabsContent value="concepts" className="mt-8">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Section
+                title="Concept Mappings"
+                items={result.concept_mappings}
+              />
 
-      <Section title="Required Changes" items={result.required_changes} />
+              <Section
+                title="Architecture Gaps"
+                items={result.architecture_gaps}
+              />
+            </div>
+          </TabsContent>
 
-      <Section title="Training Changes" items={result.training_changes} />
+          <TabsContent value="repository" className="mt-8">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Section
+                title="Repository Targets"
+                items={result.repository_targets}
+              />
 
-      <Section title="Evaluation Changes" items={result.evaluation_changes} />
+              <Section
+                title="Modification Targets"
+                items={result.modification_targets}
+              />
+            </div>
+          </TabsContent>
 
-      <Section title="Benchmark Tasks" items={result.benchmark_tasks} />
+          <TabsContent value="implementation" className="mt-8">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Section
+                title="Implementation Steps"
+                items={result.implementation_steps}
+              />
 
-      <Section title="Success Criteria" items={result.success_criteria} />
+              <Section
+                title="Required Changes"
+                items={result.required_changes}
+              />
 
-      <Section title="Risks" items={result.risks} />
+              <Section
+                title="Training Changes"
+                items={result.training_changes}
+              />
+
+              <Section
+                title="Evaluation Changes"
+                items={result.evaluation_changes}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="outcomes" className="mt-8">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Section title="Benchmark Tasks" items={result.benchmark_tasks} />
+
+              <Section
+                title="Success Criteria"
+                items={result.success_criteria}
+              />
+
+              <Section title="Risks" items={result.risks} />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
 
 function Section({ title, items }: { title: string; items: string[] }) {
-  if (!items.length) return null;
+  if (!items?.length) return null;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
-      <h2 className="mb-4 font-semibold">{title}</h2>
+    <div className="rounded-xl border border-border bg-background p-6">
+      <h3 className="mb-4 font-semibold">{title}</h3>
 
       <div className="space-y-3">
         {items.map((item) => (
-          <div key={item} className="rounded-xl bg-muted/20 px-4 py-3 text-sm">
+          <div
+            key={item}
+            className="
+              rounded-xl
+              bg-muted/30
+              px-4
+              py-3
+              text-sm
+              leading-relaxed
+            "
+          >
             {item}
           </div>
         ))}

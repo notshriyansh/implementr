@@ -12,7 +12,7 @@ export function TopNavbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-13 max-w-360 items-center gap-4 lg:gap-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-13 w-full max-w-[1800px] items-center gap-4 px-4 sm:px-6 lg:px-8">
         <div className="shrink-0 text-sm font-semibold tracking-tight">
           IMPLEMENTR
         </div>
