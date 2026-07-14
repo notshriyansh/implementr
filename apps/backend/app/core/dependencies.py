@@ -328,6 +328,9 @@ implementation_blueprint_service = (
         reproduction_service=(
             research_reproduction_service
         ),
+        symbol_retrieval_service=(
+            symbol_retrieval_service
+        ),
         llm=llm,
     )
 )

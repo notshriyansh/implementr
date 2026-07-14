@@ -42,6 +42,31 @@ GAP TO SYMBOL MAPPING
 {gap_to_symbol_mapping}
 
 ================================================
+TARGET SYMBOL CODE
+================================================
+
+{symbol_context}
+
+================================================
+IMPORTANT
+================================================
+
+Every blueprint step MUST reference
+a symbol from TARGET SYMBOL CODE.
+
+If a symbol already exists,
+the blueprint MUST modify it.
+
+Do NOT propose creating symbols
+already present in TARGET SYMBOL CODE.
+
+Use the actual implementation when
+producing blueprint steps.
+
+Prefer method-level modifications
+over class-level modifications.
+
+================================================
 TASK
 ================================================
 

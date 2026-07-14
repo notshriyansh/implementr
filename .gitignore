@@ -60,3 +60,15 @@ coverage.xml
 
 *.swp
 *.swo
+
+
+# Implementr runtime data
+data/
+
+# Vector stores
+*.index
+*.faiss
+chunks.json
+
+# Downloaded papers
+*.pdf

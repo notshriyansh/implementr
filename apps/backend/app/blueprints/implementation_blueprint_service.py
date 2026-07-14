@@ -13,6 +13,10 @@ from app.prompts.blueprint_prompt import (
     BLUEPRINT_PROMPT,
 )
 
+from app.code_retrieval.symbol_retrieval_service import (
+    SymbolRetrievalService,
+)
+
 from app.llm.base import BaseLLM
 
 
@@ -22,11 +26,18 @@ class ImplementationBlueprintService:
         reproduction_service: (
             ResearchReproductionService
         ),
+        symbol_retrieval_service: (
+            SymbolRetrievalService
+        ),
         llm: BaseLLM,
     ) -> None:
 
         self.reproduction_service = (
             reproduction_service
+        )
+
+        self.symbol_retrieval_service = (
+            symbol_retrieval_service
         )
 
         self.llm = llm
@@ -40,6 +51,26 @@ class ImplementationBlueprintService:
             self.reproduction_service.generate(
                 question
             )
+        )
+
+        symbols = await (
+            self.symbol_retrieval_service.retrieve(
+                query=question,
+                k=10,
+            )
+        )
+
+        symbol_context = "\n\n".join(
+            (
+                f"SYMBOL: "
+                f"{symbol.symbol_name}\n"
+                f"FILE: "
+                f"{symbol.file_path}\n"
+                f"TYPE: "
+                f"{symbol.symbol_type}\n\n"
+                f"{symbol.code}"
+            )
+            for symbol in symbols
         )
 
         if not plan.modification_targets:
@@ -72,6 +103,9 @@ class ImplementationBlueprintService:
                     "\n".join(
                         plan.gap_to_symbol_mapping
                     )
+                ),
+                symbol_context=(
+                    symbol_context
                 ),
             )
         )
