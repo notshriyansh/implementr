@@ -97,8 +97,13 @@ async def get_file_content(
         base_dir = Path(repo_path).resolve()
         target_file = (base_dir / file_path).resolve()
         
-        if not str(target_file).startswith(str(base_dir)):
-            raise HTTPException(status_code=400, detail="Invalid file path (path traversal detected)")
+        try:
+            target_file.relative_to(base_dir)
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid file path",
+            )
             
         if not target_file.is_file():
             raise HTTPException(status_code=404, detail="File not found")

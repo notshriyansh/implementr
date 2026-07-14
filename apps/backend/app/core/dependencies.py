@@ -78,6 +78,10 @@ from app.evaluation.retrieval_eval import (
     RetrievalEvaluator,
 )
 
+from app.evaluation.blueprint_eval import (
+    BlueprintEvaluator,
+)
+
 from app.code_ingestion.code_chunker import (
     CodeChunker,
 )
@@ -478,6 +482,13 @@ def get_rag_evaluator(
 ) -> RAGEvaluator:
     return RAGEvaluator(
         get_rag_chat_service()
+    )
+
+def get_blueprint_evaluator(
+) -> BlueprintEvaluator:
+
+    return BlueprintEvaluator(
+        implementation_blueprint_service
     )
 
 
