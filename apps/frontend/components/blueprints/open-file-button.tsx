@@ -9,9 +9,10 @@ import { useAppStore } from "@/stores/app-store";
 interface Props {
   filePath: string;
   symbolName: string;
+  reason: string;
 }
 
-export function OpenFileButton({ filePath, symbolName }: Props) {
+export function OpenFileButton({ filePath, symbolName, reason }: Props) {
   const router = useRouter();
 
   const setBlueprintTargetFile = useAppStore((s) => s.setBlueprintTargetFile);
@@ -20,10 +21,16 @@ export function OpenFileButton({ filePath, symbolName }: Props) {
     (s) => s.setBlueprintTargetSymbol,
   );
 
+  const setBlueprintTargetReason = useAppStore(
+    (s) => s.setBlueprintTargetReason,
+  );
+
   function handleOpen() {
     setBlueprintTargetFile(filePath);
 
     setBlueprintTargetSymbol(symbolName);
+
+    setBlueprintTargetReason(reason);
 
     router.push("/repository");
   }

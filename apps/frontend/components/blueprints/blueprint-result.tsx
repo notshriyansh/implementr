@@ -53,6 +53,7 @@ export function BlueprintResult({ result }: Props) {
             <OpenFileButton
               filePath={step.file_path}
               symbolName={step.symbol_name}
+              reason={step.reason}
             />
           </div>
 

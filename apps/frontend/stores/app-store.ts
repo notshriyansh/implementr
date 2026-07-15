@@ -17,6 +17,7 @@ export const useAppStore = create<AppState & AppActions>()(
       commandOpen: false,
       blueprintTargetFile: undefined,
       blueprintTargetSymbol: undefined,
+      blueprintTargetReason: undefined,
 
       setSelectedPaper: (paper) =>
         set({
@@ -68,6 +69,11 @@ export const useAppStore = create<AppState & AppActions>()(
           blueprintTargetSymbol: symbol,
         }),
 
+      setBlueprintTargetReason: (reason) =>
+        set({
+          blueprintTargetReason: reason,
+        }),
+
       setCommandOpen: (open) =>
         set({
           commandOpen: open,
@@ -92,6 +98,7 @@ export const useAppStore = create<AppState & AppActions>()(
         workspaceQuestion: state.workspaceQuestion,
         blueprintTargetFile: state.blueprintTargetFile,
         blueprintTargetSymbol: state.blueprintTargetSymbol,
+        blueprintTargetReason: state.blueprintTargetReason,
       }),
     },
   ),

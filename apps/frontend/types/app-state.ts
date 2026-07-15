@@ -13,6 +13,7 @@ export interface AppState {
   commandOpen: boolean;
   blueprintTargetFile?: string;
   blueprintTargetSymbol?: string;
+  blueprintTargetReason?: string;
 }
 
 export interface AppActions {
@@ -28,4 +29,5 @@ export interface AppActions {
   clearWorkspace: () => void;
   setBlueprintTargetFile: (file: string) => void;
   setBlueprintTargetSymbol: (symbol: string) => void;
+  setBlueprintTargetReason: (reason: string) => void;
 }

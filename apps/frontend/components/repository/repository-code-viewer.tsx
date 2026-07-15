@@ -5,6 +5,7 @@ import { useAppStore } from "@/stores/app-store";
 import { useFileContent } from "@/hooks/use-file-content";
 import { CodeViewer } from "../code/code-viewer";
 import { Loader2 } from "lucide-react";
+import { BlueprintTargetCard } from "./blueprint-target-card";
 
 interface Props {
   file?: FileNode;
@@ -80,6 +81,7 @@ export function RepositoryCodeViewer({ file }: Props) {
           )
         ) : (
           <div className="h-full overflow-y-auto p-6 space-y-6">
+            <BlueprintTargetCard />
             <div className="flex flex-wrap gap-2">
               <div className="rounded-full bg-muted px-3 py-1 text-xs">
                 {file.imports.length} imports
