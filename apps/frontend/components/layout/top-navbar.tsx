@@ -1,5 +1,7 @@
 "use client";
 
+import { useAppStore } from "@/stores/app-store";
+
 import { Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +11,21 @@ import { useCommandPalette } from "@/components/command/command-provider";
 
 export function TopNavbar() {
   const { setOpen } = useCommandPalette();
+
+  const startNewSession = useAppStore((state) => state.startNewSession);
+
+  const selectedPaper = useAppStore((state) => state.selectedPaper);
+
+  const selectedRepository = useAppStore((state) => state.selectedRepository);
+
+  const sessionStartedAt = useAppStore((state) => state.sessionStartedAt);
+
+  const minutesRunning = sessionStartedAt
+    ? Math.max(
+        1,
+        Math.floor((Date.now() - new Date(sessionStartedAt).getTime()) / 60000),
+      )
+    : 0;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -50,14 +67,17 @@ export function TopNavbar() {
           </button>
         </div>
 
+        <div className="hidden xl:flex items-center gap-4 text-xs text-muted-foreground">
+          {selectedPaper && <span>Paper Loaded</span>}
+
+          {selectedRepository && <span>Repository Loaded</span>}
+
+          <span>{minutesRunning}m</span>
+        </div>
+
         <Button
-          className="
-            hidden
-            md:flex
-            shrink-0
-            rounded-lg
-            px-5
-            "
+          className="hidden md:flex shrink-0 rounded-lg px-5"
+          onClick={startNewSession}
         >
           New Session
         </Button>

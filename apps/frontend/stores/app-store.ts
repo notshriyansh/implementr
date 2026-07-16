@@ -18,6 +18,7 @@ export const useAppStore = create<AppState & AppActions>()(
       blueprintTargetFile: undefined,
       blueprintTargetSymbol: undefined,
       blueprintTargetReason: undefined,
+      sessionStartedAt: new Date().toISOString(),
 
       setSelectedPaper: (paper) =>
         set({
@@ -94,6 +95,24 @@ export const useAppStore = create<AppState & AppActions>()(
           selectedChunk: undefined,
           workspaceQuestion: undefined,
         }),
+
+      setSessionStartedAt: (date) =>
+        set({
+          sessionStartedAt: date,
+        }),
+
+      startNewSession: () =>
+        set({
+          selectedPaper: undefined,
+          selectedRepository: undefined,
+          selectedFile: undefined,
+          selectedChunk: undefined,
+          workspaceQuestion: undefined,
+          blueprintTargetFile: undefined,
+          blueprintTargetSymbol: undefined,
+          blueprintTargetReason: undefined,
+          sessionStartedAt: new Date().toISOString(),
+        }),
     }),
     {
       name: "implementr-workspace-storage",
@@ -108,6 +127,7 @@ export const useAppStore = create<AppState & AppActions>()(
         blueprintTargetFile: state.blueprintTargetFile,
         blueprintTargetSymbol: state.blueprintTargetSymbol,
         blueprintTargetReason: state.blueprintTargetReason,
+        sessionStartedAt: state.sessionStartedAt,
       }),
     },
   ),

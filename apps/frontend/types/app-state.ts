@@ -14,6 +14,7 @@ export interface AppState {
   blueprintTargetFile?: string;
   blueprintTargetSymbol?: string;
   blueprintTargetReason?: string;
+  sessionStartedAt?: string;
 }
 
 export interface AppActions {
@@ -30,4 +31,6 @@ export interface AppActions {
   setBlueprintTargetFile: (file: string) => void;
   setBlueprintTargetSymbol: (symbol: string) => void;
   setBlueprintTargetReason: (reason: string) => void;
+  setSessionStartedAt: (date: string) => void;
+  startNewSession: () => void;
 }

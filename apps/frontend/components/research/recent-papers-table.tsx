@@ -4,8 +4,10 @@ import { useAppStore } from "@/stores/app-store";
 
 import { Badge } from "@/components/ui/badge";
 
+import { uniquePapers } from "@/lib/paper-utils";
+
 export function RecentPapersTable() {
-  const recentPapers = useAppStore((state) => state.recentPapers);
+  const recentPapers = uniquePapers(useAppStore((state) => state.recentPapers));
 
   if (recentPapers.length === 0) {
     return (

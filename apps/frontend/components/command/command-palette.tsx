@@ -16,6 +16,8 @@ import { useCommandPalette } from "./command-provider";
 
 import { useAppStore } from "@/stores/app-store";
 
+import { uniquePapers } from "@/lib/paper-utils";
+
 export function CommandPalette() {
   const router = useRouter();
 
@@ -25,7 +27,7 @@ export function CommandPalette() {
 
   const recentRepositories = useAppStore((state) => state.recentRepositories);
 
-  const recentPapers = useAppStore((state) => state.recentPapers);
+  const recentPapers = uniquePapers(useAppStore((state) => state.recentPapers));
 
   const selectedPaper = useAppStore((state) => state.selectedPaper);
 

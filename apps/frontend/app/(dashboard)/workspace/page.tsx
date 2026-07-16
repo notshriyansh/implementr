@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import Link from "next/link";
+import { useAppStore } from "@/stores/app-store";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -30,6 +33,9 @@ export default function WorkspacePage() {
   const reproductionMutation = useReproductionPlan();
   const blueprintMutation = useBlueprint();
   const evaluationMutation = useBlueprintEvaluation();
+  const selectedPaper = useAppStore((state) => state.selectedPaper);
+  const selectedRepository = useAppStore((state) => state.selectedRepository);
+  const workspaceReady = !!selectedPaper && !!selectedRepository;
 
   return (
     <PageContainer>
@@ -58,118 +64,156 @@ export default function WorkspacePage() {
 
       <ContextPanel />
 
-      <div className="mt-8">
-        <WorkspacePipeline
-          hybridReady={!!hybridMutation.data}
-          reproductionReady={!!reproductionMutation.data}
-          blueprintReady={!!blueprintMutation.data}
-          evaluationReady={!!evaluationMutation.data}
-        />
-      </div>
+      {!workspaceReady && (
+        <div className="mt-8 rounded-xl border border-border bg-card p-8">
+          <h2 className="mb-6 text-xl font-semibold">Workspace Requirements</h2>
 
-      <div className="mt-8">
-        <HybridQuery
-          loading={hybridMutation.isPending}
-          onAnalyze={(inputQuestion) => {
-            setQuestion(inputQuestion);
-            hybridMutation.mutate(inputQuestion);
-          }}
-        />
-      </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span>{selectedPaper ? "✓" : "✗"}</span>
 
-      {!hybridMutation.data && (
-        <div className="mt-10">
-          <EmptyState
-            title="Ready for analysis"
-            description="Ask a repository-aware implementation question to generate implementation guidance."
-          />
+              <span>Research Paper Selected</span>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span>{selectedRepository ? "✓" : "✗"}</span>
+
+              <span>Repository Indexed</span>
+            </div>
+          </div>
+
+          <div className="mt-8 flex gap-3">
+            {!selectedPaper && (
+              <Button asChild>
+                <Link href="/research">Go To Research</Link>
+              </Button>
+            )}
+
+            {!selectedRepository && (
+              <Button asChild variant="outline">
+                <Link href="/repository">Go To Repository</Link>
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
-      {hybridMutation.data && (
-        <div className="mt-10 space-y-10">
-          <HybridResult result={hybridMutation.data} />
+      {workspaceReady && (
+        <>
+          <div className="mt-8">
+            <WorkspacePipeline
+              hybridReady={!!hybridMutation.data}
+              reproductionReady={!!reproductionMutation.data}
+              blueprintReady={!!blueprintMutation.data}
+              evaluationReady={!!evaluationMutation.data}
+            />
+          </div>
 
-          {!reproductionMutation.data && (
-            <div className="rounded-xl border border-border bg-card p-8">
-              <h2 className="mb-3 text-lg font-semibold">
-                Research Reproduction
-              </h2>
+          <div className="mt-8">
+            <HybridQuery
+              loading={hybridMutation.isPending}
+              onAnalyze={(inputQuestion) => {
+                setQuestion(inputQuestion);
+                hybridMutation.mutate(inputQuestion);
+              }}
+            />
+          </div>
 
-              <p className="mb-6 text-muted-foreground">
-                Analyze concept mappings, architecture gaps and modification
-                targets for this implementation.
-              </p>
-
-              <Button
-                onClick={() => reproductionMutation.mutate(question)}
-                disabled={reproductionMutation.isPending}
-              >
-                {reproductionMutation.isPending
-                  ? "Generating..."
-                  : "Generate Reproduction Plan"}
-              </Button>
+          {!hybridMutation.data && (
+            <div className="mt-10">
+              <EmptyState
+                title="Ready for analysis"
+                description="Ask a repository-aware implementation question to generate implementation guidance."
+              />
             </div>
           )}
 
-          {reproductionMutation.data && (
-            <>
-              <ReproductionResult result={reproductionMutation.data} />
+          {hybridMutation.data && (
+            <div className="mt-10 space-y-10">
+              <HybridResult result={hybridMutation.data} />
 
-              {!blueprintMutation.data && (
+              {!reproductionMutation.data && (
                 <div className="rounded-xl border border-border bg-card p-8">
                   <h2 className="mb-3 text-lg font-semibold">
-                    Implementation Blueprint
+                    Research Reproduction
                   </h2>
 
                   <p className="mb-6 text-muted-foreground">
-                    Generate exact file-level implementation instructions.
+                    Analyze concept mappings, architecture gaps and modification
+                    targets for this implementation.
                   </p>
 
                   <Button
-                    onClick={() => blueprintMutation.mutate(question)}
-                    disabled={blueprintMutation.isPending}
+                    onClick={() => reproductionMutation.mutate(question)}
+                    disabled={reproductionMutation.isPending}
                   >
-                    {blueprintMutation.isPending
+                    {reproductionMutation.isPending
                       ? "Generating..."
-                      : "Generate Blueprint"}
+                      : "Generate Reproduction Plan"}
                   </Button>
                 </div>
               )}
-            </>
-          )}
 
-          {blueprintMutation.data && (
-            <>
-              <BlueprintResult result={blueprintMutation.data} />
+              {reproductionMutation.data && (
+                <>
+                  <ReproductionResult result={reproductionMutation.data} />
 
-              {!evaluationMutation.data && (
-                <div className="rounded-xl border border-border bg-card p-8">
-                  <h2 className="mb-3 text-lg font-semibold">
-                    Blueprint Evaluation
-                  </h2>
+                  {!blueprintMutation.data && (
+                    <div className="rounded-xl border border-border bg-card p-8">
+                      <h2 className="mb-3 text-lg font-semibold">
+                        Implementation Blueprint
+                      </h2>
 
-                  <p className="mb-6 text-muted-foreground">
-                    Evaluate blueprint quality and implementation coverage.
-                  </p>
+                      <p className="mb-6 text-muted-foreground">
+                        Generate exact file-level implementation instructions.
+                      </p>
 
-                  <Button
-                    onClick={() => evaluationMutation.mutate(question)}
-                    disabled={evaluationMutation.isPending}
-                  >
-                    {evaluationMutation.isPending
-                      ? "Evaluating..."
-                      : "Evaluate Blueprint"}
-                  </Button>
-                </div>
+                      <Button
+                        onClick={() => blueprintMutation.mutate(question)}
+                        disabled={blueprintMutation.isPending}
+                      >
+                        {blueprintMutation.isPending
+                          ? "Generating..."
+                          : "Generate Blueprint"}
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
-            </>
-          )}
 
-          {evaluationMutation.data && (
-            <EvaluationResult result={evaluationMutation.data} />
+              {blueprintMutation.data && (
+                <>
+                  <BlueprintResult result={blueprintMutation.data} />
+
+                  {!evaluationMutation.data && (
+                    <div className="rounded-xl border border-border bg-card p-8">
+                      <h2 className="mb-3 text-lg font-semibold">
+                        Blueprint Evaluation
+                      </h2>
+
+                      <p className="mb-6 text-muted-foreground">
+                        Evaluate blueprint quality and implementation coverage.
+                      </p>
+
+                      <Button
+                        onClick={() => evaluationMutation.mutate(question)}
+                        disabled={evaluationMutation.isPending}
+                      >
+                        {evaluationMutation.isPending
+                          ? "Evaluating..."
+                          : "Evaluate Blueprint"}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {evaluationMutation.data && (
+                <EvaluationResult result={evaluationMutation.data} />
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
     </PageContainer>
   );
