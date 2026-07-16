@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, FileText, FolderGit2 } from "lucide-react";
+import { FileText, FolderGit2, Target, MessageSquare } from "lucide-react";
 
 import { useAppStore } from "@/stores/app-store";
 
@@ -9,16 +9,14 @@ export function ContextPanel() {
 
   const selectedRepository = useAppStore((state) => state.selectedRepository);
 
+  const workspaceQuestion = useAppStore((state) => state.workspaceQuestion);
+
+  const blueprintTargetSymbol = useAppStore(
+    (state) => state.blueprintTargetSymbol,
+  );
+
   return (
-    <div
-      className="
-        rounded-xl
-        border
-        border-border
-        bg-card
-        p-5
-      "
-    >
+    <div className="rounded-xl border border-border bg-card p-5">
       <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Active Context
       </h3>
@@ -37,15 +35,15 @@ export function ContextPanel() {
         />
 
         <ContextItem
-          icon={<CheckCircle2 className="h-4 w-4 text-green-500" />}
-          label="Repository Indexed"
-          value={selectedRepository ? "Ready" : "Not Available"}
+          icon={<MessageSquare className="h-4 w-4" />}
+          label="Question"
+          value={workspaceQuestion ?? "No active question"}
         />
 
         <ContextItem
-          icon={<CheckCircle2 className="h-4 w-4 text-green-500" />}
-          label="Architecture"
-          value={selectedRepository ? "Ready" : "Unavailable"}
+          icon={<Target className="h-4 w-4" />}
+          label="Blueprint Target"
+          value={blueprintTargetSymbol ?? "No target selected"}
         />
       </div>
     </div>
@@ -63,12 +61,12 @@ function ContextItem({
 }) {
   return (
     <div className="rounded-lg bg-muted/50 p-4">
-      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
         {icon}
         {label}
       </div>
 
-      <div className="mt-2 text-sm font-medium wrap-break-word">{value}</div>
+      <div className="mt-2 wrap-break-word text-sm font-medium">{value}</div>
     </div>
   );
 }

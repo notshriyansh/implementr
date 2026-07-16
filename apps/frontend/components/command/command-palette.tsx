@@ -14,10 +14,20 @@ import {
 
 import { useCommandPalette } from "./command-provider";
 
+import { useAppStore } from "@/stores/app-store";
+
 export function CommandPalette() {
   const router = useRouter();
 
   const { open, setOpen } = useCommandPalette();
+
+  const recentQuestions = useAppStore((state) => state.recentQuestions);
+
+  const recentRepositories = useAppStore((state) => state.recentRepositories);
+
+  const selectedPaper = useAppStore((state) => state.selectedPaper);
+
+  const selectedRepository = useAppStore((state) => state.selectedRepository);
 
   useEffect(() => {
     function handler(e: KeyboardEvent) {
@@ -60,10 +70,6 @@ export function CommandPalette() {
           <CommandItem onSelect={() => navigate("/workspace")}>
             Workspace
           </CommandItem>
-
-          <CommandItem onSelect={() => navigate("/evaluation")}>
-            Evaluation
-          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
@@ -88,12 +94,38 @@ export function CommandPalette() {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Recent">
-          <CommandItem>Attention Is All You Need</CommandItem>
+        <CommandGroup heading="Current Context">
+          {selectedPaper && (
+            <CommandItem>Paper: {selectedPaper.title}</CommandItem>
+          )}
 
-          <CommandItem>FlashAttention</CommandItem>
+          {selectedRepository && (
+            <CommandItem>Repository: {selectedRepository}</CommandItem>
+          )}
+        </CommandGroup>
 
-          <CommandItem>Video Transformers</CommandItem>
+        <CommandSeparator />
+
+        <CommandGroup heading="Recent Questions">
+          {recentQuestions.length === 0 ? (
+            <CommandItem disabled>No recent questions</CommandItem>
+          ) : (
+            recentQuestions.map((question) => (
+              <CommandItem key={question}>{question}</CommandItem>
+            ))
+          )}
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Recent Repositories">
+          {recentRepositories.length === 0 ? (
+            <CommandItem disabled>No recent repositories</CommandItem>
+          ) : (
+            recentRepositories.map((repo) => (
+              <CommandItem key={repo}>{repo}</CommandItem>
+            ))
+          )}
         </CommandGroup>
       </CommandList>
     </CommandDialog>
