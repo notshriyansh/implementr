@@ -5,8 +5,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAppStore } from "@/stores/app-store";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Check, X, Loader2 } from "lucide-react";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageContainer } from "@/components/shared/page-container";
@@ -39,50 +39,56 @@ export default function WorkspacePage() {
 
   return (
     <PageContainer>
-      <section className="mb-12">
+      <section className="mb-8">
         <div className="mb-4 text-xs uppercase tracking-[0.25em] text-muted-foreground">
           04 · WORKSPACE
         </div>
 
-        <h1 className="text-4xl font-semibold tracking-tighter sm:text-5xl lg:text-6xl">
+        <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
           Implementation Workspace
         </h1>
 
-        <p className="mt-5 max-w-3xl text-base leading-7 text-muted-foreground lg:text-lg lg:leading-8">
+        <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
           Move from research understanding to implementation planning,
           reproduction analysis, blueprint generation and evaluation.
         </p>
-
-        <div className="mt-6 flex flex-wrap gap-2">
-          <Badge variant="secondary">Research</Badge>
-          <Badge variant="secondary">Repository</Badge>
-          <Badge variant="secondary">Architecture</Badge>
-          <Badge variant="secondary">Blueprints</Badge>
-          <Badge variant="secondary">Evaluation</Badge>
-        </div>
       </section>
 
       <ContextPanel />
 
       {!workspaceReady && (
-        <div className="mt-8 rounded-xl border border-border bg-card p-8">
-          <h2 className="mb-6 text-xl font-semibold">Workspace Requirements</h2>
+        <div className="mt-8 rounded-lg border border-border bg-card p-6">
+          <h2 className="mb-6 text-lg font-semibold">Workspace Requirements</h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span>{selectedPaper ? "✓" : "✗"}</span>
-
-              <span>Research Paper Selected</span>
+              {selectedPaper ? (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/10" aria-label="Completed">
+                  <Check className="h-3 w-3 text-green-500" />
+                </div>
+              ) : (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted" aria-label="Not completed">
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </div>
+              )}
+              <span className="text-sm">Research Paper Selected</span>
             </div>
 
             <div className="flex items-center gap-3">
-              <span>{selectedRepository ? "✓" : "✗"}</span>
-
-              <span>Repository Indexed</span>
+              {selectedRepository ? (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/10" aria-label="Completed">
+                  <Check className="h-3 w-3 text-green-500" />
+                </div>
+              ) : (
+                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted" aria-label="Not completed">
+                  <X className="h-3 w-3 text-muted-foreground" />
+                </div>
+              )}
+              <span className="text-sm">Repository Indexed</span>
             </div>
           </div>
 
-          <div className="mt-8 flex gap-3">
+          <div className="mt-6 flex gap-3">
             {!selectedPaper && (
               <Button asChild>
                 <Link href="/research">Go To Research</Link>
@@ -133,12 +139,12 @@ export default function WorkspacePage() {
               <HybridResult result={hybridMutation.data} />
 
               {!reproductionMutation.data && (
-                <div className="rounded-xl border border-border bg-card p-8">
+                <div className="rounded-lg border border-border bg-card p-6">
                   <h2 className="mb-3 text-lg font-semibold">
                     Research Reproduction
                   </h2>
 
-                  <p className="mb-6 text-muted-foreground">
+                  <p className="mb-6 text-sm text-muted-foreground">
                     Analyze concept mappings, architecture gaps and modification
                     targets for this implementation.
                   </p>
@@ -147,9 +153,14 @@ export default function WorkspacePage() {
                     onClick={() => reproductionMutation.mutate(question)}
                     disabled={reproductionMutation.isPending}
                   >
-                    {reproductionMutation.isPending
-                      ? "Generating..."
-                      : "Generate Reproduction Plan"}
+                    {reproductionMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Generating
+                      </>
+                    ) : (
+                      "Generate Reproduction Plan"
+                    )}
                   </Button>
                 </div>
               )}
@@ -159,12 +170,12 @@ export default function WorkspacePage() {
                   <ReproductionResult result={reproductionMutation.data} />
 
                   {!blueprintMutation.data && (
-                    <div className="rounded-xl border border-border bg-card p-8">
+                    <div className="rounded-lg border border-border bg-card p-6">
                       <h2 className="mb-3 text-lg font-semibold">
                         Implementation Blueprint
                       </h2>
 
-                      <p className="mb-6 text-muted-foreground">
+                      <p className="mb-6 text-sm text-muted-foreground">
                         Generate exact file-level implementation instructions.
                       </p>
 
@@ -172,9 +183,14 @@ export default function WorkspacePage() {
                         onClick={() => blueprintMutation.mutate(question)}
                         disabled={blueprintMutation.isPending}
                       >
-                        {blueprintMutation.isPending
-                          ? "Generating..."
-                          : "Generate Blueprint"}
+                        {blueprintMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Generating
+                          </>
+                        ) : (
+                          "Generate Blueprint"
+                        )}
                       </Button>
                     </div>
                   )}
@@ -186,12 +202,12 @@ export default function WorkspacePage() {
                   <BlueprintResult result={blueprintMutation.data} />
 
                   {!evaluationMutation.data && (
-                    <div className="rounded-xl border border-border bg-card p-8">
+                    <div className="rounded-lg border border-border bg-card p-6">
                       <h2 className="mb-3 text-lg font-semibold">
                         Blueprint Evaluation
                       </h2>
 
-                      <p className="mb-6 text-muted-foreground">
+                      <p className="mb-6 text-sm text-muted-foreground">
                         Evaluate blueprint quality and implementation coverage.
                       </p>
 
@@ -199,9 +215,14 @@ export default function WorkspacePage() {
                         onClick={() => evaluationMutation.mutate(question)}
                         disabled={evaluationMutation.isPending}
                       >
-                        {evaluationMutation.isPending
-                          ? "Evaluating..."
-                          : "Evaluate Blueprint"}
+                        {evaluationMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Evaluating
+                          </>
+                        ) : (
+                          "Evaluate Blueprint"
+                        )}
                       </Button>
                     </div>
                   )}

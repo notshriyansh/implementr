@@ -8,19 +8,19 @@ export function RepositoryStat({ label, value, description }: Props) {
   return (
     <div
       className="
-        rounded-xl
+        rounded-lg
         border
         border-border
         bg-card
-        p-6
+        p-4
       "
     >
-      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
 
-      <div className="mt-2 text-3xl font-semibold">{value}</div>
+      <div className="mt-1 text-xl font-semibold">{value}</div>
 
       {description && (
-        <div className="mt-2 text-xs text-muted-foreground">{description}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{description}</div>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
 
 interface Props {
   onAnalyze: (query: string) => void;
@@ -14,7 +15,7 @@ export function ArchitectureQuery({ onAnalyze, loading }: Props) {
   const [query, setQuery] = useState("");
 
   return (
-    <div className="border rounded-xl p-6">
+    <div className="rounded-lg border border-border bg-card p-6">
       <h2 className="font-semibold mb-4">Ask an Architecture Question</h2>
 
       <div className="flex gap-3">
@@ -22,10 +23,18 @@ export function ArchitectureQuery({ onAnalyze, loading }: Props) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="How does streaming work?"
+          aria-label="Architecture question input"
         />
 
-        <Button onClick={() => onAnalyze(query)} disabled={!query || loading}>
-          Analyze
+        <Button onClick={() => onAnalyze(query)} disabled={!query || loading} aria-label="Run architecture analysis">
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Analyzing
+            </>
+          ) : (
+            "Analyze"
+          )}
         </Button>
       </div>
     </div>

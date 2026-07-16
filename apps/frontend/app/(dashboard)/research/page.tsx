@@ -75,7 +75,10 @@ export default function ResearchPage() {
       </div>
 
       {!query && (
-        <div className="mt-10">
+        <div className="mt-8">
+          <div className="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+            Recent Papers
+          </div>
           <RecentPapersTable />
         </div>
       )}
@@ -96,7 +99,10 @@ export default function ResearchPage() {
       )}
 
       {!isLoading && papers.length > 0 && (
-        <div className="mt-10">
+        <div className="mt-8">
+          <div className="mb-4 text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground">
+            Search Results
+          </div>
           <PaperTable
             papers={papers}
             onIngest={handleIngest}

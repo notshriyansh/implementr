@@ -13,16 +13,16 @@ export default function ArchitecturePage() {
 
   return (
     <PageContainer>
-      <section className="mb-12">
-        <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
+      <section className="mb-8">
+        <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">
           03 · ARCHITECTURE
         </div>
 
-        <h1 className="text-6xl font-semibold tracking-tighter">
+        <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
           Architecture Explorer
         </h1>
 
-        <p className="mt-5 max-w-3xl text-lg leading-8 text-muted-foreground">
+        <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
           Understand execution flow, dependencies, modification points, and
           overall system design before making implementation changes.
         </p>

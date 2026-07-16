@@ -19,7 +19,7 @@ export function EmptyState({
   icon = <SearchX className="h-7 w-7 text-muted-foreground" />,
 }: EmptyStateProps) {
   return (
-    <div className="rounded-xl border border-border bg-card py-20 px-8">
+    <div className="rounded-lg border border-border bg-card py-16 px-6">
       <div className="mx-auto flex max-w-lg flex-col items-center text-center">
         <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
           {icon}

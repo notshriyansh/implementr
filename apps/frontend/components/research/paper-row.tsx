@@ -5,6 +5,7 @@ import { Paper } from "@/types/paper";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/stores/app-store";
+import { Loader2 } from "lucide-react";
 
 import { PaperStatusBadge } from "./paper-status-badge";
 
@@ -25,7 +26,7 @@ export function PaperRow({ paper, onIngest, isLoading }: Props) {
   const isIngested = recentPapers.some((p) => p.pdf_url === paper.pdf_url);
 
   return (
-    <div className="grid min-w-237.5 grid-cols-12 items-center border-b px-6 py-5 hover:bg-muted/20 hover:-translate-y-0.5 transition-all duration-300">
+    <div className="grid min-w-237.5 grid-cols-12 items-center border-b border-border px-6 py-4 hover:bg-muted/50 transition-colors">
       <div className="col-span-7">
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -55,17 +56,21 @@ export function PaperRow({ paper, onIngest, isLoading }: Props) {
       </div>
 
       <div className="col-span-2 flex justify-end gap-2">
-        <Button variant="ghost" size="sm" disabled>
-          Open
-        </Button>
         <Button variant="ghost" size="sm" asChild>
-          <a href={paper.pdf_url} target="_blank">
+          <a href={paper.pdf_url} target="_blank" rel="noopener noreferrer" aria-label={`View PDF for ${paper.title}`}>
             View
           </a>
         </Button>
 
-        <Button size="sm" onClick={onIngest} disabled={isLoading}>
-          {isLoading ? "..." : "Ingest"}
+        <Button size="sm" onClick={onIngest} disabled={isLoading} aria-label={`Ingest ${paper.title}`}>
+          {isLoading ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              Ingesting
+            </>
+          ) : (
+            "Ingest"
+          )}
         </Button>
       </div>
     </div>

@@ -23,6 +23,7 @@ export function RepositorySearch({ onSearch }: Props) {
       }}
       placeholder="Search repository..."
       className="h-9 w-62.5 text-sm"
+      aria-label="Search repository files"
     />
   );
 }

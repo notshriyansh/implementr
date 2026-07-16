@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 import { useAppStore } from "@/stores/app-store";
 
@@ -30,7 +31,7 @@ export function HybridQuery({ onAnalyze, loading }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-8">
+    <div className="rounded-lg border border-border bg-card p-6">
       <h2 className="font-semibold mb-4">Ask an Implementation Question</h2>
 
       <div className="flex gap-3">
@@ -38,10 +39,18 @@ export function HybridQuery({ onAnalyze, loading }: Props) {
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="How can I integrate Uniformer into this repository?"
+          aria-label="Implementation question input"
         />
 
-        <Button onClick={handleSubmit} disabled={!question || loading}>
-          Analyze
+        <Button onClick={handleSubmit} disabled={!question || loading} aria-label="Run hybrid analysis">
+          {loading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Analyzing
+            </>
+          ) : (
+            "Analyze"
+          )}
         </Button>
       </div>
     </div>

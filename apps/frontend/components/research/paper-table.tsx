@@ -10,8 +10,8 @@ interface Props {
 
 export function PaperTable({ papers, onIngest, ingestingPaper }: Props) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-card">
-      <div className="grid grid-cols-12 px-6 py-4 border-b bg-muted/20 text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="overflow-x-auto rounded-lg border border-border bg-card">
+      <div className="grid grid-cols-12 px-6 py-3 border-b border-border bg-muted/10 text-xs uppercase tracking-wider text-muted-foreground">
         <div className="col-span-7">Title</div>
 
         <div className="col-span-2">Tags</div>

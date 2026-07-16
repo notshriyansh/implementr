@@ -17,11 +17,11 @@ export function HybridResult({ result }: Props) {
     >
       <div
         className="
-          rounded-xl
+          rounded-lg
           bg-card
           border
           border-border
-          p-8
+          p-6
           "
       >
         <div className="mb-6 flex items-center justify-between">
@@ -51,7 +51,7 @@ export function HybridResult({ result }: Props) {
         <Section title="Relevant Symbols" items={result.relevant_symbols} />
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-8">
+      <div className="rounded-lg border border-border bg-card p-6">
         <h2 className="font-semibold mb-6">Implementation Plan</h2>
 
         <div className="space-y-4">
@@ -60,7 +60,7 @@ export function HybridResult({ result }: Props) {
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-semibold text-muted-foreground">
                 {index + 1}
               </div>
-              <div className="flex-1 rounded-xl bg-muted/30 px-5 py-4 text-sm leading-relaxed">
+              <div className="flex-1 rounded-lg bg-muted/30 px-4 py-3 text-sm leading-relaxed">
                 {step}
               </div>
             </div>
@@ -69,7 +69,7 @@ export function HybridResult({ result }: Props) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="rounded-xl border border-border bg-card p-8">
+        <div className="rounded-lg border border-border bg-card p-6">
           <h2 className="font-semibold mb-5 text-amber-500/90">Identified Risks</h2>
           <ul className="space-y-3">
             {result.risks.map((risk) => (
@@ -81,7 +81,7 @@ export function HybridResult({ result }: Props) {
           </ul>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-8">
+        <div className="rounded-lg border border-border bg-card p-6">
           <h2 className="font-semibold mb-5">Engineering Reasoning</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
             {result.reasoning}
@@ -94,7 +94,7 @@ export function HybridResult({ result }: Props) {
 
 function Section({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <div className="rounded-lg border border-border bg-card p-6">
       <h2 className="mb-4 font-semibold">{title}</h2>
 
       <ul className="space-y-2">

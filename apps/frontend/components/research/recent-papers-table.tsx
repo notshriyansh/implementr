@@ -2,16 +2,15 @@
 
 import { useAppStore } from "@/stores/app-store";
 
-import { Badge } from "@/components/ui/badge";
-
 import { uniquePapers } from "@/lib/paper-utils";
+import { PaperStatusBadge } from "./paper-status-badge";
 
 export function RecentPapersTable() {
   const recentPapers = uniquePapers(useAppStore((state) => state.recentPapers));
 
   if (recentPapers.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed p-10 text-center">
+      <div className="rounded-lg border border-dashed border-border p-10 text-center">
         <h3 className="font-medium">No papers ingested yet</h3>
 
         <p className="mt-2 text-sm text-muted-foreground">
@@ -22,8 +21,8 @@ export function RecentPapersTable() {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden border">
-      <div className="grid grid-cols-12 px-6 py-4 border-b text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-lg overflow-hidden border border-border bg-card">
+      <div className="grid grid-cols-12 px-6 py-3 border-b border-border bg-muted/10 text-xs uppercase tracking-wider text-muted-foreground">
         <div className="col-span-8">Title</div>
 
         <div className="col-span-2">Year</div>
@@ -34,7 +33,7 @@ export function RecentPapersTable() {
       {recentPapers.map((paper) => (
         <div
           key={paper.pdf_url}
-          className="grid grid-cols-12 items-center border-b px-6 py-5"
+          className="grid grid-cols-12 items-center border-b border-border px-6 py-4 hover:bg-muted/50 transition-colors"
         >
           <div className="col-span-8">
             <div className="font-medium">{paper.title}</div>
@@ -52,7 +51,7 @@ export function RecentPapersTable() {
           </div>
 
           <div className="col-span-2">
-            <Badge>INGESTED</Badge>
+            <PaperStatusBadge status="INGESTED" />
           </div>
         </div>
       ))}

@@ -4,27 +4,30 @@ interface Props {
   status: "NOT_INGESTED" | "INGESTING" | "INGESTED";
 }
 
+const statusConfig = {
+  INGESTED: {
+    label: "Ingested",
+    className: "border-green-500/30 text-green-500 bg-green-500/10",
+  },
+  INGESTING: {
+    label: "Ingesting",
+    className: "border-amber-500/30 text-amber-500 bg-amber-500/10",
+  },
+  NOT_INGESTED: {
+    label: "Ready",
+    className: "border-border text-muted-foreground",
+  },
+} as const;
+
 export function PaperStatusBadge({ status }: Props) {
-  switch (status) {
-    case "INGESTED":
-      return (
-        <Badge variant="outline" className="uppercase tracking-wider">
-          Ingested
-        </Badge>
-      );
+  const config = statusConfig[status];
 
-    case "INGESTING":
-      return (
-        <Badge variant="secondary" className="uppercase tracking-wider">
-          Ingesting
-        </Badge>
-      );
-
-    default:
-      return (
-        <Badge variant="outline" className="uppercase tracking-wider">
-          Ready
-        </Badge>
-      );
-  }
+  return (
+    <Badge
+      variant="outline"
+      className={`uppercase tracking-wider ${config.className}`}
+    >
+      {config.label}
+    </Badge>
+  );
 }

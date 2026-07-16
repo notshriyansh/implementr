@@ -16,7 +16,7 @@ export function ContextPanel() {
   );
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5">
+    <div className="rounded-lg border border-border bg-card p-4">
       <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Active Context
       </h3>
