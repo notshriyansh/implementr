@@ -1,5 +1,18 @@
-import { redirect } from "next/navigation";
+import { LandingHero } from "@/components/landing/landing-hero";
+import { WorkspacePreview } from "@/components/landing/workspace-preview";
+import { SurfaceGrid } from "@/components/landing/surface-grid";
+import { LandingFooter } from "@/components/landing/landing-footer";
 
 export default function HomePage() {
-  redirect("/research");
+  return (
+    <main>
+      <LandingHero />
+
+      <WorkspacePreview />
+
+      <SurfaceGrid />
+
+      <LandingFooter />
+    </main>
+  );
 }
