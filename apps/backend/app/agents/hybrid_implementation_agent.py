@@ -16,16 +16,19 @@ from app.concepts.concept_service import (
     ConceptService,
 )
 
+from app.code_retrieval.symbol_retrieval_service import (
+    SymbolRetrievalService,
+)
+
 
 class HybridImplementationAgent:
     def __init__(
         self,
-        retrieval_service: (
-            HybridRetrievalService
+        retrieval_service: HybridRetrievalService,
+        symbol_retrieval_service: (
+            SymbolRetrievalService
         ),
-        concept_service: (
-            ConceptService
-        ),
+        concept_service: ConceptService,
         llm: BaseLLM,
     ) -> None:
         self.retrieval_service = (
@@ -36,6 +39,10 @@ class HybridImplementationAgent:
 
         self.concept_service = (
             concept_service
+        )
+
+        self.symbol_retrieval_service = (
+            symbol_retrieval_service
         )
 
     def extract_section(
@@ -119,21 +126,31 @@ class HybridImplementationAgent:
             for chunk in code_chunks
         )
 
+        symbols = await (
+            self.symbol_retrieval_service.retrieve(
+                query=question,
+                k=20,
+            )
+        )
+
         concept_map = (
             self.concept_service
             .build_concept_map(
                 paper_text=paper_context,
-                code_text=code_context,
+                symbols=symbols,
             )
         )
 
+        matches = concept_map["matches"]
+
         concept_context = "\n".join(
             (
-                f"{item['paper_concept']} "
-                f"-> "
-                f"{item['repository_concept']}"
+                f"{match.paper_concept}"
+                f" -> "
+                f"{match.repository_concept}"
+                f" ({match.similarity:.3f})"
             )
-            for item in concept_map
+            for match in matches
         )
 
         if not concept_context:

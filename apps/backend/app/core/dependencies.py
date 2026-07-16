@@ -354,6 +354,9 @@ hybrid_agent = (
         retrieval_service=(
             hybrid_retrieval_service
         ),
+        symbol_retrieval_service=(
+            symbol_retrieval_service
+        ),
         concept_service=(
             concept_service
         ),
