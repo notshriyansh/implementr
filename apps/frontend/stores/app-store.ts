@@ -41,17 +41,26 @@ export const useAppStore = create<AppState & AppActions>()(
 
       addRecentPaper: (paper) =>
         set((state) => ({
-          recentPapers: [paper, ...state.recentPapers].slice(0, 5),
+          recentPapers: [
+            paper,
+            ...state.recentPapers.filter((p) => p.pdf_url !== paper.pdf_url),
+          ].slice(0, 5),
         })),
 
       addRecentRepository: (repo) =>
         set((state) => ({
-          recentRepositories: [repo, ...state.recentRepositories].slice(0, 5),
+          recentRepositories: [
+            repo,
+            ...state.recentRepositories.filter((r) => r !== repo),
+          ].slice(0, 5),
         })),
 
       addRecentQuestion: (question) =>
         set((state) => ({
-          recentQuestions: [question, ...state.recentQuestions].slice(0, 10),
+          recentQuestions: [
+            question,
+            ...state.recentQuestions.filter((q) => q !== question),
+          ].slice(0, 10),
         })),
 
       setWorkspaceQuestion: (question) =>

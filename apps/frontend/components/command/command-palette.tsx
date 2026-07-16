@@ -25,6 +25,8 @@ export function CommandPalette() {
 
   const recentRepositories = useAppStore((state) => state.recentRepositories);
 
+  const recentPapers = useAppStore((state) => state.recentPapers);
+
   const selectedPaper = useAppStore((state) => state.selectedPaper);
 
   const selectedRepository = useAppStore((state) => state.selectedRepository);
@@ -101,6 +103,18 @@ export function CommandPalette() {
 
           {selectedRepository && (
             <CommandItem>Repository: {selectedRepository}</CommandItem>
+          )}
+        </CommandGroup>
+
+        <CommandSeparator />
+
+        <CommandGroup heading="Recent Papers">
+          {recentPapers.length === 0 ? (
+            <CommandItem disabled>No recent papers</CommandItem>
+          ) : (
+            recentPapers.map((paper) => (
+              <CommandItem key={paper.pdf_url}>{paper.title}</CommandItem>
+            ))
           )}
         </CommandGroup>
 

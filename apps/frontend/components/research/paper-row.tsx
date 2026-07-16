@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-
 import { Paper } from "@/types/paper";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAppStore } from "@/stores/app-store";
 
 import { PaperStatusBadge } from "./paper-status-badge";
 
@@ -21,6 +20,9 @@ export function PaperRow({ paper, onIngest, isLoading }: Props) {
       ?.slice(0, 3)
       .map((a) => a.name)
       .join(", ") || "Unknown";
+
+  const recentPapers = useAppStore((state) => state.recentPapers);
+  const isIngested = recentPapers.some((p) => p.pdf_url === paper.pdf_url);
 
   return (
     <div className="grid min-w-237.5 grid-cols-12 items-center border-b px-6 py-5 hover:bg-muted/20 hover:-translate-y-0.5 transition-all duration-300">
@@ -45,7 +47,11 @@ export function PaperRow({ paper, onIngest, isLoading }: Props) {
       </div>
 
       <div className="col-span-2">
-        <PaperStatusBadge status={isLoading ? "INGESTING" : "NOT_INGESTED"} />
+        <PaperStatusBadge
+          status={
+            isLoading ? "INGESTING" : isIngested ? "INGESTED" : "NOT_INGESTED"
+          }
+        />
       </div>
 
       <div className="col-span-2 flex justify-end gap-2">
