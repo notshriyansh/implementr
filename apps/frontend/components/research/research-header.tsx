@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-
 export function ResearchHeader() {
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -18,18 +15,6 @@ export function ResearchHeader() {
           the workspace as implementation briefs.
         </p>
       </div>
-
-      <Button
-        className="
-          w-full
-          sm:w-auto
-          shrink-0
-        "
-        aria-label="Ingest a new paper"
-      >
-        <Plus className="h-4 w-4" />
-        Ingest paper
-      </Button>
     </div>
   );
 }

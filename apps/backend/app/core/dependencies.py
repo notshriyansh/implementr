@@ -1,3 +1,7 @@
+from app.db.session import (
+    SessionLocal,
+)
+
 from app.embeddings.sentence_transformer import (
     SentenceTransformerEmbeddingModel,
 )
@@ -168,6 +172,14 @@ from app.reproduction.gap_analyzer import (
 
 from app.blueprints.implementation_blueprint_service import (
     ImplementationBlueprintService,
+)
+
+from app.workspaces.workspace_service import (
+    WorkspaceService,
+)
+
+from app.workspaces.workspace_output_service import (
+    WorkspaceOutputService,
 )
 
 from app.cache.memory_cache import (
@@ -612,3 +624,19 @@ def get_research_reproduction_service(
 
 def get_implementation_blueprint_service():
     return implementation_blueprint_service
+
+def get_workspace_service():
+    db = SessionLocal()
+    try:
+        yield WorkspaceService(db)
+    finally:
+        db.close()
+
+def get_workspace_output_service():
+    db = SessionLocal()
+    try:
+        yield WorkspaceOutputService(
+            db
+        )
+    finally:
+        db.close()
