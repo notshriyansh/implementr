@@ -16,6 +16,12 @@ class Settings(BaseSettings):
 
     database_url: str = ""
 
+    clerk_publishable_key: str = ""
+
+    clerk_secret_key: str = ""
+
+    clerk_jwt_key: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

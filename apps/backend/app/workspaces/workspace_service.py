@@ -18,28 +18,18 @@ class WorkspaceService:
     def create_workspace(
         self,
         payload: CreateWorkspaceRequest,
+        user_id: str,
     ) -> Workspace:
 
         workspace = Workspace(
+            user_id=user_id,
             name=payload.name,
-            selected_repository=(
-                payload.selected_repository
-            ),
-            workspace_question=(
-                payload.workspace_question
-            ),
-            blueprint_target_file=(
-                payload.blueprint_target_file
-            ),
-            blueprint_target_symbol=(
-                payload.blueprint_target_symbol
-            ),
-            blueprint_target_reason=(
-                payload.blueprint_target_reason
-            ),
-            selected_paper=(
-                payload.selected_paper
-            ),
+            selected_repository=payload.selected_repository,
+            workspace_question=payload.workspace_question,
+            blueprint_target_file=payload.blueprint_target_file,
+            blueprint_target_symbol=payload.blueprint_target_symbol,
+            blueprint_target_reason=payload.blueprint_target_reason,
+            selected_paper=payload.selected_paper,
         )
 
         self.db.add(workspace)
@@ -52,45 +42,52 @@ class WorkspaceService:
 
     def list_workspaces(
         self,
+        user_id: str,
     ) -> list[Workspace]:
 
         return (
-            self.db.query(
-                Workspace
+            self.db.query(Workspace)
+            .filter(
+                Workspace.user_id == user_id,
             )
             .order_by(
-                Workspace.updated_at.desc()
+                Workspace.updated_at.desc(),
             )
             .all()
         )
-    
+
     def get_workspace(
         self,
+        user_id: str,
         workspace_id: str,
     ):
+
         return (
             self.db.query(Workspace)
             .filter(
-                Workspace.id == workspace_id
+                Workspace.id == workspace_id,
+                Workspace.user_id == user_id,
             )
             .first()
         )
-    
 
     def update_workspace(
         self,
+        user_id: str,
         workspace_id: str,
         payload: UpdateWorkspaceRequest,
     ):
+
         workspace = (
             self.db.query(Workspace)
             .filter(
-                Workspace.id == workspace_id
+                Workspace.id == workspace_id,
+                Workspace.user_id == user_id,
             )
             .first()
         )
 
-        if not workspace:
+        if workspace is None:
             return None
 
         updates = payload.model_dump(

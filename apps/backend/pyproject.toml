@@ -17,6 +17,7 @@ dependencies = [
     "faiss-cpu",
     "numpy",
     "groq",
+    "clerk-backend-api==6.0.1",
 ]
 
 [tool.ruff]

@@ -1,5 +1,9 @@
+from fastapi import Depends
+
+from sqlalchemy.orm import Session
+
 from app.db.session import (
-    SessionLocal,
+    get_db,
 )
 
 from app.embeddings.sentence_transformer import (
@@ -625,18 +629,13 @@ def get_research_reproduction_service(
 def get_implementation_blueprint_service():
     return implementation_blueprint_service
 
-def get_workspace_service():
-    db = SessionLocal()
-    try:
-        yield WorkspaceService(db)
-    finally:
-        db.close()
+def get_workspace_service(
+    db: Session = Depends(get_db),
+):
+    return WorkspaceService(db)
 
-def get_workspace_output_service():
-    db = SessionLocal()
-    try:
-        yield WorkspaceOutputService(
-            db
-        )
-    finally:
-        db.close()
+
+def get_workspace_output_service(
+    db: Session = Depends(get_db),
+):
+    return WorkspaceOutputService(db)
