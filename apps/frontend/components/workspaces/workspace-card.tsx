@@ -24,8 +24,10 @@ export function WorkspaceCard({ workspace }: Props) {
         border-border
         bg-card
         p-5
-        transition-colors
+        transition-all
+        duration-200
         hover:bg-muted/30
+        hover:border-foreground/15
       "
       >
         <h3 className="font-medium">{workspace.name}</h3>

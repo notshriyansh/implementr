@@ -110,16 +110,27 @@ export default function WorkspaceDetailPage() {
       <div className="mt-6 rounded-lg border border-border bg-card p-6">
         <h2 className="mb-4 font-semibold">Generated Outputs</h2>
 
-        <div className="space-y-2 text-sm">
-          <div>Hybrid Analysis: {outputs?.hybrid_result ? "✓" : "—"}</div>
-
-          <div>
-            Reproduction Plan: {outputs?.reproduction_result ? "✓" : "—"}
-          </div>
-
-          <div>Blueprint: {outputs?.blueprint_result ? "✓" : "—"}</div>
-
-          <div>Evaluation: {outputs?.evaluation_result ? "✓" : "—"}</div>
+        <div className="space-y-3 text-sm">
+          {[
+            { label: "Hybrid Analysis", done: !!outputs?.hybrid_result },
+            { label: "Reproduction Plan", done: !!outputs?.reproduction_result },
+            { label: "Blueprint", done: !!outputs?.blueprint_result },
+            { label: "Evaluation", done: !!outputs?.evaluation_result },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-3">
+              <div
+                className={`h-2 w-2 rounded-full shrink-0 ${
+                  item.done ? "bg-green-500" : "bg-muted-foreground/30"
+                }`}
+              />
+              <span className={item.done ? "text-foreground" : "text-muted-foreground"}>
+                {item.label}
+              </span>
+              {item.done && (
+                <span className="ml-auto text-xs text-green-500/80">Complete</span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 

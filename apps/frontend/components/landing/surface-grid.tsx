@@ -1,4 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
+
+import { FadeIn } from "@/components/shared/fade-in";
+import { duration, ease, stagger } from "@/lib/motion";
 
 const surfaces = [
   {
@@ -28,32 +35,68 @@ const surfaces = [
   },
 ];
 
+const container = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: stagger.normal,
+    },
+  },
+};
+
+const cardVariant = {
+  hidden: { opacity: 0, y: 16 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: duration.normal,
+      ease: ease.enter,
+    },
+  },
+};
+
 export function SurfaceGrid() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-32">
-      <div className="mb-8 text-xs uppercase tracking-[0.25em] text-muted-foreground">
-        Four Surfaces, One Workspace
-      </div>
+    <section className="mx-auto max-w-7xl px-6 pb-24 sm:pb-32">
+      <FadeIn>
+        <div className="mb-8 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          Four Surfaces, One Workspace
+        </div>
+      </FadeIn>
 
-      <div className="grid overflow-hidden rounded-3xl border border-border md:grid-cols-2">
+      <motion.div
+        variants={container}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-80px" }}
+        className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:rounded-3xl md:grid-cols-2"
+      >
         {surfaces.map((surface) => (
-          <Link
-            key={surface.href}
-            href={surface.href}
-            className="border-border border-b md:border-r p-10 hover:bg-muted/10 transition-colors"
-          >
-            <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
-              {surface.number}
-            </div>
+          <motion.div key={surface.href} variants={cardVariant}>
+            <Link
+              href={surface.href}
+              className="group relative flex flex-col bg-background p-8 transition-all duration-300 hover:bg-muted/10 lg:p-10"
+            >
+              <div className="flex items-center justify-between">
+                <div className="font-mono text-xs text-muted-foreground">
+                  {surface.number}
+                </div>
 
-            <h3 className="mt-8 text-4xl font-semibold">{surface.title}</h3>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground/0 transition-all duration-300 group-hover:text-muted-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </div>
 
-            <p className="mt-4 max-w-md text-lg text-muted-foreground">
-              {surface.description}
-            </p>
-          </Link>
+              <h3 className="mt-6 text-2xl font-semibold sm:mt-8 sm:text-3xl lg:text-4xl">
+                {surface.title}
+              </h3>
+
+              <p className="mt-3 max-w-md text-base text-muted-foreground sm:mt-4 sm:text-lg">
+                {surface.description}
+              </p>
+            </Link>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 }
