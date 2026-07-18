@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 
 import "./globals.css";
 
@@ -9,6 +10,7 @@ import { Toaster } from "sonner";
 
 import { CommandProvider } from "@/components/command/command-provider";
 import { CommandPalette } from "@/components/command/command-palette";
+import { AuthProvider } from "@/providers/auth-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,21 +33,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
-    >
-      <body className="min-h-screen bg-background text-foreground">
-        <QueryProvider>
-          <CommandProvider>
-            {children}
+    <ClerkProvider>
+      <html
+        lang="en"
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
+      >
+        <body className="min-h-screen bg-background text-foreground">
+          <AuthProvider>
+            <QueryProvider>
+              <CommandProvider>
+                {children}
 
-            <CommandPalette />
+                <CommandPalette />
 
-            <Toaster richColors position="top-right" />
-          </CommandProvider>
-        </QueryProvider>
-      </body>
-    </html>
+                <Toaster richColors position="top-right" />
+              </CommandProvider>
+            </QueryProvider>
+          </AuthProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 
 import { Search } from "lucide-react";
 
+import { UserButton } from "@clerk/nextjs";
+
 import { Button } from "@/components/ui/button";
 
 import { TopNavigation } from "./top-navigation";
@@ -92,12 +94,22 @@ export function TopNavbar() {
           <span>{minutesRunning}m</span>
         </div>
 
-        <Button
-          className="hidden md:flex shrink-0 rounded-lg px-5"
-          onClick={startNewSession}
-        >
-          New Session
-        </Button>
+        <div className="flex items-center gap-3 shrink-0">
+          <Button
+            className="hidden md:flex rounded-lg px-5"
+            onClick={startNewSession}
+          >
+            New Workspace
+          </Button>
+
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "h-9 w-9",
+              },
+            }}
+          />
+        </div>
       </div>
     </header>
   );
