@@ -32,7 +32,7 @@ export const navigationItems = [
     number: "04",
   },
   {
-    label: "Workspaces",
+    label: "History",
     href: "/workspaces",
     icon: ClipboardList,
     number: "05",
