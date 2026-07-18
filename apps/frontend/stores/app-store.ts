@@ -19,6 +19,8 @@ export const useAppStore = create<AppState & AppActions>()(
       blueprintTargetSymbol: undefined,
       blueprintTargetReason: undefined,
       sessionStartedAt: new Date().toISOString(),
+      workspaceId: undefined,
+      workspaceName: undefined,
 
       setSelectedPaper: (paper) =>
         set({
@@ -111,7 +113,30 @@ export const useAppStore = create<AppState & AppActions>()(
           blueprintTargetFile: undefined,
           blueprintTargetSymbol: undefined,
           blueprintTargetReason: undefined,
+          workspaceId: undefined,
+          workspaceName: undefined,
           sessionStartedAt: new Date().toISOString(),
+        }),
+
+      setWorkspaceId: (id) =>
+        set({
+          workspaceId: id,
+        }),
+
+      setWorkspaceName: (name) =>
+        set({
+          workspaceName: name,
+        }),
+
+      hydrateWorkspace: (payload) =>
+        set({
+          workspaceId: payload.workspaceId,
+          workspaceName: payload.workspaceName,
+          selectedRepository: payload.selectedRepository,
+          workspaceQuestion: payload.workspaceQuestion,
+          blueprintTargetFile: payload.blueprintTargetFile,
+          blueprintTargetSymbol: payload.blueprintTargetSymbol,
+          blueprintTargetReason: payload.blueprintTargetReason,
         }),
     }),
     {
@@ -128,6 +153,8 @@ export const useAppStore = create<AppState & AppActions>()(
         blueprintTargetSymbol: state.blueprintTargetSymbol,
         blueprintTargetReason: state.blueprintTargetReason,
         sessionStartedAt: state.sessionStartedAt,
+        workspaceId: state.workspaceId,
+        workspaceName: state.workspaceName,
       }),
     },
   ),

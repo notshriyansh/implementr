@@ -1,6 +1,7 @@
 "use client";
 
 import { useAppStore } from "@/stores/app-store";
+import { useState, useEffect } from "react";
 
 import { Search } from "lucide-react";
 
@@ -20,12 +21,28 @@ export function TopNavbar() {
 
   const sessionStartedAt = useAppStore((state) => state.sessionStartedAt);
 
-  const minutesRunning = sessionStartedAt
-    ? Math.max(
-        1,
-        Math.floor((Date.now() - new Date(sessionStartedAt).getTime()) / 60000),
-      )
-    : 0;
+  const [minutesRunning, setMinutesRunning] = useState(0);
+
+  useEffect(() => {
+    if (!sessionStartedAt) return;
+
+    const update = () => {
+      setMinutesRunning(
+        Math.max(
+          1,
+          Math.floor(
+            (Date.now() - new Date(sessionStartedAt).getTime()) / 60000,
+          ),
+        ),
+      );
+    };
+
+    update();
+
+    const interval = setInterval(update, 60000);
+
+    return () => clearInterval(interval);
+  }, [sessionStartedAt]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">

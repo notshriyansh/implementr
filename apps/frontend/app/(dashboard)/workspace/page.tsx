@@ -25,6 +25,7 @@ import { useReproductionPlan } from "@/hooks/use-reproduction-plan";
 import { useBlueprint } from "@/hooks/use-blueprint";
 import { useBlueprintEvaluation } from "@/hooks/use-blueprint-evaluation";
 import { WorkspacePipeline } from "@/components/workspace/workspace-pipeline";
+import { useSaveWorkspace } from "@/hooks/use-save-workspace";
 
 export default function WorkspacePage() {
   const [question, setQuestion] = useState("");
@@ -36,6 +37,29 @@ export default function WorkspacePage() {
   const selectedPaper = useAppStore((state) => state.selectedPaper);
   const selectedRepository = useAppStore((state) => state.selectedRepository);
   const workspaceReady = !!selectedPaper && !!selectedRepository;
+  const saveWorkspaceMutation = useSaveWorkspace();
+  const workspaceId = useAppStore((state) => state.workspaceId);
+  const setWorkspaceId = useAppStore((state) => state.setWorkspaceId);
+  const setWorkspaceName = useAppStore((state) => state.setWorkspaceName);
+
+  async function handleSaveWorkspace() {
+    if (workspaceId) {
+      return;
+    }
+
+    const workspace = await saveWorkspaceMutation.mutateAsync({
+      name: question || "Untitled Workspace",
+      selected_repository: selectedRepository,
+      selected_paper: selectedPaper?.title,
+      workspace_question: question,
+      blueprint_target_file: useAppStore.getState().blueprintTargetFile,
+      blueprint_target_symbol: useAppStore.getState().blueprintTargetSymbol,
+      blueprint_target_reason: useAppStore.getState().blueprintTargetReason,
+    });
+
+    setWorkspaceId(workspace.id);
+    setWorkspaceName(workspace.name);
+  }
 
   return (
     <PageContainer>
@@ -44,14 +68,33 @@ export default function WorkspacePage() {
           04 · WORKSPACE
         </div>
 
-        <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
-          Implementation Workspace
-        </h1>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-semibold tracking-tight lg:text-4xl">
+              Implementation Workspace
+            </h1>
 
-        <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
-          Move from research understanding to implementation planning,
-          reproduction analysis, blueprint generation and evaluation.
-        </p>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
+              Move from research understanding to implementation planning,
+              reproduction analysis, blueprint generation and evaluation.
+            </p>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={handleSaveWorkspace}
+            disabled={saveWorkspaceMutation.isPending}
+          >
+            {saveWorkspaceMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving
+              </>
+            ) : (
+              "Save Workspace"
+            )}
+          </Button>
+        </div>
       </section>
 
       <ContextPanel />
@@ -63,11 +106,17 @@ export default function WorkspacePage() {
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               {selectedPaper ? (
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/10" aria-label="Completed">
+                <div
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/10"
+                  aria-label="Completed"
+                >
                   <Check className="h-3 w-3 text-green-500" />
                 </div>
               ) : (
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted" aria-label="Not completed">
+                <div
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-muted"
+                  aria-label="Not completed"
+                >
                   <X className="h-3 w-3 text-muted-foreground" />
                 </div>
               )}
@@ -76,11 +125,17 @@ export default function WorkspacePage() {
 
             <div className="flex items-center gap-3">
               {selectedRepository ? (
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/10" aria-label="Completed">
+                <div
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500/10"
+                  aria-label="Completed"
+                >
                   <Check className="h-3 w-3 text-green-500" />
                 </div>
               ) : (
-                <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted" aria-label="Not completed">
+                <div
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-muted"
+                  aria-label="Not completed"
+                >
                   <X className="h-3 w-3 text-muted-foreground" />
                 </div>
               )}

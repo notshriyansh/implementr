@@ -4,8 +4,6 @@ import {
   Workflow,
   Network,
   ClipboardList,
-  Hammer,
-  BarChart3,
 } from "lucide-react";
 
 export const navigationItems = [
@@ -32,5 +30,11 @@ export const navigationItems = [
     href: "/workspace",
     icon: Workflow,
     number: "04",
+  },
+  {
+    label: "Workspaces",
+    href: "/workspaces",
+    icon: ClipboardList,
+    number: "05",
   },
 ];

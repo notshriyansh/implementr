@@ -15,6 +15,8 @@ export interface AppState {
   blueprintTargetSymbol?: string;
   blueprintTargetReason?: string;
   sessionStartedAt?: string;
+  workspaceId?: string;
+  workspaceName?: string;
 }
 
 export interface AppActions {
@@ -33,4 +35,15 @@ export interface AppActions {
   setBlueprintTargetReason: (reason: string) => void;
   setSessionStartedAt: (date: string) => void;
   startNewSession: () => void;
+  setWorkspaceId: (id: string) => void;
+  setWorkspaceName: (name: string) => void;
+  hydrateWorkspace: (payload: {
+    workspaceId: string;
+    workspaceName: string;
+    selectedRepository?: string;
+    workspaceQuestion?: string;
+    blueprintTargetFile?: string;
+    blueprintTargetSymbol?: string;
+    blueprintTargetReason?: string;
+  }) => void;
 }

@@ -1,6 +1,12 @@
 "use client";
 
-import { FileText, FolderGit2, Target, MessageSquare } from "lucide-react";
+import {
+  FileText,
+  FolderGit2,
+  Target,
+  MessageSquare,
+  ClipboardList,
+} from "lucide-react";
 
 import { useAppStore } from "@/stores/app-store";
 
@@ -15,13 +21,21 @@ export function ContextPanel() {
     (state) => state.blueprintTargetSymbol,
   );
 
+  const workspaceName = useAppStore((state) => state.workspaceName);
+
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Active Context
       </h3>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <ContextItem
+          icon={<ClipboardList className="h-4 w-4" />}
+          label="Workspace"
+          value={workspaceName ?? "Unsaved workspace"}
+        />
+
         <ContextItem
           icon={<FileText className="h-4 w-4" />}
           label="Paper"
