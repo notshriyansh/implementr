@@ -115,7 +115,7 @@ export function EvaluationResult({ result }: Props) {
                 key={item.label}
                 className="rounded-lg bg-muted/30 px-4 py-3 text-sm"
               >
-                ✓ {item.label}
+                {item.label}
               </div>
             ))}
           </div>
