@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     api_v1_prefix: str = "/api/v1"
 
-    groq_api_key: str
+    groq_api_key: str = ""
     openai_api_key: str = ""
 
     log_level: str = "INFO"

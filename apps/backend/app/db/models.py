@@ -86,22 +86,22 @@ class WorkspaceOutput(Base):
         ForeignKey("workspaces.id"),
     )
 
-    hybrid_result: Mapped[dict] = mapped_column(
+    hybrid_result: Mapped[dict | None] = mapped_column(
         JSONB,
         nullable=True,
     )
 
-    reproduction_result: Mapped[dict] = mapped_column(
+    reproduction_result: Mapped[dict | None] = mapped_column(
         JSONB,
         nullable=True,
     )
 
-    blueprint_result: Mapped[dict] = mapped_column(
+    blueprint_result: Mapped[dict | None] = mapped_column(
         JSONB,
         nullable=True,
     )
 
-    evaluation_result: Mapped[dict] = mapped_column(
+    evaluation_result: Mapped[dict | None] = mapped_column(
         JSONB,
         nullable=True,
     )

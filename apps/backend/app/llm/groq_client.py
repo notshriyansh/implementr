@@ -40,6 +40,7 @@ class GroqLLM(BaseLLM):
         return (
             response.choices[0]
             .message.content
+            or ""
         )
     
     @trace_execution(

@@ -180,6 +180,11 @@ class ResearchReproductionService:
                     "No paper context available."
                 ),
                 repository_targets=[],
+                concept_mappings=[],
+                architecture_gaps=[],
+                implementation_steps=[],
+                modification_targets=[],
+                gap_to_symbol_mapping=[],
                 required_changes=[],
                 training_changes=[],
                 evaluation_changes=[],
@@ -202,6 +207,11 @@ class ResearchReproductionService:
                     "No paper context available."
                 ),
                 repository_targets=[],
+                concept_mappings=[],
+                architecture_gaps=[],
+                implementation_steps=[],
+                modification_targets=[],
+                gap_to_symbol_mapping=[],
                 required_changes=[],
                 training_changes=[],
                 evaluation_changes=[],

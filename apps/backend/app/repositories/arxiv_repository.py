@@ -1,6 +1,6 @@
 import logging
 
-import feedparser
+import feedparser  # type: ignore[import-untyped]
 import httpx
 
 from app.schemas.paper import Paper

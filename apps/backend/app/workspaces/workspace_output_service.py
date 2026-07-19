@@ -21,7 +21,7 @@ class WorkspaceOutputService:
         self,
         payload: SaveWorkspaceOutputRequest,
         user_id: str,
-    ) -> WorkspaceOutput:
+    ) -> WorkspaceOutput | None:
 
         workspace = (
             self.db.query(Workspace)

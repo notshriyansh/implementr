@@ -61,17 +61,17 @@ class RepositoryAnalyzer:
 
                 tree = ast.parse(source)
 
-                parent_map = {}
+                parent_map: dict[ast.AST, ast.AST] = {}
 
-                for parent in ast.walk(tree):
+                for parent_node in ast.walk(tree):
                     for child in ast.iter_child_nodes(
-                        parent
+                        parent_node
                     ):
                         parent_map[
                             child
-                        ] = parent
+                        ] = parent_node
 
-                imports = []
+                imports: list[str] = []
 
                 functions = []
 
@@ -109,18 +109,18 @@ class RepositoryAnalyzer:
                         ),
                     ):
 
-                        parent = (
+                        enclosing_parent = (
                             parent_map.get(
                                 node
                             )
                         )
 
                         if isinstance(
-                            parent,
+                            enclosing_parent,
                             ast.ClassDef,
                         ):
                             qualified_name = (
-                                f"{parent.name}."
+                                f"{enclosing_parent.name}."
                                 f"{node.name}"
                             )
                         else:
@@ -166,9 +166,6 @@ class RepositoryAnalyzer:
                                 ast.Attribute,
                             ):
 
-                                #
-                                # self.method()
-                                #
                                 if (
                                     isinstance(
                                         child.func.value,
@@ -178,10 +175,10 @@ class RepositoryAnalyzer:
                                     == "self"
                                 ):
                                     called_name = (
-                                        f"{parent.name}."
+                                        f"{enclosing_parent.name}."
                                         f"{child.func.attr}"
                                         if isinstance(
-                                            parent,
+                                            enclosing_parent,
                                             ast.ClassDef,
                                         )
                                         else child.func.attr

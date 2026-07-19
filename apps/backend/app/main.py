@@ -1,64 +1,36 @@
+import logging
+
 from fastapi import FastAPI
-from fastapi.middleware.cors import (
-    CORSMiddleware,
-)
+from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.routes.agents import router as agents_router
+from app.api.routes.architecture import router as architecture_router
+from app.api.routes.autonomous import router as autonomous_router
+from app.api.routes.blueprints import router as blueprints_router
+from app.api.routes.chat import router as chat_router
+from app.api.routes.concepts import router as concepts_router
+from app.api.routes.evaluation import router as evaluation_router
+from app.api.routes.hybrid import router as hybrid_router
+from app.api.routes.ingestion import router as ingestion_router
 from app.api.routes.papers import router as papers_router
-from app.core.config import get_settings
-from app.core.logging import setup_logging
-from app.api.routes.ingestion import (
-    router as ingestion_router,
-)
-from app.api.routes.retrieval import (
-    router as retrieval_router,
-)
-from app.api.routes.chat import (
-    router as chat_router,
-)
-from app.api.routes.agents import (
-    router as agents_router,
-)
-from app.api.routes.research import (
-    router as research_router,
-)
-from app.api.routes.autonomous import (
-    router as autonomous_router,
-)
-from app.api.routes.evaluation import (
-    router as evaluation_router,
-)
-from app.api.routes.repository import (
-    router as repository_router,
-)
-from app.api.routes.hybrid import (
-    router as hybrid_router,
-)
-from app.api.routes.symbols import (
-    router as symbols_router,
-)
-from app.api.routes.architecture import (
-    router as architecture_router,
-)
-from app.api.routes.concepts import (
-    router as concepts_router,
-)
-from app.api.routes.reproduction import (
-    router as reproduction_router,
-)
-
-from app.api.routes.blueprints import (
-    router as blueprints_router
-)
-
-from app.api.routes.workspaces import (
-    router as workspaces_router,
-)
-
+from app.api.routes.repository import router as repository_router
+from app.api.routes.reproduction import router as reproduction_router
+from app.api.routes.research import router as research_router
+from app.api.routes.retrieval import router as retrieval_router
+from app.api.routes.symbols import router as symbols_router
 from app.api.routes.workspace_outputs import (
     router as workspace_outputs_router,
 )
+from app.api.routes.workspaces import (
+    router as workspaces_router,
+)
+from app.core.config import get_settings
+from app.core.logging import setup_logging
 
 setup_logging()
+
+logger = logging.getLogger(__name__)
+logger.info("main.py imported successfully")
 
 settings = get_settings()
 
@@ -66,6 +38,16 @@ app = FastAPI(
     title=settings.app_name,
     debug=settings.app_debug,
 )
+
+
+@app.on_event("startup")
+async def startup_log():
+    logger.info("====================================")
+    logger.info("FastAPI startup event reached")
+    logger.info("Application has finished importing.")
+    logger.info("If you see this, uvicorn should bind shortly.")
+    logger.info("====================================")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -167,4 +149,3 @@ app.include_router(
 @app.get("/health")
 async def health_check() -> dict[str, str]:
     return {"status": "ok"}
-

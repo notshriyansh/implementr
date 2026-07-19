@@ -1,641 +1,292 @@
-from fastapi import Depends
+"""FastAPI dependency providers backed by the lazy application container."""
 
+from __future__ import annotations
+
+from functools import lru_cache
+from typing import TYPE_CHECKING
+
+from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.db.session import (
-    get_db,
-)
+from app.core.container import Container
+from app.db.session import get_db
 
-from app.embeddings.sentence_transformer import (
-    SentenceTransformerEmbeddingModel,
-)
-
-from app.ingestion.pdf_downloader import (
-    PDFDownloader,
-)
-
-from app.repositories.arxiv_repository import (
-    ArxivRepository,
-)
-
-from app.retrieval.retrieval_service import (
-    RetrievalService,
-)
-
-from app.services.ingestion_service import (
-    IngestionService,
-)
-
-from app.services.paper_service import (
-    PaperService,
-)
-
-from app.storage.local_storage import (
-    LocalStorage,
-)
-
-from app.vectorstores.faiss_store import (
-    FAISSVectorStore,
-)
-
-from app.chat.rag_chat_service import (
-    RAGChatService,
-)
-
-from app.llm.groq_client import (
-    GroqLLM,
-)
-
-from app.memory.conversation_memory import (
-    ConversationMemory,
-)
-
-from app.agents.implementation_agent import (
-    ImplementationAgent,
-)
-
-from app.agents.research_graph import (
-    ResearchGraph,
-)
-
-from app.agents.autonomous_agent import (
-    AutonomousResearchAgent,
-)
-
-from app.agents.hybrid_implementation_agent import (
-    HybridImplementationAgent,
-)
-
-from app.tools.planning_tool import (
-    PlanningTool,
-)
-
-from app.tools.retrieval_tool import (
-    RetrievalTool,
-)
-
-from app.evaluation.benchmark_runner import (
-    BenchmarkRunner,
-)
-
-from app.evaluation.rag_eval import (
-    RAGEvaluator,
-)
-
-from app.evaluation.retrieval_eval import (
-    RetrievalEvaluator,
-)
-
-from app.evaluation.blueprint_eval import (
-    BlueprintEvaluator,
-)
-
-from app.code_ingestion.code_chunker import (
-    CodeChunker,
-)
-
-from app.code_ingestion.ingestion_service import (
-    CodeIngestionService,
-)
-
-from app.code_ingestion.repository_scanner import (
-    RepositoryScanner,
-)
-
-from app.code_ingestion.repository_analyzer import (
-    RepositoryAnalyzer,
-)
-
-from app.code_ingestion.symbol_extractor import (
-    SymbolExtractor,
-)
-
-from app.code_embeddings.code_embedding_model import (
-    CodeEmbeddingModel,
-)
-
-from app.code_retrieval.code_retrieval_service import (
-    CodeRetrievalService,
-)
-
-from app.code_retrieval.symbol_retrieval_service import (
-    SymbolRetrievalService,
-)
-
-from app.code_vectorstores.code_vector_store import (
-    CodeVectorStore,
-)
-
-from app.code_vectorstores.symbol_vector_store import (
-    SymbolVectorStore,
-)
-
-from app.hybrid.hybrid_retrieval_service import (
-    HybridRetrievalService,
-)
-
-from app.architecture.repository_graph import (
-    RepositoryGraph,
-)
-
-from app.architecture.execution_flow_service import (
-    ExecutionFlowService,
-)
-
-from app.architecture.architecture_reasoning_service import (
-    ArchitectureReasoningService,
-)
-
-from app.architecture.context_expander import (
-    ContextExpander,
-)
-
-from app.concepts.concept_extractor import (
-    ConceptExtractor,
-)
-
-from app.concepts.concept_matcher import (
-    ConceptMatcher,
-)
-
-from app.concepts.concept_service import (
-    ConceptService,
-)
-
-from app.concepts.concept_index import (
-    ConceptIndex,
-)
-
-from app.reproduction.research_reproduction_service import (
-    ResearchReproductionService,
-)
-
-from app.reproduction.gap_analyzer import (
-    GapAnalyzer,
-)
-
-from app.blueprints.implementation_blueprint_service import (
-    ImplementationBlueprintService,
-)
-
-from app.workspaces.workspace_service import (
-    WorkspaceService,
-)
-
-from app.workspaces.workspace_output_service import (
-    WorkspaceOutputService,
-)
-
-from app.cache.memory_cache import (
-    MemoryCache,
-)
-
-embedding_model = (
-    SentenceTransformerEmbeddingModel()
-)
-
-vector_store = (
-    FAISSVectorStore()
-)
-
-llm = (
-    GroqLLM()
-)
-
-memory_cache = (
-    MemoryCache()
-)
-
-conversation_memory = (
-    ConversationMemory()
-)
-
-retrieval_service = (
-    RetrievalService(
-        embedding_model=embedding_model,
-        vector_store=vector_store,
+if TYPE_CHECKING:
+    from app.agents.autonomous_agent import AutonomousResearchAgent
+    from app.agents.implementation_agent import ImplementationAgent
+    from app.agents.research_graph import ResearchGraph
+    from app.architecture.architecture_reasoning_service import (
+        ArchitectureReasoningService,
     )
-)
-
-code_embedding_model = (
-    CodeEmbeddingModel()
-)
-
-code_vector_store = (
-    CodeVectorStore()
-)
-
-code_retrieval_service = (
-    CodeRetrievalService(
-        embedding_model=code_embedding_model,
-        vector_store=code_vector_store,
+    from app.architecture.context_expander import ContextExpander
+    from app.architecture.execution_flow_service import ExecutionFlowService
+    from app.architecture.repository_graph import RepositoryGraph
+    from app.blueprints.implementation_blueprint_service import (
+        ImplementationBlueprintService,
     )
-)
-
-symbol_vector_store = (
-    SymbolVectorStore()
-)
-
-symbol_extractor = (
-    SymbolExtractor()
-)
-
-symbol_retrieval_service = (
-    SymbolRetrievalService(
-        embedding_model=code_embedding_model,
-        vector_store=symbol_vector_store,
+    from app.code_embeddings.code_embedding_model import CodeEmbeddingModel
+    from app.code_ingestion.code_chunker import CodeChunker
+    from app.code_ingestion.ingestion_service import CodeIngestionService
+    from app.code_ingestion.repository_analyzer import RepositoryAnalyzer
+    from app.code_ingestion.repository_scanner import RepositoryScanner
+    from app.chat.rag_chat_service import RAGChatService
+    from app.agents.hybrid_implementation_agent import (
+        HybridImplementationAgent,
     )
-)
-
-repository_graph = (
-    RepositoryGraph()
-)
-
-context_expander = (
-    ContextExpander(
-        graph=repository_graph,
+    from app.code_ingestion.symbol_extractor import SymbolExtractor
+    from app.code_retrieval.code_retrieval_service import CodeRetrievalService
+    from app.code_retrieval.symbol_retrieval_service import SymbolRetrievalService
+    from app.code_vectorstores.code_vector_store import CodeVectorStore
+    from app.concepts.concept_index import ConceptIndex
+    from app.concepts.concept_service import ConceptService
+    from app.evaluation.benchmark_runner import BenchmarkRunner
+    from app.evaluation.blueprint_eval import BlueprintEvaluator
+    from app.evaluation.rag_eval import RAGEvaluator
+    from app.evaluation.retrieval_eval import RetrievalEvaluator
+    from app.hybrid.hybrid_retrieval_service import HybridRetrievalService
+    from app.ingestion.pdf_downloader import PDFDownloader
+    from app.repositories.arxiv_repository import ArxivRepository
+    from app.reproduction.gap_analyzer import GapAnalyzer
+    from app.reproduction.research_reproduction_service import (
+        ResearchReproductionService,
     )
-)
-
-repository_analyzer = (
-    RepositoryAnalyzer(
-        graph=repository_graph,
-        scanner=RepositoryScanner(),
-    )
-)
-
-execution_flow_service = (
-    ExecutionFlowService(
-        graph=repository_graph,
-        symbol_service=(
-            symbol_retrieval_service
-        ),
-    )
-)
-
-hybrid_retrieval_service = (
-    HybridRetrievalService(
-        paper_retrieval=retrieval_service,
-        code_retrieval=code_retrieval_service,
-    )
-)
-
-architecture_reasoning_service = (
-    ArchitectureReasoningService(
-        code_retrieval_service=(
-            code_retrieval_service
-        ),
-        symbol_retrieval_service=(
-            symbol_retrieval_service
-        ),
-        execution_flow_service=(
-            execution_flow_service
-        ),
-        context_expander=(
-            context_expander
-        ),
-        llm=llm,
-        cache=memory_cache,
-    )
-)
+    from app.retrieval.retrieval_service import RetrievalService
+    from app.services.ingestion_service import IngestionService
+    from app.services.paper_service import PaperService
+    from app.storage.local_storage import LocalStorage
+    from app.tools.planning_tool import PlanningTool
+    from app.tools.retrieval_tool import RetrievalTool
+    from app.workspaces.workspace_output_service import WorkspaceOutputService
+    from app.workspaces.workspace_service import WorkspaceService
 
 
-concept_extractor = (
-    ConceptExtractor()
-)
-
-concept_matcher = (
-    ConceptMatcher()
-)
-
-concept_service = (
-    ConceptService(
-        extractor=(
-            concept_extractor
-        ),
-        matcher=(
-            concept_matcher
-        ),
-    )
-)
-
-concept_index = (
-    ConceptIndex()
-)
+@lru_cache
+def get_container() -> Container:
+    """Return the lazily constructed application dependency container."""
+    return Container()
 
 
-gap_analyzer = (
-    GapAnalyzer()
-)
+def get_concept_index() -> ConceptIndex:
+    return get_container().concept_index
 
-research_reproduction_service = (
-    ResearchReproductionService(
-        retrieval_service=(
-            retrieval_service
-        ),
-        code_retrieval_service=(
-            code_retrieval_service
-        ),
-        symbol_retrieval_service=(
-            symbol_retrieval_service
-        ),
-        architecture_service=(
-            architecture_reasoning_service
-        ),
-        concept_service=(
-            concept_service
-        ),
-        gap_analyzer=(
-            gap_analyzer
-        ),
-        llm=llm,
-        cache=memory_cache,
-    )
-)
+def get_arxiv_repository() -> ArxivRepository:
+    from app.repositories.arxiv_repository import ArxivRepository
 
-implementation_blueprint_service = (
-    ImplementationBlueprintService(
-        reproduction_service=(
-            research_reproduction_service
-        ),
-        symbol_retrieval_service=(
-            symbol_retrieval_service
-        ),
-        llm=llm,
-    )
-)
-
-hybrid_agent = (
-    HybridImplementationAgent(
-        retrieval_service=(
-            hybrid_retrieval_service
-        ),
-        symbol_retrieval_service=(
-            symbol_retrieval_service
-        ),
-        concept_service=(
-            concept_service
-        ),
-        llm=llm,
-    )
-)
-
-def get_arxiv_repository(
-) -> ArxivRepository:
     return ArxivRepository()
 
 
-def get_paper_service(
-) -> PaperService:
-    return PaperService(
-        arxiv_repository=(
-            get_arxiv_repository()
-        ),
-    )
+def get_paper_service() -> PaperService:
+    from app.services.paper_service import PaperService
+
+    return PaperService(arxiv_repository=get_arxiv_repository())
 
 
-def get_local_storage(
-) -> LocalStorage:
+def get_local_storage() -> LocalStorage:
+    from app.storage.local_storage import LocalStorage
+
     return LocalStorage()
 
 
-def get_pdf_downloader(
-) -> PDFDownloader:
-    return PDFDownloader(
-        storage=(
-            get_local_storage()
-        ),
-    )
+def get_pdf_downloader() -> PDFDownloader:
+    from app.ingestion.pdf_downloader import PDFDownloader
+
+    return PDFDownloader(storage=get_local_storage())
 
 
-def get_retrieval_service(
-) -> RetrievalService:
-    return retrieval_service
+def get_retrieval_service() -> RetrievalService:
+    return get_container().retrieval_service
 
 
-def get_ingestion_service(
-) -> IngestionService:
+def get_ingestion_service() -> IngestionService:
+    from app.services.ingestion_service import IngestionService
+
     return IngestionService(
-        pdf_downloader=(
-            get_pdf_downloader()
-        ),
-        retrieval_service=(
-            retrieval_service
-        ),
+        pdf_downloader=get_pdf_downloader(),
+        retrieval_service=get_container().retrieval_service,
     )
 
 
-def get_concept_service(
-) -> ConceptService:
-    return concept_service
-
-def get_gap_analyzer(
-):
-    return gap_analyzer
+def get_concept_service() -> ConceptService:
+    return get_container().concept_service
 
 
-def get_rag_chat_service(
-) -> RAGChatService:
+def get_gap_analyzer() -> GapAnalyzer:
+    return get_container().gap_analyzer
+
+
+def get_rag_chat_service() -> RAGChatService:
+    from app.chat.rag_chat_service import RAGChatService
+
     return RAGChatService(
-        retrieval_service=(
-            retrieval_service
-        ),
-        llm=llm,
-        memory=conversation_memory,
+        retrieval_service=get_container().retrieval_service,
+        llm=get_container().llm,
+        memory=get_container().conversation_memory,
     )
 
 
-def get_implementation_agent(
-) -> ImplementationAgent:
+def get_implementation_agent() -> ImplementationAgent:
+    from app.agents.implementation_agent import ImplementationAgent
+
     return ImplementationAgent(
-        retrieval_service=(
-            retrieval_service
-        ),
-        llm=llm,
+        retrieval_service=get_container().retrieval_service,
+        llm=get_container().llm,
     )
 
 
-def get_research_graph(
-) -> ResearchGraph:
+def get_research_graph() -> ResearchGraph:
+    from app.agents.research_graph import ResearchGraph
+
     return ResearchGraph(
-        retrieval_service=(
-            retrieval_service
-        ),
-        llm=llm,
+        retrieval_service=get_container().retrieval_service,
+        llm=get_container().llm,
     )
 
 
-def get_retrieval_tool(
-) -> RetrievalTool:
-    return RetrievalTool(
-        retrieval_service
-    )
+def get_retrieval_tool() -> RetrievalTool:
+    from app.tools.retrieval_tool import RetrievalTool
+
+    return RetrievalTool(retrieval_service=get_container().retrieval_service)
 
 
-def get_planning_tool(
-) -> PlanningTool:
-    return PlanningTool(llm)
+def get_planning_tool() -> PlanningTool:
+    from app.tools.planning_tool import PlanningTool
+
+    return PlanningTool(llm=get_container().llm)
 
 
-def get_autonomous_agent(
-) -> AutonomousResearchAgent:
+def get_autonomous_agent() -> AutonomousResearchAgent:
+    from app.agents.autonomous_agent import AutonomousResearchAgent
+
     return AutonomousResearchAgent(
-        llm=llm,
-        retrieval_tool=(
-            get_retrieval_tool()
-        ),
-        planning_tool=(
-            get_planning_tool()
-        ),
+        llm=get_container().llm,
+        retrieval_tool=get_retrieval_tool(),
+        planning_tool=get_planning_tool(),
     )
 
 
-def get_retrieval_evaluator(
-) -> RetrievalEvaluator:
-    return RetrievalEvaluator(
-        retrieval_service
-    )
+def get_retrieval_evaluator() -> RetrievalEvaluator:
+    from app.evaluation.retrieval_eval import RetrievalEvaluator
+
+    return RetrievalEvaluator(retrieval_service=get_container().retrieval_service)
 
 
-def get_rag_evaluator(
-) -> RAGEvaluator:
-    return RAGEvaluator(
-        get_rag_chat_service()
-    )
+def get_rag_evaluator() -> RAGEvaluator:
+    from app.evaluation.rag_eval import RAGEvaluator
 
-def get_blueprint_evaluator(
-) -> BlueprintEvaluator:
+    return RAGEvaluator(rag_service=get_rag_chat_service())
+
+
+def get_blueprint_evaluator() -> BlueprintEvaluator:
+    from app.evaluation.blueprint_eval import BlueprintEvaluator
 
     return BlueprintEvaluator(
-        implementation_blueprint_service
+        blueprint_service=get_container().implementation_blueprint_service
     )
 
 
-def get_benchmark_runner(
-) -> BenchmarkRunner:
+def get_benchmark_runner() -> BenchmarkRunner:
+    from app.evaluation.benchmark_runner import BenchmarkRunner
+
     return BenchmarkRunner(
-        retrieval_evaluator=(
-            get_retrieval_evaluator()
-        ),
-        rag_evaluator=(
-            get_rag_evaluator()
-        ),
+        retrieval_evaluator=get_retrieval_evaluator(),
+        rag_evaluator=get_rag_evaluator(),
     )
 
 
-def get_repository_graph(
-) -> RepositoryGraph:
-    return repository_graph
+def get_repository_graph() -> RepositoryGraph:
+    return get_container().repository_graph
 
-def get_repository_scanner(
-) -> RepositoryScanner:
+
+def get_repository_scanner() -> RepositoryScanner:
+    from app.code_ingestion.repository_scanner import RepositoryScanner
+
     return RepositoryScanner()
 
 
-def get_code_chunker(
-) -> CodeChunker:
+def get_code_chunker() -> CodeChunker:
+    from app.code_ingestion.code_chunker import CodeChunker
+
     return CodeChunker()
 
 
-def get_code_embedding_model(
-) -> CodeEmbeddingModel:
-    return code_embedding_model
+def get_code_embedding_model() -> CodeEmbeddingModel:
+    return get_container().code_embedding_model
 
 
-def get_code_vector_store(
-) -> CodeVectorStore:
-    return code_vector_store
+def get_code_vector_store() -> CodeVectorStore:
+    return get_container().code_vector_store
 
 
-def get_code_retrieval_service(
-) -> CodeRetrievalService:
-    return code_retrieval_service
+def get_code_retrieval_service() -> CodeRetrievalService:
+    return get_container().code_retrieval_service
 
 
-def get_symbol_extractor(
-) -> SymbolExtractor:
-    return symbol_extractor
+def get_symbol_extractor() -> SymbolExtractor:
+    return get_container().symbol_extractor
 
 
-def get_symbol_retrieval_service(
-) -> SymbolRetrievalService:
-    return symbol_retrieval_service
+def get_symbol_retrieval_service() -> SymbolRetrievalService:
+    return get_container().symbol_retrieval_service
 
 
-def get_repository_analyzer(
-) -> RepositoryAnalyzer:
-    return repository_analyzer
+def get_repository_analyzer() -> RepositoryAnalyzer:
+    return get_container().repository_analyzer
 
 
-def get_execution_flow_service(
-) -> ExecutionFlowService:
-    return execution_flow_service
+def get_execution_flow_service() -> ExecutionFlowService:
+    return get_container().execution_flow_service
 
 
-def get_hybrid_retrieval_service(
-) -> HybridRetrievalService:
-    return hybrid_retrieval_service
+def get_hybrid_retrieval_service() -> HybridRetrievalService:
+    return get_container().hybrid_retrieval_service
 
 
-def get_hybrid_agent(
-) -> HybridImplementationAgent:
-    return hybrid_agent
+def get_hybrid_agent() -> HybridImplementationAgent:
+    return get_container().hybrid_agent
 
 
-def get_code_ingestion_service(
-) -> CodeIngestionService:
+def get_code_ingestion_service() -> CodeIngestionService:
+    from app.code_ingestion.ingestion_service import CodeIngestionService
+
     return CodeIngestionService(
-        scanner=(
-            get_repository_scanner()
-        ),
-        chunker=(
-            get_code_chunker()
-        ),
-        retrieval_service=(
-            code_retrieval_service
-        ),
-        symbol_extractor=(
-            symbol_extractor
-        ),
-        symbol_retrieval_service=(
-            symbol_retrieval_service
-        ),
-        concept_service=(
-            concept_service
-        ),
-        concept_index=(
-            concept_index
-        ),
-        repository_analyzer=(
-            repository_analyzer
-        ),
+        scanner=get_repository_scanner(),
+        chunker=get_code_chunker(),
+        retrieval_service=get_container().code_retrieval_service,
+        symbol_extractor=get_container().symbol_extractor,
+        symbol_retrieval_service=get_container().symbol_retrieval_service,
+        concept_service=get_container().concept_service,
+        concept_index=get_container().concept_index,
+        repository_analyzer=get_container().repository_analyzer,
     )
 
 
-def get_architecture_reasoning_service(
-) -> ArchitectureReasoningService:
-    return architecture_reasoning_service
+def get_architecture_reasoning_service() -> ArchitectureReasoningService:
+    return get_container().architecture_reasoning_service
 
-def get_context_expander(
-) -> ContextExpander:
-    return context_expander
 
-def get_research_reproduction_service(
-) -> ResearchReproductionService:
-    return (
-        research_reproduction_service
-    )
+def get_context_expander() -> ContextExpander:
+    return get_container().context_expander
 
-def get_implementation_blueprint_service():
-    return implementation_blueprint_service
+
+def get_research_reproduction_service() -> ResearchReproductionService:
+    return get_container().research_reproduction_service
+
+
+def get_implementation_blueprint_service() -> ImplementationBlueprintService:
+    return get_container().implementation_blueprint_service
+
 
 def get_workspace_service(
     db: Session = Depends(get_db),
-):
-    return WorkspaceService(db)
+) -> WorkspaceService:
+    from app.workspaces.workspace_service import WorkspaceService
+
+    return WorkspaceService(db=db)
 
 
 def get_workspace_output_service(
     db: Session = Depends(get_db),
-):
-    return WorkspaceOutputService(db)
+) -> WorkspaceOutputService:
+    from app.workspaces.workspace_output_service import WorkspaceOutputService
+
+    return WorkspaceOutputService(db=db)

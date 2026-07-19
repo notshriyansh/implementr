@@ -35,13 +35,13 @@ class SymbolExtractor:
         except Exception:
             return []
 
-        parent_map = {}
+        parent_map: dict[ast.AST, ast.AST] = {}
 
-        for parent in ast.walk(tree):
+        for parent_node in ast.walk(tree):
             for child in ast.iter_child_nodes(
-                parent
+                parent_node
             ):
-                parent_map[child] = parent
+                parent_map[child] = parent_node
 
         lines = source.splitlines()
 
@@ -85,16 +85,16 @@ class SymbolExtractor:
 
             if symbol_type == "function":
 
-                parent = parent_map.get(
+                enclosing_parent = parent_map.get(
                     node
                 )
 
                 if isinstance(
-                    parent,
+                    enclosing_parent,
                     ast.ClassDef,
                 ):
                     symbol_name = (
-                        f"{parent.name}."
+                        f"{enclosing_parent.name}."
                         f"{node.name}"
                     )
                 else:

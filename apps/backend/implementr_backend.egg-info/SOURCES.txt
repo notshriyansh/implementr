@@ -1,9 +1,0 @@
-pyproject.toml
-app/main.py
-app/core/config.py
-app/core/logging.py
-implementr_backend.egg-info/PKG-INFO
-implementr_backend.egg-info/SOURCES.txt
-implementr_backend.egg-info/dependency_links.txt
-implementr_backend.egg-info/requires.txt
-implementr_backend.egg-info/top_level.txt

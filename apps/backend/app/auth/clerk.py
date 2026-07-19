@@ -45,6 +45,14 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return CurrentUser(
-        user_id=request_state.payload["sub"],
-    )
+    payload = request_state.payload
+    user_id = payload.get("sub") if payload else None
+
+    if not isinstance(user_id, str):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="AUTHENTICATION_REQUIRED",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    return CurrentUser(user_id=user_id)

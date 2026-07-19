@@ -1,6 +1,6 @@
 from pathlib import Path
 
-import fitz
+import fitz  # type: ignore[import-untyped]
 
 from app.parsing.base import BaseParser
 from app.schemas.document import (

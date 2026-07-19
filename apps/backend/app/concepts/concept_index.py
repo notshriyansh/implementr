@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import DefaultDict
 
 from app.schemas.concept import (
     Concept,
@@ -7,7 +8,7 @@ from app.schemas.concept import (
 
 class ConceptIndex:
     def __init__(self) -> None:
-        self.index = defaultdict(list)
+        self.index: DefaultDict[str, list[Concept]] = defaultdict(list)
 
     def add(
         self,
@@ -33,5 +34,5 @@ class ConceptIndex:
 
     def all(
         self,
-    ) -> dict:
+    ) -> dict[str, list[Concept]]:
         return dict(self.index)

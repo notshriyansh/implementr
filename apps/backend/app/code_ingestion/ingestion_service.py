@@ -104,7 +104,7 @@ class CodeIngestionService:
 
             symbols = (
                 self.symbol_extractor
-                .extract_symbols(file)
+                .extract_symbols(str(file))
             )
 
             all_symbols.extend(

@@ -1,22 +1,17 @@
 from collections import defaultdict
+from typing import DefaultDict
 
 
 class RepositoryGraph:
     def __init__(self) -> None:
 
-        self.file_to_imports = (
-            defaultdict(list)
-        )
+        self.file_to_imports: DefaultDict[str, list[str]] = defaultdict(list)
 
-        self.symbol_to_file = {}
+        self.symbol_to_file: dict[str, str] = {}
 
-        self.call_graph = (
-            defaultdict(set)
-        )
+        self.call_graph: DefaultDict[str, set[str]] = defaultdict(set)
 
-        self.reverse_call_graph = (
-            defaultdict(set)
-        )
+        self.reverse_call_graph: DefaultDict[str, set[str]] = defaultdict(set)
 
     def add_file(
         self,
