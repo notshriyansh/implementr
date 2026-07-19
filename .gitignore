@@ -75,3 +75,7 @@ chunks.json
 
 # Downloaded papers
 *.pdf
+
+# Python packaging
+build/
+*.egg-info/

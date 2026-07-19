@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "implementr-backend"
 version = "0.1.0"
@@ -21,6 +25,9 @@ dependencies = [
     "sqlalchemy",
     "langgraph",
 ]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
 
 [tool.ruff]
 line-length = 88
