@@ -1,0 +1,22 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-dotenv
+httpx
+feedparser
+pymupdf
+
+torch==2.12.0
+transformers==5.9.0
+sentence-transformers==5.5.1
+
+faiss-cpu
+numpy
+groq
+clerk-backend-api==6.0.1
+sqlalchemy
+langgraph
+psycopg[binary]
