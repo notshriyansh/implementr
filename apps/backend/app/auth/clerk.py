@@ -9,7 +9,9 @@ from clerk_backend_api import (
 
 from app.auth.current_user import CurrentUser
 
-from app.core.config import settings
+from app.core.config import get_settings
+
+settings = get_settings()
 
 
 AUTHORIZED_PARTIES = [

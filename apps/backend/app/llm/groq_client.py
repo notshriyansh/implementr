@@ -1,14 +1,16 @@
 from collections.abc import AsyncGenerator
 
 from groq import Groq
+from app.core.config import get_settings
 
-from app.core.config import settings
+
 from app.llm.base import BaseLLM
 
 from app.observability.tracing import (
     trace_execution,
 )
 
+settings = get_settings()
 
 class GroqLLM(BaseLLM):
     def __init__(self) -> None:
