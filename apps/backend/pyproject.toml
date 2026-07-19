@@ -24,6 +24,7 @@ dependencies = [
     "clerk-backend-api==6.0.1",
     "sqlalchemy",
     "langgraph",
+    "psycopg[binary]",
 ]
 
 [tool.setuptools.packages.find]
