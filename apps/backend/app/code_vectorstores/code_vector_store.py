@@ -1,9 +1,7 @@
 import faiss
 import numpy as np
 
-from app.schemas.code_chunk import (
-    CodeChunk,
-)
+from app.schemas.code_chunk import CodeChunk
 
 
 class CodeVectorStore:
@@ -12,34 +10,21 @@ class CodeVectorStore:
         embedding_dimension: int = 384,
     ) -> None:
         self.index = faiss.IndexFlatIP(
-            embedding_dimension
+            embedding_dimension,
         )
 
-        self.chunks: list[
-            CodeChunk
-        ] = []
+        self.chunks: list[CodeChunk] = []
 
     async def add_embeddings(
         self,
         embeddings: np.ndarray,
         chunks: list[CodeChunk],
     ) -> None:
-        embeddings = embeddings.astype(
-            "float32"
-        )
+        embeddings = embeddings.astype("float32")
 
-        print(
-            "VECTOR STORE RECEIVED:",
-            embeddings.shape,
-        )
+        faiss.normalize_L2(embeddings)
 
-        faiss.normalize_L2(
-            embeddings
-        )
-
-        self.index.add(
-            embeddings
-        )
+        self.index.add(embeddings)
 
         self.chunks.extend(chunks)
 
@@ -48,34 +33,19 @@ class CodeVectorStore:
         query_embedding: np.ndarray,
         k: int = 5,
     ) -> list[CodeChunk]:
-        query_embedding = (
-            query_embedding.astype(
-                "float32"
-            )
+        query_embedding = query_embedding.astype("float32")
+
+        faiss.normalize_L2(query_embedding)
+
+        _, indices = self.index.search(
+            query_embedding,
+            k,
         )
 
-        faiss.normalize_L2(
-            query_embedding
-        )
-
-        scores, indices = (
-            self.index.search(
-                query_embedding,
-                k,
-            )
-        )
-
-        results = []
+        results: list[CodeChunk] = []
 
         for idx in indices[0]:
-            if (
-                idx != -1
-                and idx < len(
-                    self.chunks
-                )
-            ):
-                results.append(
-                    self.chunks[idx]
-                )
+            if idx != -1 and idx < len(self.chunks):
+                results.append(self.chunks[idx])
 
         return results

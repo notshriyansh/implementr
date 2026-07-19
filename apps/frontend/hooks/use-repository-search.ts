@@ -9,5 +9,6 @@ export function useRepositorySearch(query: string) {
     queryKey: ["repository-search", query],
     queryFn: () => searchRepository(query),
     enabled: query.trim().length > 1,
+    retry: false,
   });
 }

@@ -18,6 +18,8 @@ dependencies = [
     "numpy",
     "groq",
     "clerk-backend-api==6.0.1",
+    "sqlalchemy",
+    "langgraph",
 ]
 
 [tool.ruff]

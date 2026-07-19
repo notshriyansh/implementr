@@ -8,5 +8,6 @@ export function usePaperSearch(query: string) {
     queryKey: ["papers", query],
     queryFn: () => searchPapers(query),
     enabled: query.length > 0,
+    retry: false,
   });
 }

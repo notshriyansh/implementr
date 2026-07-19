@@ -2,21 +2,15 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from sentence_transformers import (
-    SentenceTransformer,
-)
+from sentence_transformers import SentenceTransformer
 
 
 class CodeEmbeddingModel:
     def __init__(
         self,
-        model_name: str = (
-            "all-MiniLM-L6-v2"
-        ),
+        model_name: str = "all-MiniLM-L6-v2",
     ) -> None:
-        self.model = SentenceTransformer(
-            model_name
-        )
+        self.model = SentenceTransformer(model_name)
 
     def symbol_to_text(
         self,
@@ -32,64 +26,26 @@ class CodeEmbeddingModel:
         self,
         chunks: list[Any],
     ) -> np.ndarray:
-
         texts: list[str] = []
 
         for chunk in chunks:
-
-            if hasattr(
-                chunk,
-                "symbol_name",
-            ):
-                texts.append(
-                    self.symbol_to_text(
-                        chunk
-                    )
-                )
-
-            elif hasattr(
-                chunk,
-                "content",
-            ):
-                texts.append(
-                    chunk.content
-                )
-
-            elif hasattr(
-                chunk,
-                "code",
-            ):
-                texts.append(
-                    chunk.code
-                )
-
+            if hasattr(chunk, "symbol_name"):
+                texts.append(self.symbol_to_text(chunk))
+            elif hasattr(chunk, "content"):
+                texts.append(chunk.content)
+            elif hasattr(chunk, "code"):
+                texts.append(chunk.code)
             else:
-                texts.append(
-                    str(chunk)
-                )
-
-        print("TEXT COUNT:", len(texts))
+                texts.append(str(chunk))
 
         embeddings = self.model.encode(
             texts,
             normalize_embeddings=True,
         )
 
-        embeddings = np.array(
+        return np.asarray(
             embeddings,
-            dtype="float32",
-        )
-
-        print(
-            "EMBEDDING SHAPE:",
-            embeddings.shape,
-        )
-
-        return embeddings
-
-        return np.array(
-            embeddings,
-            dtype="float32",
+            dtype=np.float32,
         )
 
     async def embed_query(
@@ -101,7 +57,7 @@ class CodeEmbeddingModel:
             normalize_embeddings=True,
         )
 
-        return np.array(
+        return np.asarray(
             embedding,
-            dtype="float32",
+            dtype=np.float32,
         )
