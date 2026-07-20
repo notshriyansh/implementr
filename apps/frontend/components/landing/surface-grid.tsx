@@ -2,35 +2,44 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import {
+  ArrowRight,
+  FileSearch,
+  FolderTree,
+  Network,
+  ClipboardList,
+} from "lucide-react";
 
 import { FadeIn } from "@/components/shared/fade-in";
 import { duration, ease, stagger } from "@/lib/motion";
 
-const surfaces = [
+const steps = [
   {
-    number: "01",
+    icon: FileSearch,
     title: "Research",
     description:
-      "Discover papers, ingest research and build implementation context.",
+      "Search papers, ingest PDFs and extract implementation knowledge.",
     href: "/research",
   },
   {
-    number: "02",
+    icon: FolderTree,
     title: "Repository",
-    description: "Search symbols, inspect files and understand code structure.",
+    description:
+      "Index repositories, inspect symbols and understand project structure.",
     href: "/repository",
   },
   {
-    number: "03",
+    icon: Network,
     title: "Architecture",
-    description: "Trace execution flows and identify modification points.",
+    description:
+      "Trace execution flows and identify where research fits into existing systems.",
     href: "/architecture",
   },
   {
-    number: "04",
-    title: "Workspace",
-    description: "Generate implementation plans, blueprints and evaluations.",
+    icon: ClipboardList,
+    title: "Blueprint",
+    description:
+      "Generate implementation plans grounded in the repository instead of generic suggestions.",
     href: "/workspace",
   },
 ];
@@ -44,7 +53,7 @@ const container = {
   },
 };
 
-const cardVariant = {
+const item = {
   hidden: { opacity: 0, y: 16 },
   show: {
     opacity: 1,
@@ -58,10 +67,23 @@ const cardVariant = {
 
 export function SurfaceGrid() {
   return (
-    <section className="mx-auto max-w-7xl px-6 pb-24 sm:pb-32">
+    <section className="mx-auto max-w-7xl px-6 pb-28">
       <FadeIn>
-        <div className="mb-8 text-xs uppercase tracking-[0.25em] text-muted-foreground">
-          Four Surfaces, One Workspace
+        <div className="max-w-3xl">
+          <div className="font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
+            Workflow
+          </div>
+
+          <h2 className="mt-3 text-3xl font-medium tracking-tight">
+            From paper to implementation,
+            <br />
+            one step at a time.
+          </h2>
+
+          <p className="mt-5 text-lg leading-8 text-muted-foreground">
+            Each stage builds on the previous one, giving the model more context
+            before generating implementation guidance.
+          </p>
         </div>
       </FadeIn>
 
@@ -69,33 +91,40 @@ export function SurfaceGrid() {
         variants={container}
         initial="hidden"
         whileInView="show"
-        viewport={{ once: true, margin: "-80px" }}
-        className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:rounded-3xl md:grid-cols-2"
+        viewport={{ once: true }}
+        className="mt-14 grid gap-6 lg:grid-cols-4"
       >
-        {surfaces.map((surface) => (
-          <motion.div key={surface.href} variants={cardVariant}>
-            <Link
-              href={surface.href}
-              className="group relative flex flex-col bg-background p-8 transition-all duration-300 hover:bg-muted/10 lg:p-10"
-            >
-              <div className="flex items-center justify-between">
-                <div className="font-mono text-xs text-muted-foreground">
-                  {surface.number}
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+
+          return (
+            <motion.div variants={item} key={step.title}>
+              <Link
+                href={step.href}
+                className="group flex h-full flex-col rounded-2xl border border-border bg-card p-7 transition-all duration-300 hover:border-foreground/15 hover:bg-muted/20"
+              >
+                <div className="flex items-center justify-between">
+                  <Icon className="h-5 w-5 text-muted-foreground" />
+
+                  <span className="font-mono text-xs text-muted-foreground">
+                    0{index + 1}
+                  </span>
                 </div>
 
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground/0 transition-all duration-300 group-hover:text-muted-foreground group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </div>
+                <h3 className="mt-8 text-xl font-medium">{step.title}</h3>
 
-              <h3 className="mt-6 text-2xl font-semibold sm:mt-8 sm:text-3xl lg:text-4xl">
-                {surface.title}
-              </h3>
+                <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
+                  {step.description}
+                </p>
 
-              <p className="mt-3 max-w-md text-base text-muted-foreground sm:mt-4 sm:text-lg">
-                {surface.description}
-              </p>
-            </Link>
-          </motion.div>
-        ))}
+                <div className="mt-8 flex items-center text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+                  Explore
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            </motion.div>
+          );
+        })}
       </motion.div>
     </section>
   );

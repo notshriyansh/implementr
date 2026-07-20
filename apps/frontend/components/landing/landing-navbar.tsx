@@ -6,72 +6,72 @@ import { Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-const navLinks = [
-  { label: "Research", href: "/research" },
-  { label: "Repository", href: "/repository" },
-  { label: "Architecture", href: "/architecture" },
+const navItems = [
+  {
+    label: "Research",
+    href: "/research",
+  },
+  {
+    label: "Repository",
+    href: "/repository",
+  },
+  {
+    label: "Architecture",
+    href: "/architecture",
+  },
 ];
 
 export function LandingNavbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
-          IMPLEMENTR
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
+        <Link
+          href="/"
+          className="text-lg font-medium tracking-tight transition-opacity hover:opacity-80"
+        >
+          Implementr
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
+        <nav className="hidden items-center gap-10 md:flex">
+          {navItems.map((item) => (
             <Link
-              key={link.href}
-              href={link.href}
-              className="text-[13px] text-muted-foreground transition-colors duration-200 hover:text-foreground"
+              key={item.href}
+              href={item.href}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             >
-              {link.label}
+              {item.label}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button asChild size="sm" className="hidden md:inline-flex">
+          <Button asChild size="sm">
             <Link href="/research">Enter Workspace</Link>
           </Button>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="inline-flex md:hidden h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+          <button onClick={() => setOpen(!open)} className="md:hidden">
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
-      {mobileOpen && (
-        <nav className="border-t border-border/50 bg-background px-6 py-4 md:hidden">
-          <div className="flex flex-col gap-3">
-            {navLinks.map((link) => (
+      {open && (
+        <div className="border-t border-border bg-background md:hidden">
+          <nav className="mx-auto flex max-w-7xl flex-col px-6 py-5">
+            {navItems.map((item) => (
               <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground py-2"
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="py-3 text-muted-foreground"
               >
-                {link.label}
+                {item.label}
               </Link>
             ))}
-
-            <Button asChild size="sm" className="mt-2 w-full">
-              <Link href="/research">Enter Workspace</Link>
-            </Button>
-          </div>
-        </nav>
+          </nav>
+        </div>
       )}
     </header>
   );

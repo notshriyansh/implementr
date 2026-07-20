@@ -1,80 +1,58 @@
 import Link from "next/link";
 
-const productLinks = [
-  { label: "Research", href: "/research" },
-  { label: "Repository", href: "/repository" },
-  { label: "Architecture", href: "/architecture" },
-  { label: "Workspace", href: "/workspace" },
-];
-
-const resourceLinks = [
-  { label: "Documentation", href: "#" },
-  { label: "GitHub", href: "#" },
-  { label: "Changelog", href: "#" },
-  { label: "Status", href: "#" },
+const links = [
+  {
+    label: "Research",
+    href: "/research",
+  },
+  {
+    label: "Repository",
+    href: "/repository",
+  },
+  {
+    label: "Architecture",
+    href: "/architecture",
+  },
+  {
+    label: "Workspace",
+    href: "/workspace",
+  },
 ];
 
 export function LandingFooter() {
   return (
     <footer className="border-t border-border">
-      <div className="mx-auto max-w-7xl px-6 py-14 sm:py-20">
-        <div className="flex flex-col gap-12 md:flex-row md:justify-between">
-          <div className="max-w-xs">
-            <div className="text-sm font-semibold tracking-tight">
-              IMPLEMENTR
-            </div>
+      <div className="mx-auto flex max-w-7xl flex-col gap-12 px-6 py-16 md:flex-row md:justify-between">
+        <div className="max-w-sm">
+          <div className="text-lg font-medium tracking-tight">Implementr</div>
 
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Architecture-aware implementation for modern ML systems.
-            </p>
-          </div>
+          <p className="mt-4 text-sm leading-7 text-muted-foreground">
+            Repository-aware implementation assistant for turning research
+            papers into production-ready engineering plans.
+          </p>
+        </div>
 
-          <div className="grid grid-cols-2 gap-12 sm:gap-16">
-            <div>
-              <div className="mb-4 text-[11px] uppercase tracking-widest text-muted-foreground">
-                Product
-              </div>
-
-              <div className="space-y-2.5">
-                {productLinks.map((link) => (
-                  <div key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
-                    >
-                      {link.label}
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="mb-4 text-[11px] uppercase tracking-widest text-muted-foreground">
-                Resources
-              </div>
-
-              <div className="space-y-2.5">
-                {resourceLinks.map((link) => (
-                  <div key={link.label}>
-                    <a
-                      href={link.href}
-                      className="text-sm text-muted-foreground transition-colors duration-200 hover:text-foreground"
-                    >
-                      {link.label}
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className="flex flex-wrap gap-10">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
       </div>
 
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-          <span className="text-xs text-muted-foreground">
+          <span className="font-mono text-xs text-muted-foreground">
             © {new Date().getFullYear()} Implementr
+          </span>
+
+          <span className="font-mono text-xs text-muted-foreground">
+            Repository-aware implementation
           </span>
         </div>
       </div>

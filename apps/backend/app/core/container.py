@@ -1,10 +1,3 @@
-"""Lazy application dependency container.
-
-This module intentionally imports concrete services inside their properties so
-importing the FastAPI application does not import or construct heavyweight AI
-and vector-store dependencies.
-"""
-
 from functools import cached_property
 from typing import TYPE_CHECKING
 
