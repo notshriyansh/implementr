@@ -1,3 +1,4 @@
+import gc
 from pathlib import Path
 from typing import Any
 
@@ -6,6 +7,10 @@ from sentence_transformers import SentenceTransformer
 
 
 class CodeEmbeddingModel:
+    EMBED_BATCH_SIZE = 8
+
+    MODEL_BATCH_SIZE = 4
+
     def __init__(
         self,
         model_name: str = "all-MiniLM-L6-v2",
@@ -26,38 +31,59 @@ class CodeEmbeddingModel:
         self,
         chunks: list[Any],
     ) -> np.ndarray:
-        texts: list[str] = []
 
-        for chunk in chunks:
-            if hasattr(chunk, "symbol_name"):
-                texts.append(self.symbol_to_text(chunk))
-            elif hasattr(chunk, "content"):
-                texts.append(chunk.content)
-            elif hasattr(chunk, "code"):
-                texts.append(chunk.code)
-            else:
-                texts.append(str(chunk))
+        embeddings = []
 
-        embeddings = self.model.encode(
-            texts,
-            normalize_embeddings=True,
-        )
+        for i in range(
+            0,
+            len(chunks),
+            self.EMBED_BATCH_SIZE,
+        ):
+
+            batch_chunks = chunks[
+                i : i + self.EMBED_BATCH_SIZE
+            ]
+
+            batch_texts = []
+
+            for chunk in batch_chunks:
+
+                if hasattr(chunk, "symbol_name"):
+                    batch_texts.append(
+                        self.symbol_to_text(chunk)
+                    )
+
+                elif hasattr(chunk, "content"):
+                    batch_texts.append(
+                        chunk.content
+                    )
+
+                elif hasattr(chunk, "code"):
+                    batch_texts.append(
+                        chunk.code
+                    )
+
+                else:
+                    batch_texts.append(
+                        str(chunk)
+                    )
+
+            batch_embeddings = self.model.encode(
+                batch_texts,
+                batch_size=self.MODEL_BATCH_SIZE,
+                normalize_embeddings=True,
+                show_progress_bar=False,
+            )
+
+            embeddings.append(batch_embeddings)
+
+            del batch_chunks
+            del batch_texts
+            del batch_embeddings
+
+            gc.collect()
 
         return np.asarray(
-            embeddings,
-            dtype=np.float32,
-        )
-
-    async def embed_query(
-        self,
-        query: str,
-    ) -> np.ndarray:
-        embedding = self.model.encode(
-            [query],
-            normalize_embeddings=True,
-        )
-
-        return np.asarray(
-            embedding,
+            np.vstack(embeddings),
             dtype=np.float32,
         )

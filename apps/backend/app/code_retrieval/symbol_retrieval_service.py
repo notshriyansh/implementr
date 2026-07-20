@@ -38,6 +38,8 @@ class SymbolRetrievalService:
             symbols,
         )
 
+        del embeddings
+
     async def retrieve(
         self,
         query: str,
