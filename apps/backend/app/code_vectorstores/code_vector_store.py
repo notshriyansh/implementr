@@ -26,6 +26,10 @@ class CodeVectorStore:
 
         self.index.add(embeddings)
 
+        print(
+            f"Indexed {self.index.ntotal} code vectors."
+        )
+
         self.chunks.extend(chunks)
 
     async def similarity_search(
@@ -33,9 +37,17 @@ class CodeVectorStore:
         query_embedding: np.ndarray,
         k: int = 5,
     ) -> list[CodeChunk]:
-        query_embedding = query_embedding.astype("float32")
+        query_embedding = (
+            np.asarray(
+                query_embedding,
+                dtype=np.float32,
+            )
+            .reshape(1, -1)
+        )
 
-        faiss.normalize_L2(query_embedding)
+        faiss.normalize_L2(
+            query_embedding
+        )
 
         _, indices = self.index.search(
             query_embedding,

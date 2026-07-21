@@ -1,5 +1,3 @@
-"""FastAPI dependency providers backed by the lazy application container."""
-
 from __future__ import annotations
 
 from functools import lru_cache
@@ -10,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from app.core.container import Container
 from app.db.session import get_db
+
+from app.orchestration.service import JobService
 
 if TYPE_CHECKING:
     from app.agents.autonomous_agent import AutonomousResearchAgent
@@ -290,3 +290,8 @@ def get_workspace_output_service(
     from app.workspaces.workspace_output_service import WorkspaceOutputService
 
     return WorkspaceOutputService(db=db)
+
+def get_job_service(
+    db: Session = Depends(get_db),
+) -> JobService:
+    return JobService(db)

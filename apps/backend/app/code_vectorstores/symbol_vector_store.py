@@ -37,6 +37,10 @@ class SymbolVectorStore:
             embeddings
         )
 
+        print(
+            f"Indexed {self.index.ntotal} symbol vectors."
+        )
+
         self.symbols.extend(
             symbols
         )
@@ -48,9 +52,11 @@ class SymbolVectorStore:
     ) -> list[CodeSymbol]:
 
         query_embedding = (
-            query_embedding.astype(
-                "float32"
+            np.asarray(
+                query_embedding,
+                dtype=np.float32,
             )
+            .reshape(1, -1)
         )
 
         faiss.normalize_L2(

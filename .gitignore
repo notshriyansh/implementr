@@ -79,3 +79,5 @@ chunks.json
 # Python packaging
 build/
 *.egg-info/
+
+**/.cph/

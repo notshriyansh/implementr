@@ -45,10 +45,8 @@ class SymbolRetrievalService:
         query: str,
         k: int = 5,
     ) -> list[CodeSymbol]:
-        embedding = await (
-            self.embedding_model.embed_query(
-                query
-            )
+        embedding = self.embedding_model.embed_text(
+            query
         )
 
         return await (

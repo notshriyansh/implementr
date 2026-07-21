@@ -52,10 +52,8 @@ class CodeRetrievalService:
         query: str,
         k: int = 5,
     ) -> list[CodeChunk]:
-        query_embedding = (
-            await self.embedding_model.embed_query(
-                query
-            )
+        query_embedding = self.embedding_model.embed_text(
+            query
         )
 
         results = await (

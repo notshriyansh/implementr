@@ -24,6 +24,9 @@ from app.api.routes.workspace_outputs import (
 from app.api.routes.workspaces import (
     router as workspaces_router,
 )
+from app.api.routes.orchestration import (
+    router as orchestration_router,
+)
 from app.core.config import get_settings
 from app.core.logging import setup_logging
 
@@ -141,6 +144,11 @@ app.include_router(
 
 app.include_router(
     workspace_outputs_router,
+    prefix=settings.api_v1_prefix,
+)
+
+app.include_router(
+    orchestration_router,
     prefix=settings.api_v1_prefix,
 )
 

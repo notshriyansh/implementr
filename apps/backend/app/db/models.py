@@ -11,6 +11,13 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy import ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 
+from sqlalchemy import Enum
+
+from app.orchestration.enums import (
+    JobStatus,
+    JobType,
+)
+
 from app.db.base import Base
 
 
@@ -114,4 +121,59 @@ class WorkspaceOutput(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=datetime.utcnow,
+    )
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id: Mapped[str] = mapped_column(
+        String,
+        primary_key=True,
+        default=lambda: str(uuid4()),
+    )
+
+    job_type: Mapped[JobType] = mapped_column(
+        Enum(JobType),
+        nullable=False,
+    )
+
+    status: Mapped[JobStatus] = mapped_column(
+        Enum(JobStatus),
+        nullable=False,
+        default=JobStatus.QUEUED,
+    )
+
+    payload: Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=False,
+    )
+
+    result: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
+    )
+
+    error: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+    )
+
+    claimed_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
+    )
+
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
+    )
+
+    completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
     )

@@ -4,9 +4,6 @@ from app.code_ingestion.code_chunker import (
 from app.code_ingestion.repository_scanner import (
     RepositoryScanner,
 )
-from app.schemas.code_chunk import (
-    CodeChunk,
-)
 from app.code_retrieval.code_retrieval_service import (
     CodeRetrievalService,
 )
@@ -70,7 +67,7 @@ class CodeIngestionService:
     async def ingest_repository(
         self,
         repo_path: str,
-    ) -> list[CodeChunk]:
+    ) -> int:
         
         self.repository_analyzer.analyze(
             repo_path
@@ -80,12 +77,21 @@ class CodeIngestionService:
             repo_path
         )
 
+        total_chunks = 0
+
 
         for file in files:
             chunks = self.chunker.chunk_file(file)
 
             if chunks:
-                await self.retrieval_service.index_chunks(chunks)
+
+                total_chunks += len(
+                    chunks
+                )
+
+                await self.retrieval_service.index_chunks(
+                    chunks
+                )
 
             symbols = self.symbol_extractor.extract_symbols(str(file))
 
@@ -102,4 +108,4 @@ class CodeIngestionService:
             del chunks
             del symbols
 
-        return []
+        return total_chunks

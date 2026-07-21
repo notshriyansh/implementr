@@ -8,7 +8,6 @@ from sentence_transformers import SentenceTransformer
 
 class CodeEmbeddingModel:
     EMBED_BATCH_SIZE = 8
-
     MODEL_BATCH_SIZE = 4
 
     def __init__(
@@ -27,46 +26,66 @@ class CodeEmbeddingModel:
             f"File: {Path(symbol.file_path).stem}"
         )
 
-    def embed_chunks(
+    def _object_to_text(
         self,
-        chunks: list[Any],
-    ) -> np.ndarray:
+        obj: Any,
+    ) -> str:
 
-        embeddings = []
+        if hasattr(obj, "symbol_name"):
+            return self.symbol_to_text(obj)
+
+        if hasattr(obj, "content"):
+            return obj.content
+
+        if hasattr(obj, "code"):
+            return obj.code
+
+        return str(obj)
+
+    def embed_text(
+        self,
+        text: str,
+    ) -> np.ndarray:
+        """
+        Embed a single piece of text (typically a search query).
+        """
+
+        embedding = self.model.encode(
+            text,
+            normalize_embeddings=True,
+            show_progress_bar=False,
+        )
+
+        return np.asarray(
+            embedding,
+            dtype=np.float32,
+        )
+
+    def embed_texts(
+        self,
+        texts: list[str],
+    ) -> np.ndarray:
+        """
+        Embed multiple text strings in batches.
+        """
+
+        if not texts:
+            return np.empty(
+                (0, self.model.get_sentence_embedding_dimension()),
+                dtype=np.float32,
+            )
+
+        embeddings: list[np.ndarray] = []
 
         for i in range(
             0,
-            len(chunks),
+            len(texts),
             self.EMBED_BATCH_SIZE,
         ):
 
-            batch_chunks = chunks[
+            batch_texts = texts[
                 i : i + self.EMBED_BATCH_SIZE
             ]
-
-            batch_texts = []
-
-            for chunk in batch_chunks:
-
-                if hasattr(chunk, "symbol_name"):
-                    batch_texts.append(
-                        self.symbol_to_text(chunk)
-                    )
-
-                elif hasattr(chunk, "content"):
-                    batch_texts.append(
-                        chunk.content
-                    )
-
-                elif hasattr(chunk, "code"):
-                    batch_texts.append(
-                        chunk.code
-                    )
-
-                else:
-                    batch_texts.append(
-                        str(chunk)
-                    )
 
             batch_embeddings = self.model.encode(
                 batch_texts,
@@ -77,7 +96,6 @@ class CodeEmbeddingModel:
 
             embeddings.append(batch_embeddings)
 
-            del batch_chunks
             del batch_texts
             del batch_embeddings
 
@@ -87,3 +105,18 @@ class CodeEmbeddingModel:
             np.vstack(embeddings),
             dtype=np.float32,
         )
+
+    def embed_chunks(
+        self,
+        chunks: list[Any],
+    ) -> np.ndarray:
+        """
+        Convenience wrapper used during indexing.
+        """
+
+        texts = [
+            self._object_to_text(chunk)
+            for chunk in chunks
+        ]
+
+        return self.embed_texts(texts)
