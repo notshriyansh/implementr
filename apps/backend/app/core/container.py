@@ -13,7 +13,6 @@ if TYPE_CHECKING:
         ImplementationBlueprintService,
     )
     from app.cache.memory_cache import MemoryCache
-    from app.code_embeddings.code_embedding_model import CodeEmbeddingModel
     from app.code_ingestion.repository_analyzer import RepositoryAnalyzer
     from app.code_ingestion.symbol_extractor import SymbolExtractor
     from app.code_retrieval.code_retrieval_service import CodeRetrievalService
@@ -78,12 +77,6 @@ class Container:
         )
 
     @cached_property
-    def code_embedding_model(self) -> "CodeEmbeddingModel":
-        from app.code_embeddings.code_embedding_model import CodeEmbeddingModel
-
-        return CodeEmbeddingModel()
-
-    @cached_property
     def code_vector_store(self) -> "CodeVectorStore":
         from app.code_vectorstores.code_vector_store import CodeVectorStore
 
@@ -94,7 +87,7 @@ class Container:
         from app.code_retrieval.code_retrieval_service import CodeRetrievalService
 
         return CodeRetrievalService(
-            embedding_model=self.code_embedding_model,
+            embedding_model=self.embedding_model,
             vector_store=self.code_vector_store,
         )
 
@@ -115,7 +108,7 @@ class Container:
         from app.code_retrieval.symbol_retrieval_service import SymbolRetrievalService
 
         return SymbolRetrievalService(
-            embedding_model=self.code_embedding_model,
+            embedding_model=self.embedding_model,
             vector_store=self.symbol_vector_store,
         )
 

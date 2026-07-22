@@ -1,21 +1,28 @@
 from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
 
-from app.schemas.chunk import DocumentChunk
+import numpy as np
+
+T = TypeVar("T")
 
 
-class BaseVectorStore(ABC):
+class BaseVectorStore(
+    Generic[T],
+    ABC,
+):
     @abstractmethod
-    async def add_embeddings(
+    async def add(
         self,
-        embeddings,
-        chunks: list[DocumentChunk],
+        items: list[T],
+        embeddings: np.ndarray,
     ) -> None:
-        pass
+        ...
 
     @abstractmethod
     async def similarity_search(
         self,
-        query_embedding,
+        query_embedding: np.ndarray,
         k: int = 5,
-    ) -> list[DocumentChunk]:
-        pass
+    ) -> list[T]:
+        
+        ...

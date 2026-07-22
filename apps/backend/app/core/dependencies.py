@@ -24,7 +24,6 @@ if TYPE_CHECKING:
     from app.blueprints.implementation_blueprint_service import (
         ImplementationBlueprintService,
     )
-    from app.code_embeddings.code_embedding_model import CodeEmbeddingModel
     from app.code_ingestion.code_chunker import CodeChunker
     from app.code_ingestion.ingestion_service import CodeIngestionService
     from app.code_ingestion.repository_analyzer import RepositoryAnalyzer
@@ -207,10 +206,6 @@ def get_code_chunker() -> CodeChunker:
     from app.code_ingestion.code_chunker import CodeChunker
 
     return CodeChunker()
-
-
-def get_code_embedding_model() -> CodeEmbeddingModel:
-    return get_container().code_embedding_model
 
 
 def get_code_vector_store() -> CodeVectorStore:

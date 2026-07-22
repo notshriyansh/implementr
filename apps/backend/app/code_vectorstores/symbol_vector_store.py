@@ -4,9 +4,12 @@ import numpy as np
 from app.schemas.code_symbol import (
     CodeSymbol,
 )
+from app.vectorstores.base import BaseVectorStore
 
 
-class SymbolVectorStore:
+class SymbolVectorStore(
+    BaseVectorStore[CodeSymbol],
+):
     def __init__(
         self,
         embedding_dimension: int = 384,
@@ -19,10 +22,10 @@ class SymbolVectorStore:
             CodeSymbol
         ] = []
 
-    async def add_symbols(
+    async def add(
         self,
+        items: list[CodeSymbol],
         embeddings: np.ndarray,
-        symbols: list[CodeSymbol],
     ) -> None:
 
         embeddings = embeddings.astype(
@@ -41,9 +44,7 @@ class SymbolVectorStore:
             f"Indexed {self.index.ntotal} symbol vectors."
         )
 
-        self.symbols.extend(
-            symbols
-        )
+        self.symbols.extend(items)
 
     async def similarity_search(
         self,

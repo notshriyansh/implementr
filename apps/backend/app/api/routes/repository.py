@@ -1,7 +1,6 @@
 from pathlib import Path
-from fastapi import HTTPException
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.code_ingestion.ingestion_service import (
     CodeIngestionService,
@@ -18,7 +17,6 @@ from app.core.dependencies import (
 from app.code_ingestion.repository_analyzer import (
     RepositoryAnalyzer,
 )
-
 from app.core.dependencies import (
     get_repository_analyzer,
 )
@@ -32,45 +30,35 @@ router = APIRouter(
 @router.post("/ingest")
 async def ingest_repository(
     repo_path: str,
-    ingestion_service: (
-        CodeIngestionService
-    ) = Depends(
+    ingestion_service: CodeIngestionService = Depends(
         get_code_ingestion_service,
     ),
 ) -> dict:
-    chunks = await ingestion_service.ingest_repository(
+    total_chunks = await ingestion_service.ingest_repository(
         repo_path
     )
-    
 
     return {
-        "total_chunks": len(chunks),
-        "sample_chunk": (
-            chunks[0]
-            if chunks
-            else None
-        ),
+        "total_chunks": total_chunks,
     }
+
 
 @router.get("/search")
 async def search_repository(
     query: str,
-    retrieval_service: (
-        CodeRetrievalService
-    ) = Depends(
+    retrieval_service: CodeRetrievalService = Depends(
         get_code_retrieval_service,
     ),
 ) -> dict:
-    chunks = (
-        await retrieval_service.retrieve(
-            query=query,
-            k=5,
-        )
+    chunks = await retrieval_service.retrieve(
+        query=query,
+        k=5,
     )
 
     return {
         "results": chunks,
     }
+
 
 @router.get("/structure")
 async def analyze_repository(
@@ -91,12 +79,10 @@ async def get_file_content(
     repo_path: str,
     file_path: str,
 ) -> dict:
-    
-    
     try:
         base_dir = Path(repo_path).resolve()
         target_file = (base_dir / file_path).resolve()
-        
+
         try:
             target_file.relative_to(base_dir)
         except ValueError:
@@ -104,15 +90,24 @@ async def get_file_content(
                 status_code=400,
                 detail="Invalid file path",
             )
-            
+
         if not target_file.is_file():
-            raise HTTPException(status_code=404, detail="File not found")
-            
-        content = target_file.read_text(encoding="utf-8")
+            raise HTTPException(
+                status_code=404,
+                detail="File not found",
+            )
+
+        content = target_file.read_text(
+            encoding="utf-8"
+        )
+
         size_bytes = target_file.stat().st_size
-        line_count = len(content.splitlines())
-        
+        line_count = len(
+            content.splitlines()
+        )
+
         ext = target_file.suffix.lower()
+
         language_map = {
             ".py": "python",
             ".ts": "typescript",
@@ -126,16 +121,25 @@ async def get_file_content(
             ".rs": "rust",
             ".go": "go",
         }
-        language = language_map.get(ext, "plaintext")
-        
+
+        language = language_map.get(
+            ext,
+            "plaintext",
+        )
+
         return {
             "path": file_path,
             "content": content,
             "language": language,
             "size_bytes": size_bytes,
-            "line_count": line_count
+            "line_count": line_count,
         }
+
     except HTTPException:
         raise
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )

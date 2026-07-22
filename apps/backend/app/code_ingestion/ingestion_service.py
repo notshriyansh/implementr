@@ -22,6 +22,12 @@ from app.concepts.concept_index import (
 from app.code_ingestion.repository_analyzer import (
     RepositoryAnalyzer,
 )
+from app.schemas.code_chunk import (
+    CodeChunk,
+)
+from app.schemas.code_symbol import (
+    CodeSymbol,
+)
 
 
 class CodeIngestionService:
@@ -37,75 +43,59 @@ class CodeIngestionService:
         repository_analyzer: RepositoryAnalyzer,
     ) -> None:
         self.scanner = scanner
-
         self.chunker = chunker
-
-        self.retrieval_service = (
-            retrieval_service
-        )
-
-        self.symbol_extractor = (
-            symbol_extractor
-        )
-
-        self.symbol_retrieval_service = (
-            symbol_retrieval_service
-        )
-
-        self.concept_service = (
-            concept_service
-        )
-
-        self.concept_index = (
-            concept_index
-        )
-
-        self.repository_analyzer = (
-        repository_analyzer
-    )
+        self.retrieval_service = retrieval_service
+        self.symbol_extractor = symbol_extractor
+        self.symbol_retrieval_service = symbol_retrieval_service
+        self.concept_service = concept_service
+        self.concept_index = concept_index
+        self.repository_analyzer = repository_analyzer
 
     async def ingest_repository(
         self,
         repo_path: str,
     ) -> int:
-        
-        self.repository_analyzer.analyze(
-            repo_path
-        )
 
-        files = self.scanner.scan(
-            repo_path
-        )
+        self.repository_analyzer.analyze(repo_path)
+
+        files = self.scanner.scan(repo_path)
 
         total_chunks = 0
 
+        all_chunks: list[CodeChunk] = []
+        all_symbols: list[CodeSymbol] = []
 
         for file in files:
+
             chunks = self.chunker.chunk_file(file)
 
             if chunks:
+                total_chunks += len(chunks)
+                all_chunks.extend(chunks)
 
-                total_chunks += len(
-                    chunks
-                )
-
-                await self.retrieval_service.index_chunks(
-                    chunks
-                )
-
-            symbols = self.symbol_extractor.extract_symbols(str(file))
+            symbols = self.symbol_extractor.extract_symbols(
+                str(file)
+            )
 
             if symbols:
-                await self.symbol_retrieval_service.index_symbols(symbols)
+                all_symbols.extend(symbols)
 
-            for symbol in symbols:
+                for symbol in symbols:
+                    concepts = self.concept_service.symbol_to_concepts(
+                        symbol
+                    )
 
-                concepts = self.concept_service.symbol_to_concepts(symbol)
+                    for concept in concepts:
+                        self.concept_index.add(concept)
 
-                for concept in concepts:
-                    self.concept_index.add(concept)
+        if all_chunks:
+            await self.retrieval_service.index_chunks(
+                all_chunks
+            )
 
-            del chunks
-            del symbols
+        if all_symbols:
+            await self.symbol_retrieval_service.index_symbols(
+                all_symbols
+            )
 
         return total_chunks

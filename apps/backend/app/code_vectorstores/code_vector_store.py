@@ -2,9 +2,12 @@ import faiss
 import numpy as np
 
 from app.schemas.code_chunk import CodeChunk
+from app.vectorstores.base import BaseVectorStore
 
 
-class CodeVectorStore:
+class CodeVectorStore(
+    BaseVectorStore[CodeChunk],
+):
     def __init__(
         self,
         embedding_dimension: int = 384,
@@ -15,10 +18,10 @@ class CodeVectorStore:
 
         self.chunks: list[CodeChunk] = []
 
-    async def add_embeddings(
+    async def add(
         self,
+        items: list[CodeChunk],
         embeddings: np.ndarray,
-        chunks: list[CodeChunk],
     ) -> None:
         embeddings = embeddings.astype("float32")
 
@@ -30,7 +33,7 @@ class CodeVectorStore:
             f"Indexed {self.index.ntotal} code vectors."
         )
 
-        self.chunks.extend(chunks)
+        self.chunks.extend(items)
 
     async def similarity_search(
         self,

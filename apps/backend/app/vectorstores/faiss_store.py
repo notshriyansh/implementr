@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class FAISSVectorStore(
-    BaseVectorStore,
+    BaseVectorStore[DocumentChunk],
 ):
     INDEX_PATH = Path(
         "data/vector_store/faiss.index"
@@ -89,16 +89,16 @@ class FAISSVectorStore(
             )
         )
 
-    async def add_embeddings(
+    async def add(
         self,
+        items: list[DocumentChunk],
         embeddings: np.ndarray,
-        chunks: list[DocumentChunk],
     ) -> None:
         self.index.add(
             embeddings.astype("float32")
         )
 
-        self.chunks.extend(chunks)
+        self.chunks.extend(items)
 
         self._persist()
 

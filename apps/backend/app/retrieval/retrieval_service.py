@@ -39,9 +39,9 @@ class RetrievalService:
             )
         )
 
-        await self.vector_store.add_embeddings(
+        await self.vector_store.add(
+            items=chunks,
             embeddings=embeddings,
-            chunks=chunks,
         )
 
     @trace_execution(
