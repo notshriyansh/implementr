@@ -24,5 +24,20 @@ class BaseVectorStore(
         query_embedding: np.ndarray,
         k: int = 5,
     ) -> list[T]:
-        
+        ...
+
+    @abstractmethod
+    async def delete_by_field(
+        self,
+        field: str,
+        value: str,
+    ) -> None:
+        ...
+
+    @abstractmethod
+    async def count(self) -> int:
+        ...
+
+    @abstractmethod
+    async def clear(self) -> None:
         ...

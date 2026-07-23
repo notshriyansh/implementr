@@ -1,4 +1,3 @@
-import gc
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -9,12 +8,12 @@ from app.embeddings.base import BaseEmbeddingModel
 class SentenceTransformerEmbeddingModel(
     BaseEmbeddingModel
 ):
-    EMBED_BATCH_SIZE = 64
-    MODEL_BATCH_SIZE = 32
+    EMBED_BATCH_SIZE = 256
+    MODEL_BATCH_SIZE = 128
 
     def __init__(
         self,
-        model_name: str = "all-MiniLM-L6-v2",
+        model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
     ) -> None:
         self.model = SentenceTransformer(
             model_name
@@ -69,11 +68,6 @@ class SentenceTransformerEmbeddingModel(
             )
 
             embeddings.append(batch_embeddings)
-
-            del batch
-            del batch_embeddings
-
-            gc.collect()
 
         return np.asarray(
             np.vstack(embeddings),

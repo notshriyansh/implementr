@@ -29,6 +29,18 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    vector_store: str = "qdrant"
+
+    qdrant_url: str = "http://localhost:6333"
+
+    qdrant_api_key: str = ""
+
+    qdrant_documents_collection: str = "documents"
+
+    qdrant_code_collection: str = "code"
+
+    qdrant_symbols_collection: str = "symbols"
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

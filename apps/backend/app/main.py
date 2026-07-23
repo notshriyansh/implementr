@@ -27,6 +27,7 @@ from app.api.routes.workspaces import (
 from app.api.routes.orchestration import (
     router as orchestration_router,
 )
+from app.vectorstores.qdrant.collections import ensure_collections
 from app.core.config import get_settings
 from app.core.logging import setup_logging
 
@@ -43,10 +44,12 @@ app = FastAPI(
 
 
 @app.on_event("startup")
-async def startup_log():
+async def startup() -> None:
+    logger.info("Connecting to Qdrant...")
+    await ensure_collections()
+    logger.info("Qdrant collections ready.")
     logger.info("====================================")
     logger.info("Implementr Backend Started")
-    logger.info("FastAPI startup completed successfully.")
     logger.info("====================================")
 
 

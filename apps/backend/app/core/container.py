@@ -1,6 +1,8 @@
 from functools import cached_property
 from typing import TYPE_CHECKING
 
+from app.vectorstores.qdrant.client import get_qdrant_client
+
 if TYPE_CHECKING:
     from app.architecture.architecture_reasoning_service import (
         ArchitectureReasoningService,
@@ -17,8 +19,6 @@ if TYPE_CHECKING:
     from app.code_ingestion.symbol_extractor import SymbolExtractor
     from app.code_retrieval.code_retrieval_service import CodeRetrievalService
     from app.code_retrieval.symbol_retrieval_service import SymbolRetrievalService
-    from app.code_vectorstores.code_vector_store import CodeVectorStore
-    from app.code_vectorstores.symbol_vector_store import SymbolVectorStore
     from app.concepts.concept_extractor import ConceptExtractor
     from app.concepts.concept_index import ConceptIndex
     from app.concepts.concept_matcher import ConceptMatcher
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
         ResearchReproductionService,
     )
     from app.retrieval.retrieval_service import RetrievalService
-    from app.vectorstores.faiss_store import FAISSVectorStore
+    
 
 
 class Container:
@@ -44,10 +44,20 @@ class Container:
         return SentenceTransformerEmbeddingModel()
 
     @cached_property
-    def vector_store(self) -> "FAISSVectorStore":
-        from app.vectorstores.faiss_store import FAISSVectorStore
+    def vector_store(self):
+        from app.core.config import get_settings
+        from app.schemas.chunk import DocumentChunk
+        from app.vectorstores.qdrant.vector_store import (
+            QdrantVectorStore,
+        )
 
-        return FAISSVectorStore()
+        settings = get_settings()
+
+        return QdrantVectorStore(
+            client=get_qdrant_client(),
+            collection_name=settings.qdrant_documents_collection,
+            model=DocumentChunk,
+        )
 
     @cached_property
     def llm(self) -> "GroqLLM":
@@ -77,10 +87,20 @@ class Container:
         )
 
     @cached_property
-    def code_vector_store(self) -> "CodeVectorStore":
-        from app.code_vectorstores.code_vector_store import CodeVectorStore
+    def code_vector_store(self):
+        from app.core.config import get_settings
+        from app.schemas.code_chunk import CodeChunk
+        from app.vectorstores.qdrant.vector_store import (
+            QdrantVectorStore,
+        )
 
-        return CodeVectorStore()
+        settings = get_settings()
+
+        return QdrantVectorStore(
+            client=get_qdrant_client(),
+            collection_name=settings.qdrant_code_collection,
+            model=CodeChunk,
+        )
 
     @cached_property
     def code_retrieval_service(self) -> "CodeRetrievalService":
@@ -92,10 +112,20 @@ class Container:
         )
 
     @cached_property
-    def symbol_vector_store(self) -> "SymbolVectorStore":
-        from app.code_vectorstores.symbol_vector_store import SymbolVectorStore
+    def symbol_vector_store(self):
+        from app.core.config import get_settings
+        from app.schemas.code_symbol import CodeSymbol
+        from app.vectorstores.qdrant.vector_store import (
+            QdrantVectorStore,
+        )
 
-        return SymbolVectorStore()
+        settings = get_settings()
+
+        return QdrantVectorStore(
+            client=get_qdrant_client(),
+            collection_name=settings.qdrant_symbols_collection,
+            model=CodeSymbol,
+        )
 
     @cached_property
     def symbol_extractor(self) -> "SymbolExtractor":
