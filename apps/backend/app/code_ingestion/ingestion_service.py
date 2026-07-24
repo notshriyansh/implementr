@@ -28,6 +28,7 @@ from app.schemas.code_chunk import (
 from app.schemas.code_symbol import (
     CodeSymbol,
 )
+from app.sources.base import BaseRepositorySource
 
 
 class CodeIngestionService:
@@ -53,12 +54,18 @@ class CodeIngestionService:
 
     async def ingest_repository(
         self,
-        repo_path: str,
+        source: BaseRepositorySource,
     ) -> int:
 
-        self.repository_analyzer.analyze(repo_path)
+        repository_root = await source.prepare()
 
-        files = self.scanner.scan(repo_path)
+        self.repository_analyzer.analyze(
+            repository_root
+        )
+
+        files = self.scanner.scan(
+            repository_root
+        )
 
         total_chunks = 0
 
@@ -67,14 +74,18 @@ class CodeIngestionService:
 
         for file in files:
 
-            chunks = self.chunker.chunk_file(file)
+            chunks = self.chunker.chunk_file(
+                repository_root,
+                file,
+            )
 
             if chunks:
                 total_chunks += len(chunks)
                 all_chunks.extend(chunks)
 
             symbols = self.symbol_extractor.extract_symbols(
-                str(file)
+                repository_root,
+                file,
             )
 
             if symbols:

@@ -27,17 +27,16 @@ class RepositoryAnalyzer:
 
     def analyze(
         self,
-        repo_path: str,
+        repository_root: Path,
     ) -> RepositoryMap:
 
-        root = Path(repo_path)
 
         files = []
 
         files_to_analyze = [
             file
             for file in self.scanner.scan(
-                repo_path
+                repository_root
             )
             if file.suffix == ".py"
         ]
@@ -78,7 +77,9 @@ class RepositoryAnalyzer:
                 classes = []
 
                 relative_path = str(
-                    file.relative_to(root)
+                    file.relative_to(
+                        repository_root
+                    )
                 )
 
                 for node in ast.walk(tree):

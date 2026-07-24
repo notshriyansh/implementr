@@ -2,12 +2,6 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.code_ingestion.ingestion_service import (
-    CodeIngestionService,
-)
-from app.core.dependencies import (
-    get_code_ingestion_service,
-)
 from app.code_retrieval.code_retrieval_service import (
     CodeRetrievalService,
 )
@@ -20,6 +14,15 @@ from app.code_ingestion.repository_analyzer import (
 from app.core.dependencies import (
     get_repository_analyzer,
 )
+from app.orchestration.service import JobService
+from app.core.dependencies import get_job_service
+
+from app.orchestration.enums import JobType
+from app.sources.models import LocalRepositoryModel
+
+from app.schemas.repository import (
+    RepositoryIngestionResponse,
+)
 
 router = APIRouter(
     prefix="/repository",
@@ -27,19 +30,29 @@ router = APIRouter(
 )
 
 
-@router.post("/ingest")
+@router.post(
+    "/ingest",
+    response_model=RepositoryIngestionResponse,
+)
 async def ingest_repository(
     repo_path: str,
-    ingestion_service: CodeIngestionService = Depends(
-        get_code_ingestion_service,
+    job_service: JobService = Depends(
+        get_job_service,
     ),
-) -> dict:
-    total_chunks = await ingestion_service.ingest_repository(
-        repo_path
+):
+
+    job = job_service.create(
+        job_type=JobType.REPOSITORY_INDEX,
+        payload={
+            "source": LocalRepositoryModel(
+                path=repo_path,
+            ).model_dump()
+        },
     )
 
     return {
-        "total_chunks": total_chunks,
+        "job_id": job.id,
+        "status": job.status,
     }
 
 

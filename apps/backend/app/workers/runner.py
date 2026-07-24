@@ -4,13 +4,17 @@ from app.workers.bootstrap import (
     create_repository_worker,
 )
 
+from app.core.config import get_settings
+
+settings = get_settings()
+
 
 class WorkerRunner:
 
     def __init__(
         self,
         *workers,
-        poll_interval: float = 3.0,
+        poll_interval: float = settings.worker_poll_interval,
     ):
         self.workers = workers
         self.poll_interval = poll_interval

@@ -15,6 +15,7 @@ class CodeChunker:
 
     def chunk_file(
         self,
+        repository_root: Path,
         file_path: Path,
     ) -> list[CodeChunk]:
         text = file_path.read_text(
@@ -45,7 +46,9 @@ class CodeChunker:
                         uuid.uuid4()
                     ),
                     file_path=str(
-                        file_path
+                        file_path.relative_to(
+                            repository_root
+                        )
                     ),
                     language=(
                         file_path.suffix

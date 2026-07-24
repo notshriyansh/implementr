@@ -16,16 +16,17 @@ from app.code_ingestion.symbol_constants import (
 class SymbolExtractor:
     def extract_symbols(
         self,
-        file_path: str,
+        repository_root:Path,
+        file_path: Path,
     ) -> list[CodeSymbol]:
 
-        path = Path(file_path)
+        
 
-        if path.suffix != ".py":
+        if file_path.suffix != ".py":
             return []
 
         try:
-            source = path.read_text(
+            source = file_path.read_text(
                 encoding="utf-8",
                 errors="ignore",
             )
@@ -125,7 +126,11 @@ class SymbolExtractor:
                     symbol_id=str(
                         uuid.uuid4()
                     ),
-                    file_path=str(path),
+                    file_path=str(
+                        file_path.relative_to(
+                            repository_root
+                        )
+                    ),
                     symbol_name=symbol_name,
                     symbol_type=symbol_type,
                     code=code,

@@ -39,25 +39,22 @@ IGNORED_DIRECTORIES = {
 class RepositoryScanner:
     def scan(
         self,
-        repo_path: str,
+        repository_root: Path,
     ) -> list[Path]:
-        root = Path(repo_path)
 
-        files = []
+        files: list[Path] = []
 
-        for path in root.rglob("*"):
+        for path in repository_root.rglob("*"):
+
             if any(
                 ignored in path.parts
-                for ignored in (
-                    IGNORED_DIRECTORIES
-                )
+                for ignored in IGNORED_DIRECTORIES
             ):
                 continue
 
             if (
                 path.is_file()
-                and path.suffix
-                in SUPPORTED_EXTENSIONS
+                and path.suffix in SUPPORTED_EXTENSIONS
             ):
                 files.append(path)
 

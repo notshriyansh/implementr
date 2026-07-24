@@ -41,6 +41,8 @@ class Settings(BaseSettings):
 
     qdrant_symbols_collection: str = "symbols"
 
+    worker_poll_interval: float = 3.0
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

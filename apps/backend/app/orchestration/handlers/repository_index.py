@@ -11,6 +11,7 @@ from app.orchestration.handlers.base import (
 from app.orchestration.models import (
     JobExecutionResult,
 )
+from app.sources.factory import RepositorySourceFactory
 
 
 class RepositoryIndexHandler(
@@ -29,24 +30,22 @@ class RepositoryIndexHandler(
 
         payload = job.payload or {}
 
-        repo_path = payload.get(
-            "repo_path"
+        source_payload = payload.get("source")
+
+        if source_payload is None:
+            raise ValueError("Missing repository source.")
+
+        source = RepositorySourceFactory.create_from_dict(
+            source_payload
         )
 
-        if not repo_path:
-            raise ValueError(
-                "Repository job missing repo_path."
-            )
-
-        chunk_count = (
-            await self.ingestion_service.ingest_repository(
-                repo_path
-            )
+        chunk_count = await self.ingestion_service.ingest_repository(
+            source
         )
 
         return JobExecutionResult(
             result={
-                "repo_path": repo_path,
+                "source": source_payload,
                 "chunk_count": chunk_count,
             }
         )
