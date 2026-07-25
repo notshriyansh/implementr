@@ -72,6 +72,7 @@ class JobService:
             self.db.query(Job)
             .filter(Job.status == JobStatus.QUEUED)
             .order_by(Job.created_at)
+            .with_for_update(skip_locked=True)
             .first()
         )
 

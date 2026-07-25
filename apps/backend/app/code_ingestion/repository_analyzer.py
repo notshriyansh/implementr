@@ -30,6 +30,8 @@ class RepositoryAnalyzer:
         repository_root: Path,
     ) -> RepositoryMap:
 
+        self.graph.clear()
+
 
         files = []
 

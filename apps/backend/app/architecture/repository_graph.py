@@ -84,6 +84,12 @@ class RepositoryGraph:
             )
         )
 
+    def clear(self) -> None:
+        self.file_to_imports.clear()
+        self.symbol_to_file.clear()
+        self.call_graph.clear()
+        self.reverse_call_graph.clear()
+
     def trace_execution_path(
         self,
         start_symbol: str,

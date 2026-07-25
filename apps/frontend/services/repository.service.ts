@@ -2,11 +2,16 @@ import { apiClient } from "./api-client";
 
 import { RepositoryMap, FileContent } from "@/types/repository";
 
-export async function ingestRepository(repoPath: string) {
-  const response = await apiClient.post("/repository/ingest", null, {
-    params: {
-      repo_path: repoPath,
-    },
+import {
+  RepositorySource,
+  RepositoryIngestionResponse,
+} from "@/types/repository";
+
+export async function ingestRepository(
+  source: RepositorySource,
+): Promise<RepositoryIngestionResponse> {
+  const response = await apiClient.post("/repository/ingest", {
+    source,
   });
 
   return response.data;

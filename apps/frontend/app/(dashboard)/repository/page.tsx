@@ -18,6 +18,7 @@ import { useRepositoryStructure } from "@/hooks/use-repository-structure";
 import { useRepositorySearch } from "@/hooks/use-repository-search";
 import { useAppStore } from "@/stores/app-store";
 import { useDebounce } from "@/hooks/use-debounce";
+import { RepositorySource } from "@/types/repository";
 
 export default function RepositoryPage() {
   const selectedRepository = useAppStore((state) => state.selectedRepository);
@@ -56,11 +57,14 @@ export default function RepositoryPage() {
   );
   const addRecentRepository = useAppStore((state) => state.addRecentRepository);
 
-  async function handleAnalyze(path: string) {
-    setRepoPath(path);
-    setSelectedRepository(path);
-    addRecentRepository(path);
-    await ingestMutation.mutateAsync(path);
+  async function handleAnalyze(source: RepositorySource) {
+    if (source.type === "local") {
+      setRepoPath(source.path);
+      setSelectedRepository(source.path);
+      addRecentRepository(source.path);
+    }
+
+    await ingestMutation.mutateAsync(source);
   }
 
   const isSearching = searchQuery && searchQueryResult.data;

@@ -7,9 +7,22 @@ export interface CodeChunk {
   end_line: number;
 }
 
-export interface RepositoryIngestResponse {
-  total_chunks: number;
-  sample_chunk: CodeChunk | null;
+export interface LocalRepositorySource {
+  type: "local";
+  path: string;
+}
+
+export interface GithubRepositorySource {
+  type: "github";
+  repository_url: string;
+  branch?: string;
+}
+
+export type RepositorySource = LocalRepositorySource | GithubRepositorySource;
+
+export interface RepositoryIngestionResponse {
+  job_id: string;
+  status: string;
 }
 
 export interface FileNode {

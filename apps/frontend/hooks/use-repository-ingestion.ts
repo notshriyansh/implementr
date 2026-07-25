@@ -3,9 +3,10 @@
 import { useMutation } from "@tanstack/react-query";
 
 import { ingestRepository } from "@/services/repository.service";
+import { RepositorySource } from "@/types/repository";
 
 export function useRepositoryIngestion() {
   return useMutation({
-    mutationFn: (repoPath: string) => ingestRepository(repoPath),
+    mutationFn: (source: RepositorySource) => ingestRepository(source),
   });
 }

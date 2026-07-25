@@ -2,6 +2,8 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator
 
 from app.api.routes.agents import router as agents_router
 from app.api.routes.architecture import router as architecture_router
@@ -37,20 +39,32 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-app = FastAPI(
-    title=settings.app_name,
-    debug=settings.app_debug,
-)
+@asynccontextmanager
+async def lifespan(
+    _: FastAPI,
+) -> AsyncIterator[None]:
 
-
-@app.on_event("startup")
-async def startup() -> None:
     logger.info("Connecting to Qdrant...")
+
     await ensure_collections()
+
     logger.info("Qdrant collections ready.")
     logger.info("====================================")
     logger.info("Implementr Backend Started")
     logger.info("====================================")
+
+    yield
+
+    logger.info("====================================")
+    logger.info("Implementr Backend Stopped")
+    logger.info("====================================")
+
+
+app = FastAPI(
+    title=settings.app_name,
+    debug=settings.app_debug,
+    lifespan=lifespan,
+)
 
 
 app.add_middleware(
@@ -127,7 +141,7 @@ app.include_router(
 
 app.include_router(
     concepts_router,
-    prefix="/api/v1",
+    prefix=settings.api_v1_prefix,
 )
 
 app.include_router(
@@ -157,5 +171,18 @@ app.include_router(
 
 
 @app.get("/health")
-async def health_check() -> dict[str, str]:
-    return {"status": "ok"}
+async def health_check():
+
+    return {
+        "status": "ok",
+        "service": settings.app_name,
+        "environment": settings.app_env,
+        "vector_store": settings.vector_store,
+    }
+
+@app.get("/ready")
+async def readiness_check():
+
+    return {
+        "ready": True,
+    }

@@ -43,6 +43,8 @@ class Settings(BaseSettings):
 
     worker_poll_interval: float = 3.0
 
+    repository_workspace: str = "./data/repositories"
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

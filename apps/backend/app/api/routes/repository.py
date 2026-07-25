@@ -18,9 +18,8 @@ from app.orchestration.service import JobService
 from app.core.dependencies import get_job_service
 
 from app.orchestration.enums import JobType
-from app.sources.models import LocalRepositoryModel
-
 from app.schemas.repository import (
+    RepositoryIngestionRequest,
     RepositoryIngestionResponse,
 )
 
@@ -35,7 +34,7 @@ router = APIRouter(
     response_model=RepositoryIngestionResponse,
 )
 async def ingest_repository(
-    repo_path: str,
+    request: RepositoryIngestionRequest,
     job_service: JobService = Depends(
         get_job_service,
     ),
@@ -44,9 +43,7 @@ async def ingest_repository(
     job = job_service.create(
         job_type=JobType.REPOSITORY_INDEX,
         payload={
-            "source": LocalRepositoryModel(
-                path=repo_path,
-            ).model_dump()
+            "source": request.source.model_dump(),
         },
     )
 
@@ -80,8 +77,9 @@ async def analyze_repository(
         get_repository_analyzer,
     ),
 ) -> dict:
+
     result = analyzer.analyze(
-        repo_path
+        Path(repo_path)
     )
 
     return result.model_dump()

@@ -1,12 +1,14 @@
 import asyncio
+import logging
 
+from app.core.config import get_settings
 from app.workers.bootstrap import (
     create_repository_worker,
 )
 
-from app.core.config import get_settings
-
 settings = get_settings()
+
+logger = logging.getLogger(__name__)
 
 
 class WorkerRunner:
@@ -18,22 +20,36 @@ class WorkerRunner:
     ):
         self.workers = workers
         self.poll_interval = poll_interval
+        self.running = True
+
+    async def stop(self) -> None:
+        logger.info("Stopping worker...")
+        self.running = False
 
     async def run(self):
 
-        while True:
+        logger.info("Worker started.")
 
-            processed = False
+        try:
+            while self.running:
 
-            for worker in self.workers:
+                processed = False
 
-                if await worker.run_once():
-                    processed = True
+                for worker in self.workers:
 
-            if not processed:
-                await asyncio.sleep(
-                    self.poll_interval
-                )
+                    if await worker.run_once():
+                        processed = True
+
+                if not processed:
+                    await asyncio.sleep(
+                        self.poll_interval
+                    )
+
+        except asyncio.CancelledError:
+            logger.info("Worker cancelled.")
+
+        finally:
+            logger.info("Worker stopped.")
 
 
 async def main():
@@ -42,7 +58,11 @@ async def main():
         create_repository_worker(),
     )
 
-    await runner.run()
+    try:
+        await runner.run()
+
+    except KeyboardInterrupt:
+        await runner.stop()
 
 
 if __name__ == "__main__":

@@ -57,7 +57,7 @@ class CodeIngestionService:
         source: BaseRepositorySource,
     ) -> int:
 
-        repository_root = await source.prepare()
+        repository_root = (await source.prepare()).resolve()
 
         self.repository_analyzer.analyze(
             repository_root
