@@ -45,7 +45,6 @@ class CodeRetrievalService:
             chunks=chunks,
         )
 
-        del embeddings
 
     async def retrieve(
         self,

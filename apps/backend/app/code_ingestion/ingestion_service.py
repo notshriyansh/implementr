@@ -25,6 +25,9 @@ from app.concepts.concept_index import (
 from app.code_ingestion.repository_analyzer import (
     RepositoryAnalyzer,
 )
+from app.schemas.code_symbol import (
+    CodeSymbol,
+)
 
 
 class CodeIngestionService:
@@ -80,26 +83,61 @@ class CodeIngestionService:
             repo_path
         )
 
+        all_chunks: list[
+            CodeChunk
+        ] = []
+
+        all_symbols: list[
+            CodeSymbol
+        ] = []
+
 
         for file in files:
-            chunks = self.chunker.chunk_file(file)
+            chunks = (
+                self.chunker.chunk_file(
+                    file
+                )
+            )
 
-            if chunks:
-                await self.retrieval_service.index_chunks(chunks)
+            all_chunks.extend(
+                chunks
+            )
 
-            symbols = self.symbol_extractor.extract_symbols(str(file))
+            symbols = (
+                self.symbol_extractor
+                .extract_symbols(str(file))
+            )
 
-            if symbols:
-                await self.symbol_retrieval_service.index_symbols(symbols)
+            all_symbols.extend(
+                symbols
+            )
 
             for symbol in symbols:
 
-                concepts = self.concept_service.symbol_to_concepts(symbol)
+                concepts = (
+                    self.concept_service
+                    .symbol_to_concepts(
+                        symbol
+                    )
+                )
 
                 for concept in concepts:
-                    self.concept_index.add(concept)
+                    self.concept_index.add(
+                        concept
+                    )
 
-            del chunks
-            del symbols
+        await (
+            self.retrieval_service
+            .index_chunks(
+                all_chunks
+            )
+        )
 
-        return []
+        await (
+            self.symbol_retrieval_service
+            .index_symbols(
+                all_symbols
+            )
+        )
+
+        return all_chunks
