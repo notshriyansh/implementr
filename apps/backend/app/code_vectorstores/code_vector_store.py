@@ -7,7 +7,7 @@ from app.schemas.code_chunk import CodeChunk
 class CodeVectorStore:
     def __init__(
         self,
-        embedding_dimension: int = 384,
+        embedding_dimension: int,
     ) -> None:
         self.index = faiss.IndexFlatIP(
             embedding_dimension,

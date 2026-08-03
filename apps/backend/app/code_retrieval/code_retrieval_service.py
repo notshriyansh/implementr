@@ -34,7 +34,7 @@ class CodeRetrievalService:
         self,
         chunks: list[CodeChunk],
     ) -> None:
-        embeddings = (
+        embeddings = await (
             self.embedding_model.embed_chunks(
                 chunks
             )

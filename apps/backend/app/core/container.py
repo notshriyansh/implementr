@@ -13,18 +13,15 @@ if TYPE_CHECKING:
         ImplementationBlueprintService,
     )
     from app.cache.memory_cache import MemoryCache
-    from app.code_embeddings.code_embedding_model import CodeEmbeddingModel
     from app.code_ingestion.repository_analyzer import RepositoryAnalyzer
     from app.code_ingestion.symbol_extractor import SymbolExtractor
     from app.code_retrieval.code_retrieval_service import CodeRetrievalService
     from app.code_retrieval.symbol_retrieval_service import SymbolRetrievalService
-    from app.code_vectorstores.code_vector_store import CodeVectorStore
     from app.code_vectorstores.symbol_vector_store import SymbolVectorStore
     from app.concepts.concept_extractor import ConceptExtractor
     from app.concepts.concept_index import ConceptIndex
     from app.concepts.concept_matcher import ConceptMatcher
     from app.concepts.concept_service import ConceptService
-    from app.embeddings.sentence_transformer import SentenceTransformerEmbeddingModel
     from app.hybrid.hybrid_retrieval_service import HybridRetrievalService
     from app.llm.groq_client import GroqLLM
     from app.memory.conversation_memory import ConversationMemory
@@ -34,21 +31,42 @@ if TYPE_CHECKING:
     )
     from app.retrieval.retrieval_service import RetrievalService
     from app.vectorstores.faiss_store import FAISSVectorStore
+    from app.embeddings.base import BaseEmbeddingModel
 
 
 class Container:
 
     @cached_property
-    def embedding_model(self) -> "SentenceTransformerEmbeddingModel":
-        from app.embeddings.sentence_transformer import SentenceTransformerEmbeddingModel
+    def embedding_model(self) -> BaseEmbeddingModel:
+        from app.core.config import get_settings
+
+        settings = get_settings()
+
+        if settings.embedding_provider == "jina":
+            from app.embeddings.jina import (
+                JinaEmbeddingModel,
+            )
+
+            return JinaEmbeddingModel()
+
+        from app.embeddings.sentence_transformer import (
+            SentenceTransformerEmbeddingModel,
+        )
 
         return SentenceTransformerEmbeddingModel()
 
     @cached_property
-    def vector_store(self) -> "FAISSVectorStore":
-        from app.vectorstores.faiss_store import FAISSVectorStore
+    def vector_store(
+        self,
+    ) -> "FAISSVectorStore":
 
-        return FAISSVectorStore()
+        from app.vectorstores.faiss_store import (
+            FAISSVectorStore,
+        )
+
+        return FAISSVectorStore(
+            embedding_dimension=self.embedding_model.embedding_dimension,
+        )
 
     @cached_property
     def llm(self) -> "GroqLLM":
@@ -78,16 +96,29 @@ class Container:
         )
 
     @cached_property
-    def code_embedding_model(self) -> "CodeEmbeddingModel":
-        from app.code_embeddings.code_embedding_model import CodeEmbeddingModel
+    def code_embedding_model(
+        self,
+    ):
+        from app.code_embeddings.code_embedding_model import (
+            CodeEmbeddingModel,
+        )
 
-        return CodeEmbeddingModel()
+        return CodeEmbeddingModel(
+            embedding_model=self.embedding_model,
+        )
 
     @cached_property
-    def code_vector_store(self) -> "CodeVectorStore":
-        from app.code_vectorstores.code_vector_store import CodeVectorStore
+    def code_vector_store(
+        self,
+    ):
 
-        return CodeVectorStore()
+        from app.code_vectorstores.code_vector_store import (
+            CodeVectorStore,
+        )
+
+        return CodeVectorStore(
+            embedding_dimension=self.embedding_model.embedding_dimension,
+        )
 
     @cached_property
     def code_retrieval_service(self) -> "CodeRetrievalService":
@@ -102,7 +133,9 @@ class Container:
     def symbol_vector_store(self) -> "SymbolVectorStore":
         from app.code_vectorstores.symbol_vector_store import SymbolVectorStore
 
-        return SymbolVectorStore()
+        return SymbolVectorStore(
+            embedding_dimension=self.embedding_model.embedding_dimension,
+        )
 
     @cached_property
     def symbol_extractor(self) -> "SymbolExtractor":

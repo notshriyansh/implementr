@@ -12,6 +12,14 @@ class Settings(BaseSettings):
     groq_api_key: str = ""
     openai_api_key: str = ""
 
+    jina_api_key: str = ""
+    jina_embedding_model: str = "jina-embeddings-v5-text-small"
+    jina_embedding_dimension: int = 1024
+    jina_batch_size: int = 128
+    jina_retry_count: int = 3
+
+    embedding_provider: str = "local"
+
     log_level: str = "INFO"
 
     database_url: str = ""

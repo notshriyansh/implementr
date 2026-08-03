@@ -12,6 +12,10 @@ from app.embeddings.base import (
 class SentenceTransformerEmbeddingModel(
     BaseEmbeddingModel,
 ):
+    @property
+    def embedding_dimension(self) -> int:
+        return self.model.get_sentence_embedding_dimension()
+    
     def __init__(self) -> None:
         self.model = SentenceTransformer(
             "all-MiniLM-L6-v2"

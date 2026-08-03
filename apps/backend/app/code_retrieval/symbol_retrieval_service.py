@@ -27,7 +27,7 @@ class SymbolRetrievalService:
         self,
         symbols: list[CodeSymbol],
     ) -> None:
-        embeddings = (
+        embeddings = await (
             self.embedding_model.embed_chunks(
                 symbols
             )

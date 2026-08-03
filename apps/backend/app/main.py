@@ -2,7 +2,9 @@ import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
+from app.core.dependencies import get_container
 from app.api.routes.agents import router as agents_router
 from app.api.routes.architecture import router as architecture_router
 from app.api.routes.autonomous import router as autonomous_router
@@ -33,19 +35,34 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
-app = FastAPI(
-    title=settings.app_name,
-    debug=settings.app_debug,
-)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
 
-
-@app.on_event("startup")
-async def startup_log():
     logger.info("====================================")
     logger.info("Implementr Backend Started")
     logger.info("FastAPI startup completed successfully.")
     logger.info("====================================")
 
+    yield
+
+    embedding_model = get_container().embedding_model
+
+    if hasattr(
+        embedding_model,
+        "close",
+    ):
+        await embedding_model.close()
+
+    logger.info(
+        "Embedding client closed."
+    )
+
+
+app = FastAPI(
+    title=settings.app_name,
+    debug=settings.app_debug,
+    lifespan=lifespan,
+)
 
 app.add_middleware(
     CORSMiddleware,

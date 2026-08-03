@@ -26,7 +26,7 @@ class FAISSVectorStore(
 
     def __init__(
         self,
-        embedding_dimension: int = 384,
+        embedding_dimension: int,
     ) -> None:
         self.embedding_dimension = (
             embedding_dimension
@@ -48,6 +48,8 @@ class FAISSVectorStore(
             self.index = faiss.read_index(
                 str(self.INDEX_PATH)
             )
+
+            print("Loaded FAISS dimension:", self.index.d)
 
         else:
             self.index = faiss.IndexFlatL2(
