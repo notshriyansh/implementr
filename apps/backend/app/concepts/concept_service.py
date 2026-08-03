@@ -66,7 +66,7 @@ class ConceptService:
 
         return concepts
 
-    def build_concept_map(
+    async def build_concept_map(
         self,
         paper_text: str,
         symbols: list[CodeSymbol],
@@ -89,11 +89,9 @@ class ConceptService:
                 )
             )
 
-        matches = (
-            self.matcher.match(
-                paper_concepts,
-                repository_concepts,
-            )
+        matches = await self.matcher.match(
+            paper_concepts,
+            repository_concepts,
         )
 
         return {

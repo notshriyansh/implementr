@@ -217,7 +217,9 @@ class Container:
     def concept_matcher(self) -> "ConceptMatcher":
         from app.concepts.concept_matcher import ConceptMatcher
 
-        return ConceptMatcher()
+        return ConceptMatcher(
+            embedding_model=self.embedding_model,
+        )
 
     @cached_property
     def concept_service(self) -> "ConceptService":

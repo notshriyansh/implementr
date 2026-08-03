@@ -133,9 +133,8 @@ class HybridImplementationAgent:
             )
         )
 
-        concept_map = (
-            self.concept_service
-            .build_concept_map(
+        concept_map = await (
+            self.concept_service.build_concept_map(
                 paper_text=paper_context,
                 symbols=symbols,
             )
@@ -178,6 +177,10 @@ class HybridImplementationAgent:
                 prompt
             )
         )
+
+        print("=" * 80)
+        print(reasoning)
+        print("=" * 80)
 
         summary = (
             self.extract_section(
