@@ -1,5 +1,6 @@
 from functools import cached_property
 from typing import TYPE_CHECKING
+from app.embeddings.base import BaseEmbeddingModel
 
 if TYPE_CHECKING:
     from app.architecture.architecture_reasoning_service import (
@@ -31,7 +32,6 @@ if TYPE_CHECKING:
     )
     from app.retrieval.retrieval_service import RetrievalService
     from app.vectorstores.faiss_store import FAISSVectorStore
-    from app.embeddings.base import BaseEmbeddingModel
 
 
 class Container:
