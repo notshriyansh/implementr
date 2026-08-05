@@ -12,22 +12,22 @@ interface Props {
 }
 
 export function RepositoryIngestForm({ onAnalyze, loading }: Props) {
-  const [path, setPath] = useState("");
+  const [location, setLocation] = useState("");
 
   return (
     <div className="flex items-center gap-2">
       <Input
-        value={path}
-        onChange={(e) => setPath(e.target.value)}
-        placeholder="C:/Projects/implementr"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        placeholder="Local path or GitHub URL"
         className="h-9 w-75 text-sm"
         aria-label="Repository path"
       />
 
       <Button
         size="sm"
-        onClick={() => onAnalyze(path)}
-        disabled={loading || !path}
+        onClick={() => onAnalyze(location)}
+        disabled={loading || !location}
         aria-label="Analyze repository"
       >
         {loading ? (

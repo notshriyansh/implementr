@@ -15,7 +15,7 @@ export function SymbolResults({ results }: Props) {
             {symbol.symbol_type}
           </div>
 
-          <div className="text-xs mt-1">{symbol.file_path}</div>
+          <div className="text-xs mt-1">{symbol.relative_path}</div>
         </div>
       ))}
     </div>

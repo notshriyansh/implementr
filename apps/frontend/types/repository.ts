@@ -1,6 +1,6 @@
 export interface CodeChunk {
   chunk_id: string;
-  file_path: string;
+  relative_path: string;
   language: string;
   content: string;
   start_line: number;
@@ -8,6 +8,10 @@ export interface CodeChunk {
 }
 
 export interface RepositoryIngestResponse {
+  repository: string;
+  repository_id: string;
+  repository_root: string;
+  source: string;
   total_chunks: number;
   sample_chunk: CodeChunk | null;
 }
@@ -25,7 +29,7 @@ export interface RepositoryMap {
 
 export interface CodeSymbol {
   symbol_id: string;
-  file_path: string;
+  relative_path: string;
   symbol_name: string;
   symbol_type: string;
   code: string;

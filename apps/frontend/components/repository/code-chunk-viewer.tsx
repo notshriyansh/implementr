@@ -32,7 +32,7 @@ export function CodeChunkViewer({ chunk }: Props) {
           py-4
         "
       >
-        <div className="break-all font-medium">{chunk.file_path}</div>
+        <div className="break-all font-medium">{chunk.relative_path}</div>
 
         <div className="mt-2 flex flex-wrap gap-2">
           <span className="rounded-full bg-muted px-3 py-1 text-xs">

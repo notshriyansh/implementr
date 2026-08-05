@@ -56,11 +56,14 @@ export default function RepositoryPage() {
   );
   const addRecentRepository = useAppStore((state) => state.addRecentRepository);
 
-  async function handleAnalyze(path: string) {
-    setRepoPath(path);
-    setSelectedRepository(path);
-    addRecentRepository(path);
-    await ingestMutation.mutateAsync(path);
+  async function handleAnalyze(location: string) {
+    const repository = await ingestMutation.mutateAsync(location);
+    setRepoPath(repository.repository_root);
+    setSelectedRepository(repository.repository_root);
+    addRecentRepository(repository.repository_root);
+    setSelectedFile(undefined);
+    setSelectedChunk(undefined);
+    setSearchQuery("");
   }
 
   const isSearching = searchQuery && searchQueryResult.data;

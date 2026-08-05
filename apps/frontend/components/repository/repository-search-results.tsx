@@ -50,11 +50,11 @@ export function RepositorySearchResults({ results, onSelect }: Props) {
           >
             <div className="min-w-0">
               <div className="truncate font-medium">
-                {result.file_path.split(/[\\/]/).pop()}
+                {result.relative_path.split(/[\\/]/).pop()}
               </div>
 
               <div className="truncate text-xs text-muted-foreground">
-                {result.file_path}
+                {result.relative_path}
               </div>
             </div>
 
