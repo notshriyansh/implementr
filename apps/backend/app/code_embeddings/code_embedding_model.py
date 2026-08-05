@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -18,9 +17,23 @@ class CodeEmbeddingModel:
         symbol: Any,
     ) -> str:
         return (
-            f"Symbol Name: {symbol.symbol_name}\n"
-            f"Symbol Type: {symbol.symbol_type}\n"
-            f"File: {Path(symbol.file_path).stem}"
+            f"""
+        Repository:
+        {symbol.repository_name}
+
+        File:
+        {symbol.relative_path}
+
+        Symbol:
+        {symbol.symbol_name}
+
+        Type:
+        {symbol.symbol_type}
+
+        Code:
+
+        {symbol.code}
+        """
         )
 
     async def embed_chunks(
@@ -34,7 +47,22 @@ class CodeEmbeddingModel:
             if hasattr(chunk, "symbol_name"):
                 texts.append(self.symbol_to_text(chunk))
             elif hasattr(chunk, "content"):
-                texts.append(chunk.content)
+                texts.append(
+                    f"""
+                Repository:
+                {chunk.repository_name}
+
+                File:
+                {chunk.relative_path}
+
+                Language:
+                {chunk.language}
+
+                Code:
+
+                {chunk.content}
+                """
+                )
             elif hasattr(chunk, "code"):
                 texts.append(chunk.code)
             else:

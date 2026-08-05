@@ -12,13 +12,13 @@ def deduplicate_files(
 
     for chunk in chunks:
         if (
-            chunk.file_path
+            chunk.relative_path
             in seen_files
         ):
             continue
 
         seen_files.add(
-            chunk.file_path
+            chunk.relative_path
         )
 
         unique_chunks.append(

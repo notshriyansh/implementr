@@ -56,7 +56,7 @@ class ConceptService:
                     name=part.lower(),
                     source="repository",
                     file_path=(
-                        symbol.file_path
+                        symbol.relative_path
                     ),
                     symbol_name=(
                         symbol.symbol_name

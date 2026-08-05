@@ -30,6 +30,8 @@ class RepositoryAnalyzer:
         repo_path: str,
     ) -> RepositoryMap:
 
+        self.graph.clear()
+
         root = Path(repo_path)
 
         files = []

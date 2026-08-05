@@ -120,7 +120,7 @@ class HybridImplementationAgent:
 
         code_context = "\n\n".join(
             (
-                f"FILE: {chunk.file_path}\n"
+                f"FILE: {chunk.relative_path}\n"
                 f"{chunk.content}"
             )
             for chunk in code_chunks

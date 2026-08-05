@@ -3,10 +3,21 @@ from pydantic import BaseModel
 
 class CodeSymbol(BaseModel):
     symbol_id: str
-    file_path: str
+
+    repository_id: str
+
+    repository_name: str
+
+    relative_path: str
+
     symbol_name: str
+
     symbol_type: str
+
     code: str
+
     start_line: int
+
     end_line: int
+
     importance: int = 1

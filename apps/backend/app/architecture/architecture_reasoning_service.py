@@ -177,7 +177,7 @@ class ArchitectureReasoningService:
 
         relevant_files = list(
             dict.fromkeys(
-                chunk.file_path
+                chunk.relative_path
                 for chunk in code_chunks
             )
         )
@@ -214,7 +214,7 @@ class ArchitectureReasoningService:
             (
                 f"{symbol.symbol_name} "
                 f"({symbol.symbol_type}) "
-                f"in {symbol.file_path}"
+                f"in {symbol.relative_path}"
             )
             for symbol in symbols
         )
@@ -222,7 +222,7 @@ class ArchitectureReasoningService:
         code_context = "\n\n".join(
             (
                 f"FILE: "
-                f"{chunk.file_path}\n\n"
+                f"{chunk.relative_path}\n\n"
                 f"{chunk.content}"
             )
             for chunk in code_chunks

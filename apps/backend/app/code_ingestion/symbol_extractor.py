@@ -17,9 +17,16 @@ class SymbolExtractor:
     def extract_symbols(
         self,
         file_path: str,
+        repository_root: Path,
+        repository_name: str,
+        repository_id: str,
     ) -> list[CodeSymbol]:
 
         path = Path(file_path)
+
+        relative_path = str(
+            path.relative_to(repository_root)
+        )
 
         if path.suffix != ".py":
             return []
@@ -122,10 +129,10 @@ class SymbolExtractor:
 
             symbols.append(
                 CodeSymbol(
-                    symbol_id=str(
-                        uuid.uuid4()
-                    ),
-                    file_path=str(path),
+                    symbol_id=str(uuid.uuid4()),
+                    repository_id=repository_id,
+                    repository_name=repository_name,
+                    relative_path=relative_path,
                     symbol_name=symbol_name,
                     symbol_type=symbol_type,
                     code=code,

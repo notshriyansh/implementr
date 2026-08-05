@@ -42,7 +42,7 @@ class ExecutionFlowService:
 
         for symbol in symbols:
 
-            file_path = symbol.file_path
+            file_path = symbol.relative_path
 
             visited_files.add(
                 file_path

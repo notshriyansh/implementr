@@ -31,7 +31,7 @@ router = APIRouter(
 
 @router.post("/ingest")
 async def ingest_repository(
-    repo_path: str,
+    location: str,
     ingestion_service: (
         CodeIngestionService
     ) = Depends(
@@ -39,11 +39,33 @@ async def ingest_repository(
     ),
 ) -> dict:
     chunks = await ingestion_service.ingest_repository(
-        repo_path
+        location
     )
     
 
     return {
+        "repository": (
+            chunks[0].repository_name
+            if chunks
+            else None
+        ),
+        "repository_id": (
+            chunks[0].repository_id
+            if chunks
+            else None
+        ),
+        "repository_root": (
+            str(
+                ingestion_service.repository_info.repository_root
+            )
+            if ingestion_service.repository_info
+            else None
+        ),
+        "source": (
+            ingestion_service.repository_info.source
+            if ingestion_service.repository_info
+            else None
+        ),
         "total_chunks": len(chunks),
         "sample_chunk": (
             chunks[0]

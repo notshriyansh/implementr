@@ -94,6 +94,7 @@ class RepositoryGraph:
 
         results = []
 
+
         def dfs(
             symbol: str,
             current_depth: int,
@@ -144,3 +145,15 @@ class RepositoryGraph:
         )
 
         return results
+
+    def clear(
+                self,
+            ) -> None:
+    
+                self.file_to_imports.clear()
+    
+                self.symbol_to_file.clear()
+    
+                self.call_graph.clear()
+    
+                self.reverse_call_graph.clear()

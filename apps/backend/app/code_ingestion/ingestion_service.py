@@ -28,6 +28,9 @@ from app.code_ingestion.repository_analyzer import (
 from app.schemas.code_symbol import (
     CodeSymbol,
 )
+from app.repository_sources.factory import (
+    RepositorySourceFactory,
+)
 
 
 class CodeIngestionService:
@@ -66,21 +69,33 @@ class CodeIngestionService:
             concept_index
         )
 
+        self.repository_info = None
+
         self.repository_analyzer = (
         repository_analyzer
     )
 
     async def ingest_repository(
         self,
-        repo_path: str,
+        location: str,
     ) -> list[CodeChunk]:
-        
+
+        source = RepositorySourceFactory.create(
+            location
+        )
+
+        repository = await source.prepare(
+            location
+        )
+
+        self.repository_info = repository
+
         self.repository_analyzer.analyze(
-            repo_path
+            str(repository.repository_root)
         )
 
         files = self.scanner.scan(
-            repo_path
+            str(repository.repository_root)
         )
 
         all_chunks: list[
@@ -91,12 +106,13 @@ class CodeIngestionService:
             CodeSymbol
         ] = []
 
-
         for file in files:
-            chunks = (
-                self.chunker.chunk_file(
-                    file
-                )
+
+            chunks = self.chunker.chunk_file(
+                file_path=file,
+                repository_root=repository.repository_root,
+                repository_name=repository.repository_name,
+                repository_id=repository.repository_id,
             )
 
             all_chunks.extend(
@@ -104,8 +120,12 @@ class CodeIngestionService:
             )
 
             symbols = (
-                self.symbol_extractor
-                .extract_symbols(str(file))
+                self.symbol_extractor.extract_symbols(
+                    file_path=str(file),
+                    repository_root=repository.repository_root,
+                    repository_name=repository.repository_name,
+                    repository_id=repository.repository_id,
+                )
             )
 
             all_symbols.extend(
@@ -115,8 +135,7 @@ class CodeIngestionService:
             for symbol in symbols:
 
                 concepts = (
-                    self.concept_service
-                    .symbol_to_concepts(
+                    self.concept_service.symbol_to_concepts(
                         symbol
                     )
                 )
@@ -126,18 +145,12 @@ class CodeIngestionService:
                         concept
                     )
 
-        await (
-            self.retrieval_service
-            .index_chunks(
-                all_chunks
-            )
+        await self.retrieval_service.index_chunks(
+            all_chunks
         )
 
-        await (
-            self.symbol_retrieval_service
-            .index_symbols(
-                all_symbols
-            )
+        await self.symbol_retrieval_service.index_symbols(
+            all_symbols
         )
 
         return all_chunks

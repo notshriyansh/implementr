@@ -16,10 +16,17 @@ class CodeChunker:
     def chunk_file(
         self,
         file_path: Path,
+        repository_root: Path,
+        repository_name: str,
+        repository_id: str,
     ) -> list[CodeChunk]:
         text = file_path.read_text(
             encoding="utf-8",
             errors="ignore",
+        )
+
+        relative_path = str(
+            file_path.relative_to(repository_root)
         )
 
         lines = text.splitlines()
@@ -41,17 +48,22 @@ class CodeChunker:
 
             chunks.append(
                 CodeChunk(
-                    chunk_id=str(
-                        uuid.uuid4()
-                    ),
-                    file_path=str(
-                        file_path
-                    ),
-                    language=(
-                        file_path.suffix
-                    ),
+                    chunk_id=str(uuid.uuid4()),
+
+                    repository_id=repository_id,
+
+                    repository_name=repository_name,
+
+                    relative_path=relative_path,
+
+                    source="repository",
+
+                    language=file_path.suffix,
+
                     content=chunk_text,
+
                     start_line=i + 1,
+
                     end_line=min(
                         i + self.chunk_size,
                         len(lines),

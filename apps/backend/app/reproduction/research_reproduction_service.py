@@ -246,12 +246,17 @@ class ResearchReproductionService:
         repository_context = (
             "\n\n".join(
                 (
-                    f"{chunk.file_path}\n"
+                    f"{chunk.relative_path}\n"
                     f"{chunk.content}"
                 )
                 for chunk in code_chunks
             )
         )
+
+        if not repository_context:
+            repository_context = (
+                "No repository context retrieved."
+            )
 
         architecture_context = (
             architecture.reasoning
@@ -261,17 +266,43 @@ class ResearchReproductionService:
             (
                 f"{symbol.symbol_name} "
                 f"({symbol.symbol_type}) "
-                f"in {symbol.file_path}"
+                f"in {symbol.relative_path}"
             )
             for symbol in symbols
         )
 
+        if not symbols_context:
+            symbols_context = (
+                "No relevant symbols found."
+            )
+
         concept_map = (
-            self.concept_service
+            await self.concept_service
             .build_concept_map(
                 paper_text=paper_context,
                 symbols=symbols,
             )
+        )
+
+        paper_concepts = [
+            concept.name
+            for concept in concept_map.get(
+                "paper_concepts",
+                [],
+            )
+        ]
+
+        repo_concepts = [
+            concept.name
+            for concept in concept_map.get(
+                "repository_concepts",
+                [],
+            )
+        ]
+
+        semantic_matches = concept_map.get(
+            "matches",
+            [],
         )
 
         paper_concepts = [
@@ -311,6 +342,8 @@ class ResearchReproductionService:
                 paper_concepts,
                 repo_concepts,
             )
+            if paper_concepts
+            else []
         )
 
         prompt = (
@@ -466,11 +499,11 @@ class ResearchReproductionService:
         confidence = min(
             1.0,
             (
-                len(repository_targets)
-                + len(concept_mappings)
-                + len(implementation_steps)
+                len(code_chunks)
+                + len(symbols)
+                + len(semantic_matches)
             )
-            / 15,
+            / 40,
         )
 
         result = (

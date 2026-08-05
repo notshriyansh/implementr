@@ -65,7 +65,7 @@ class ImplementationBlueprintService:
                 f"SYMBOL: "
                 f"{symbol.symbol_name}\n"
                 f"FILE: "
-                f"{symbol.file_path}\n"
+                f"{symbol.relative_path}"
                 f"TYPE: "
                 f"{symbol.symbol_type}\n\n"
                 f"{symbol.code}"
