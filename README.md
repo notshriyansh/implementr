@@ -1,104 +1,125 @@
 # Implementr
 
+> **AI-powered research-to-implementation platform for software engineers.**
+>
+> Implementr bridges the gap between research papers and production codebases by combining Retrieval-Augmented Generation (RAG), repository understanding, architecture reasoning, and implementation planning into a single workflow.
+
+---
+
 ## Overview
 
-Implementr is an AI-powered research-to-implementation platform that helps engineers bridge the gap between academic research papers and real-world software systems.
+Reading a research paper is only the beginning.
 
-Most tools stop at summarizing papers or answering questions about them. Implementr goes further by understanding both the research and the target codebase, enabling architecture-aware implementation planning.
+The difficult part is translating novel ideas into an existing software system without spending hours understanding an unfamiliar codebase.
 
-The long-term goal is to help developers answer questions such as:
+Implementr is designed to solve this problem.
 
-- How would I implement this paper in my repository?
-- Which components already exist?
+Instead of only answering questions about papers, Implementr understands both the research and the target repository, allowing it to reason about architecture, execution flow, code structure, and implementation strategy.
+
+Given a research paper and a codebase, Implementr can answer questions such as:
+
+- Where should this algorithm be implemented?
+- Which files are relevant?
+- Which existing components already solve part of the problem?
 - What concepts are missing?
-- Which files need modification?
-- What is the expected execution flow?
-- How should I evaluate the implementation?
-
-Implementr combines research understanding, repository intelligence, architecture reasoning, and implementation planning into a unified workflow.
+- How would the execution flow change?
+- What modifications are required?
+- How should the implementation be evaluated?
 
 ---
 
-# Problem
+# The Problem
 
-Research papers are written for researchers.
+Modern AI research moves incredibly fast.
 
-Production codebases are built by engineers.
+While thousands of papers are published every month, transforming those papers into working software remains largely manual.
 
-Moving from a paper to a working implementation often requires:
+Engineers typically need to:
 
-- Understanding the paper's methodology
-- Understanding the repository architecture
-- Mapping research concepts to existing code
-- Identifying missing components
-- Planning implementation changes
-- Designing evaluation and benchmarking strategies
+- Read hundreds of pages of research
+- Understand unfamiliar repositories
+- Reverse engineer system architecture
+- Identify implementation entry points
+- Map research concepts to existing components
+- Plan modifications safely
+- Design evaluation strategies
+- Reproduce experimental results
 
-This process is typically manual and time-consuming.
+This process is slow, repetitive, and error-prone.
 
-Implementr aims to automate large portions of this workflow.
-
----
-
-# Vision
-
-Given:
-
-- A research paper
-- A target repository
-
-Implementr should be able to:
-
-1. Understand the paper
-2. Understand the repository
-3. Compare both systems
-4. Identify architectural gaps
-5. Generate implementation plans
-6. Suggest modification points
-7. Generate evaluation strategies
-8. Produce reproducible engineering guidance
+Implementr aims to automate much of this engineering workflow.
 
 ---
 
-# Core Capabilities
+# Features
 
 ## Research Understanding
 
+Implementr provides a complete research ingestion pipeline.
+
 ### Paper Discovery
 
-- arXiv search
-- Paper metadata retrieval
+- arXiv paper search
+- Metadata retrieval
 - Paper exploration
 
-### Paper Ingestion
+### Paper Processing
 
 - PDF downloading
 - PDF parsing
+- Intelligent document chunking
+- Embedding generation
+- Vector indexing
+
+### Research Intelligence
+
+- Retrieval-Augmented Question Answering
+- Paper summarization
+- Methodology analysis
+- Engineering insight extraction
+- Research-focused conversations
+
+---
+
+## Repository Intelligence
+
+Implementr analyzes software repositories beyond simple code search.
+
+### Repository Ingestion
+
+Supports both:
+
+- Local repositories
+- GitHub repositories
+
+During ingestion Implementr performs:
+
+- Repository cloning
+- Source code scanning
 - Intelligent chunking
 - Embedding generation
 - Vector indexing
 
-### Research Analysis
+---
 
-- Retrieval-Augmented Question Answering
-- Methodology analysis
-- Engineering challenge extraction
-- Research summarization
-- Implementation planning
+### Code Retrieval
+
+Semantic repository search over indexed code.
+
+Capabilities include:
+
+- Natural language code search
+- Semantic retrieval
+- File-level search
+- Context-aware code retrieval
 
 ---
 
-## Repository Understanding
-
-### Repository Ingestion
-
-- Repository scanning
-- Source code ingestion
-- Code chunk generation
-- Embedding generation
-- Code indexing
-
 ### Symbol Intelligence
+
+Extracts repository-level programming symbols.
+
+Current capabilities:
 
 - Function extraction
 - Class extraction
@@ -106,128 +127,156 @@ Implementr should be able to:
 - Semantic symbol search
 - Repository-wide symbol retrieval
 
-### Structure Analysis
+---
 
-- Repository mapping
-- Import analysis
-- File relationships
-- Dependency tracking
-- Repository graph construction
+### Repository Mapping
+
+Builds a structural representation of the repository including:
+
+- File hierarchy
+- Imports
+- Symbols
+- Dependencies
+- Repository relationships
 
 ---
 
-## Architecture Reasoning
+# Architecture Reasoning
 
-### Execution Flow Analysis
+One of Implementr's primary differentiators is architecture-aware reasoning.
 
-- Call graph generation
-- Caller/callee relationships
-- Symbol tracing
-- Execution path discovery
-
-### Architecture Understanding
-
-- Architecture explanations
-- Relevant file discovery
-- Modification point identification
-- Context expansion
-- Repository reasoning
-
-### Engineering Guidance
-
-- Entry point detection
-- Execution flow generation
-- Affected file identification
-- Safe modification planning
-
----
-
-## Concept Intelligence
-
-Implementr builds a semantic bridge between:
-
-- Research concepts
-- Repository concepts
+Instead of retrieving isolated code snippets, the system reasons over repository structure.
 
 Capabilities include:
 
-- Concept extraction
-- Concept indexing
-- Concept matching
-- Concept mapping
-- Architecture gap detection
+- Entry point detection
+- Relevant file discovery
+- Execution flow analysis
+- Dependency reasoning
+- Call graph traversal
+- Context expansion
+- Modification point identification
 
-Examples:
+Example questions:
 
-| Paper Concept | Repository Concept                |
-| ------------- | --------------------------------- |
-| Retrieval     | RetrievalService                  |
-| Memory        | ConversationMemory                |
-| Embedding     | SentenceTransformerEmbeddingModel |
-| Vector Search | FAISSVectorStore                  |
+- How does authentication work?
+- Which files participate in inference?
+- Where does ingestion begin?
+- Which services communicate with the vector store?
+- What changes would be required to support a new model?
 
 ---
 
-## Research Reproduction Engine
+# Concept Intelligence
 
-The Research Reproduction Engine is responsible for translating research papers into actionable implementation plans.
+Implementr builds semantic relationships between research concepts and repository concepts.
 
-Current capabilities:
+For example:
 
-- Paper understanding
-- Repository understanding
-- Concept mapping
-- Gap analysis
-- Architecture-aware planning
+| Research Concept | Repository Concept |
+|------------------|--------------------|
+| Retrieval | RetrievalService |
+| Embedding | EmbeddingService |
+| Memory | ConversationMemory |
+| Vector Search | FAISSVectorStore |
+| Ranking | HybridRetriever |
+
+These mappings enable the system to identify implementation opportunities and architectural gaps.
+
+---
+
+# Hybrid Research + Repository Reasoning
+
+Implementr combines information from:
+
+- Research papers
+- Source code
+- Repository structure
+- Symbol search
+- Concept mappings
+
+This enables architecture-aware implementation guidance instead of traditional document-only RAG.
+
+---
+
+# Research Reproduction Engine
+
+The Research Reproduction Engine transforms academic research into actionable engineering plans.
 
 Generated outputs include:
 
 - Repository targets
-- Required changes
-- Implementation steps
-- Training changes
-- Evaluation plans
-- Benchmark tasks
-- Success criteria
+- Relevant files
+- Relevant symbols
+- Implementation roadmap
+- Modification points
 - Engineering risks
+- Success criteria
+- Evaluation strategy
+- Benchmark planning
+
+Rather than simply summarizing a paper, the engine explains **how that research fits into a real software system.**
+
+---
+
+# Implementation Blueprint Generator
+
+Implementr can generate structured implementation blueprints containing:
+
+- Target files
+- Target symbols
+- Required modifications
+- Validation steps
+- Expected outcomes
+
+This provides developers with a concrete engineering plan before writing code.
 
 ---
 
 # System Architecture
 
 ```text
-                     ┌────────────────────┐
-                     │   Research Paper   │
-                     └─────────┬──────────┘
+                        ┌───────────────────────┐
+                        │   Research Paper      │
+                        └──────────┬────────────┘
+                                   │
+                                   ▼
+                    ┌────────────────────────────┐
+                    │ Paper Ingestion Pipeline   │
+                    └──────────┬─────────────────┘
                                │
                                ▼
-                    ┌─────────────────────┐
-                    │   Paper Retrieval   │
-                    └─────────┬───────────┘
-                              │
-                              ▼
-                    ┌─────────────────────┐
-                    │  Research Analysis  │
-                    └─────────┬───────────┘
-                              │
+                    ┌────────────────────────────┐
+                    │ Research Retrieval (RAG)   │
+                    └──────────┬─────────────────┘
 
-┌──────────────────────┐      │      ┌──────────────────────┐
-│     Repository       │◄─────┼─────►│ Architecture Engine  │
-│     Understanding    │      │      │                      │
-└──────────┬───────────┘      │      └──────────┬───────────┘
-           │                  │                 │
-           ▼                  ▼                 ▼
+      ┌────────────────────────┼────────────────────────┐
+      │                        │                        │
+      ▼                        ▼                        ▼
 
-      Code Retrieval    Concept Mapping    Execution Flow
+ Repository Index      Concept Intelligence     Repository Graph
 
-                 └─────────────┬─────────────┘
+      │                        │                        │
+      ▼                        ▼                        ▼
+
+ Code Retrieval      Symbol Retrieval       Execution Flow Analysis
+
+      └────────────────────────┬────────────────────────┘
                                ▼
 
-                  Research Reproduction Engine
+                Hybrid Research + Repository Reasoning
 
                                ▼
 
-                    Implementation Guidance
+                 Research Reproduction Engine
+
+                               ▼
+
+              Implementation Blueprint Generator
+
+                               ▼
+
+                 Architecture-Aware Engineering Guidance
 ```
 
 ---
@@ -241,7 +290,7 @@ Generated outputs include:
 - Pydantic
 - FAISS
 - Sentence Transformers
-- Groq LLMs
+- Groq API
 - LangGraph
 
 ### Retrieval
@@ -251,9 +300,10 @@ Generated outputs include:
 - Semantic Search
 - Symbol Retrieval
 
-### Architecture Analysis
+### Repository Analysis
 
 - Repository Graphs
+- Call Graph Construction
 - Execution Flow Analysis
 - Context Expansion
 - Dependency Analysis
@@ -266,88 +316,77 @@ Generated outputs include:
 - TypeScript
 - Tailwind CSS
 - shadcn/ui
+- React Query
+- Zustand
+- Framer Motion
 
 ---
 
-# Current Development Status
+# Project Structure
 
-## Completed
+```text
+Research Layer
+├── Paper Search
+├── PDF Ingestion
+├── Vector Indexing
+└── Research RAG
 
-### Research Layer
+Repository Layer
+├── Local Repository Ingestion
+├── GitHub Repository Ingestion
+├── Code Chunking
+├── Symbol Extraction
+├── Repository Mapping
+└── Semantic Code Retrieval
 
-- arXiv Search
-- Paper Discovery
-- PDF Downloading
-- PDF Parsing
-- Paper Chunking
-- Embedding Generation
-- Paper Retrieval
-- RAG Chat
+Architecture Layer
+├── Repository Graph
+├── Call Graph
+├── Execution Flow Analysis
+├── Context Expansion
+└── Architecture Reasoning
 
-### Repository Layer
+Intelligence Layer
+├── Concept Extraction
+├── Concept Matching
+├── Gap Detection
+├── Hybrid Retrieval
+└── Research Reproduction
 
-- Repository Ingestion
-- Code Chunking
-- Code Retrieval
-- Symbol Extraction
-- Symbol Retrieval
-- Repository Mapping
-
-### Architecture Layer
-
-- Repository Graph
-- Call Graph Construction
-- Execution Flow Analysis
-- Architecture Reasoning
-- Context Expansion
-
-### Intelligence Layer
-
-- Concept Extraction
-- Concept Matching
-- Concept Indexing
-- Gap Analysis
-
-### Hybrid Layer
-
-- Paper + Repository Retrieval
-- Architecture-Aware Reasoning
-- Repository-Aware Analysis
+Planning Layer
+├── Implementation Blueprint
+├── Engineering Guidance
+├── Modification Planning
+└── Evaluation Planning
+```
 
 ---
 
-## In Progress
+# Current Capabilities
 
-### Research Reproduction Engine
-
-- Concept-driven implementation planning
-- Architecture gap detection
-- Repository-aware modification planning
-- Training plan generation
-- Evaluation plan generation
-- Benchmark planning
+- Research paper search
+- PDF ingestion and indexing
+- Retrieval-Augmented Question Answering
+- Local repository ingestion
+- GitHub repository ingestion
+- Semantic code search
+- Symbol extraction
+- Repository mapping
+- Repository graph construction
+- Architecture reasoning
+- Execution flow analysis
+- Hybrid research + repository retrieval
+- Concept mapping
+- Gap analysis
+- Research reproduction planning
+- Implementation blueprint generation
 
 ---
 
-## Planned
+# Motivation
 
-### Implementation Intelligence
+Most AI tools help developers understand research.
 
-- File-level modification planning
-- Symbol-level implementation guidance
-- Code generation support
-- Architecture impact prediction
+Implementr helps developers **implement research**.
 
-### Evaluation Framework
-
-- Automated benchmark generation
-- Research reproduction scoring
-- Implementation quality assessment
-
-### Multi-Repository Support
-
-- Cross-repository reasoning
-- Dependency-aware planning
-- Large-scale architecture analysis
-
-The objective is not merely answering questions about research papers, but helping engineers systematically reproduce and implement research in real software systems.
+By combining paper understanding, repository intelligence, architecture reasoning, and implementation planning, the goal is to reduce the gap between academic innovation and production software.
