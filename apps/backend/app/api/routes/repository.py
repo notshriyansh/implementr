@@ -74,20 +74,19 @@ async def ingest_repository(
         ),
     }
 
+
 @router.get("/search")
 async def search_repository(
     query: str,
-    retrieval_service: (
-        CodeRetrievalService
-    ) = Depends(
+    repository_id: str | None = None,
+    retrieval_service: CodeRetrievalService = Depends(
         get_code_retrieval_service,
     ),
 ) -> dict:
-    chunks = (
-        await retrieval_service.retrieve(
-            query=query,
-            k=5,
-        )
+    chunks = await retrieval_service.retrieve(
+        query=query,
+        k=5,
+        repository_id=repository_id,
     )
 
     return {

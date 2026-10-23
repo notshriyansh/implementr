@@ -125,33 +125,39 @@ class CodeVectorStore:
         self,
         query_embedding: np.ndarray,
         k: int = 5,
+        repository_id: str | None = None,
     ) -> list[CodeChunk]:
+        if k <= 0 or self.index.ntotal == 0:
+            return []
 
-        query_embedding = (
-            query_embedding.astype(
-                "float32"
-            )
+        query_embedding = query_embedding.astype("float32")
+        faiss.normalize_L2(query_embedding)
+
+        search_k = (
+            self.index.ntotal
+            if repository_id is not None
+            else k
         )
 
-        faiss.normalize_L2(
-            query_embedding
-        )
+        _, indices = self.index.search(query_embedding, search_k)
 
-        _, indices = self.index.search(
-            query_embedding,
-            k,
-        )
-
-        results = []
+        results: list[CodeChunk] = []
 
         for idx in indices[0]:
+            if idx == -1 or idx >= len(self.chunks):
+                continue
+
+            chunk = self.chunks[idx]
 
             if (
-                idx != -1
-                and idx < len(self.chunks)
+                repository_id is not None
+                and chunk.repository_id != repository_id
             ):
-                results.append(
-                    self.chunks[idx]
-                )
+                continue
+
+            results.append(chunk)
+
+            if repository_id is None and len(results) == k:
+                break
 
         return results

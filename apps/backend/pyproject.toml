@@ -31,6 +31,9 @@ dependencies = [
     "psycopg[binary]",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0,<10.0"]
+
 [tool.setuptools.packages.find]
 include = ["app*"]
 
@@ -39,3 +42,14 @@ line-length = 88
 
 [tool.black]
 line-length = 88
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [
+    "data",
+    ".venv",
+    "venv",
+    "node_modules",
+    "__pycache__",
+    ".pytest_cache",
+]
