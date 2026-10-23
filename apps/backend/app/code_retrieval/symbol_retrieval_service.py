@@ -43,16 +43,15 @@ class SymbolRetrievalService:
         self,
         query: str,
         k: int = 5,
+        repository_id: str | None = None,
     ) -> list[CodeSymbol]:
-        embedding = await (
-            self.embedding_model.embed_query(
-                query
-            )
-        )
+        if k <= 0:
+            return []
 
-        return await (
-            self.vector_store.similarity_search(
-                embedding,
-                k,
-            )
+        embedding = await self.embedding_model.embed_query(query)
+
+        return await self.vector_store.similarity_search(
+            embedding,
+            k=k,
+            repository_id=repository_id,
         )

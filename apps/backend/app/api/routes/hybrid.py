@@ -1,6 +1,7 @@
 from fastapi import (
     APIRouter,
     Depends,
+    Query,
 )
 
 from app.agents.hybrid_implementation_agent import (
@@ -27,6 +28,7 @@ router = APIRouter(
 )
 async def hybrid_analysis(
     question: str,
+    repository_id: str | None = Query(default=None),
     agent: (
         HybridImplementationAgent
     ) = Depends(
@@ -34,5 +36,6 @@ async def hybrid_analysis(
     ),
 ) -> HybridAnalysisResponse:
     return await agent.analyze(
-        question
+        question,
+        repository_id=repository_id,
     )
