@@ -17,6 +17,7 @@ router = APIRouter(
 async def generate_plan(
     question: str,
     repository_id: str | None = Query(default=None),
+    paper_id: str | None = Query(default=None),
     service: ResearchReproductionService = Depends(
         get_research_reproduction_service,
     ),
@@ -24,4 +25,5 @@ async def generate_plan(
     return await service.generate(
         question,
         repository_id=repository_id,
+        paper_id=paper_id,
     )

@@ -9,9 +9,11 @@ export function useReproductionPlan() {
     mutationFn: ({
       question,
       repositoryId,
+      paperId,
     }: {
       question: string;
       repositoryId?: string;
-    }) => generateReproductionPlan(question, repositoryId),
+      paperId?: string;
+    }) => generateReproductionPlan(question, repositoryId, paperId),
   });
 }

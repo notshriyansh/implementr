@@ -9,6 +9,7 @@ from app.reproduction.research_reproduction_service import (
 
 def test_generate_scopes_repository_retrieval():
     repository_id = "repo-123"
+    paper_id = "2401.12345"
 
     paper_chunks = [
         SimpleNamespace(text="A paper about transformers.")
@@ -101,7 +102,14 @@ def test_generate_scopes_repository_retrieval():
         service.generate(
             "How can this paper be implemented?",
             repository_id=repository_id,
+            paper_id=paper_id,
         )
+    )
+
+    retrieval.retrieve.assert_awaited_once_with(
+        query="How can this paper be implemented?",
+        k=5,
+        paper_id=paper_id,
     )
 
     code_retrieval.retrieve.assert_awaited_once_with(
@@ -120,3 +128,97 @@ def test_generate_scopes_repository_retrieval():
         "How can this paper be implemented?",
         repository_id=repository_id,
     )
+
+
+def test_reproduction_cache_is_isolated_by_paper_id():
+    retrieval = MagicMock()
+    retrieval.retrieve = AsyncMock(
+        return_value=[
+            SimpleNamespace(text="Paper context")
+        ]
+    )
+
+    code_retrieval = MagicMock()
+    code_retrieval.retrieve = AsyncMock(return_value=[])
+
+    symbol_retrieval = MagicMock()
+    symbol_retrieval.retrieve = AsyncMock(return_value=[])
+
+    architecture = MagicMock()
+    architecture.analyze = AsyncMock(
+        return_value=SimpleNamespace(reasoning="Architecture context")
+    )
+
+    concept_service = MagicMock()
+    concept_service.build_concept_map = AsyncMock(
+        return_value={
+            "paper_concepts": [],
+            "repository_concepts": [],
+            "matches": [],
+        }
+    )
+
+    gap_analyzer = MagicMock()
+    gap_analyzer.analyze.return_value = []
+
+    llm = MagicMock()
+    llm.generate = AsyncMock(
+        return_value=(
+            "PAPER_SUMMARY: Summary\n"
+            "REPOSITORY_TARGETS:\n"
+            "CONCEPT_MAPPINGS:\n"
+            "ARCHITECTURE_GAPS:\n"
+            "IMPLEMENTATION_STEPS:\n"
+            "MODIFICATION_TARGETS:\n"
+            "GAP_TO_SYMBOL_MAPPING:\n"
+            "REQUIRED_CHANGES:\n"
+            "TRAINING_CHANGES:\n"
+            "EVALUATION_CHANGES:\n"
+            "BENCHMARK_TASKS:\n"
+            "SUCCESS_CRITERIA:\n"
+            "RISKS:\n"
+        )
+    )
+
+    cache = MagicMock()
+    cache.get.return_value = None
+
+    service = ResearchReproductionService(
+        retrieval_service=retrieval,
+        code_retrieval_service=code_retrieval,
+        symbol_retrieval_service=symbol_retrieval,
+        architecture_service=architecture,
+        concept_service=concept_service,
+        gap_analyzer=gap_analyzer,
+        llm=llm,
+        cache=cache,
+    )
+
+    question = "How can this paper be implemented?"
+
+    async def run():
+        await service.generate(
+            question,
+            repository_id="repo-123",
+            paper_id="paper-A",
+        )
+
+        await service.generate(
+            question,
+            repository_id="repo-123",
+            paper_id="paper-B",
+        )
+
+    asyncio.run(run())
+
+    assert retrieval.retrieve.await_count == 2
+    assert llm.generate.await_count == 2
+
+    assert cache.get.call_count == 2
+
+    first_key = cache.get.call_args_list[0].args[0]
+    second_key = cache.get.call_args_list[1].args[0]
+
+    assert first_key != second_key
+    assert "paper-A" in first_key
+    assert "paper-B" in second_key

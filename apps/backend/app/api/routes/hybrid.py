@@ -29,6 +29,7 @@ router = APIRouter(
 async def hybrid_analysis(
     question: str,
     repository_id: str | None = Query(default=None),
+    paper_id: str | None = Query(default=None),
     agent: (
         HybridImplementationAgent
     ) = Depends(
@@ -38,4 +39,5 @@ async def hybrid_analysis(
     return await agent.analyze(
         question,
         repository_id=repository_id,
+        paper_id=paper_id,
     )

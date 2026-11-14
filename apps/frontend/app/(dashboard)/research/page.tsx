@@ -19,13 +19,6 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { usePaperSearch } from "@/hooks/use-paper-search";
 import { usePaperIngestion } from "@/hooks/use-paper-ingestion";
 
-function generatePaperId(title: string) {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 export default function ResearchPage() {
   const [query, setQuery] = useState("");
   const [ingestingPaper, setIngestingPaper] = useState<string>();
@@ -46,7 +39,7 @@ export default function ResearchPage() {
     try {
       setIngestingPaper(paper.pdf_url);
 
-      const paperId = generatePaperId(paper.title);
+      const paperId = paper.paper_id;
 
       await ingestionMutation.mutateAsync({
         pdfUrl: paper.pdf_url,

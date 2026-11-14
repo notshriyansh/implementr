@@ -155,10 +155,14 @@ class ResearchReproductionService:
         self,
         question: str,
         repository_id: str | None = None,
+        paper_id: str | None = None,
     ) -> ResearchReproductionPlan:
         
         cache_key = (
-            f"reproduction:{repository_id or 'global'}:{question}"
+            f"reproduction:"
+            f"{repository_id or 'global'}:"
+            f"{paper_id or 'global'}:"
+            f"{question}"
         )
 
         cached = self.cache.get(
@@ -172,6 +176,7 @@ class ResearchReproductionService:
             await self.retrieval_service.retrieve(
                 query=question,
                 k=5,
+                paper_id=paper_id,
             )
         )
 

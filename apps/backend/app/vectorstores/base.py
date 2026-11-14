@@ -17,5 +17,6 @@ class BaseVectorStore(ABC):
         self,
         query_embedding,
         k: int = 5,
+        paper_id: str | None = None,
     ) -> list[DocumentChunk]:
         pass

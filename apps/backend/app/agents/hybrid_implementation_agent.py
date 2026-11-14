@@ -103,11 +103,13 @@ class HybridImplementationAgent:
         self,
         question: str,
         repository_id: str | None = None,
+        paper_id: str | None = None,
     ) -> HybridAnalysisResponse:
 
         paper_chunks, code_chunks = await self.retrieval_service.retrieve(
             query=question,
             repository_id=repository_id,
+            paper_id=paper_id,
         )
 
         paper_context = "\n\n".join(
