@@ -21,6 +21,9 @@ import { useDebounce } from "@/hooks/use-debounce";
 
 export default function RepositoryPage() {
   const selectedRepository = useAppStore((state) => state.selectedRepository);
+  const selectedRepositoryId = useAppStore(
+    (state) => state.selectedRepositoryId,
+  );
 
   const [repoPath, setRepoPath] = useState(selectedRepository ?? "");
   const [selectedFile, setSelectedFile] = useState<FileNode>();
@@ -30,7 +33,10 @@ export default function RepositoryPage() {
   const blueprintTargetFile = useAppStore((state) => state.blueprintTargetFile);
 
   const ingestMutation = useRepositoryIngestion();
-  const structureQuery = useRepositoryStructure(repoPath, !!repoPath);
+  const structureQuery = useRepositoryStructure(
+    selectedRepositoryId ?? "",
+    !!selectedRepositoryId,
+  );
 
   useEffect(() => {
     if (!blueprintTargetFile || !structureQuery.data || selectedFile) {

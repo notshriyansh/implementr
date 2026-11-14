@@ -13,9 +13,14 @@ interface Props {
 
 export function RepositoryCodeViewer({ file }: Props) {
   const [activeTab, setActiveTab] = useState<"code" | "overview">("code");
-  const selectedRepository = useAppStore((state) => state.selectedRepository);
+  const selectedRepositoryId = useAppStore(
+    (state) => state.selectedRepositoryId,
+  );
 
-  const fileContentQuery = useFileContent(selectedRepository, file?.path);
+  const fileContentQuery = useFileContent(
+    selectedRepositoryId ?? undefined,
+    file?.path,
+  );
 
   if (!file) {
     return (

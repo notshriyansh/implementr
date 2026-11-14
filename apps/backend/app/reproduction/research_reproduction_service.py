@@ -154,10 +154,11 @@ class ResearchReproductionService:
     async def generate(
         self,
         question: str,
+        repository_id: str | None = None,
     ) -> ResearchReproductionPlan:
         
         cache_key = (
-            f"reproduction:{question}"
+            f"reproduction:{repository_id or 'global'}:{question}"
         )
 
         cached = self.cache.get(
@@ -227,6 +228,7 @@ class ResearchReproductionService:
             await self.code_retrieval_service.retrieve(
                 query=question,
                 k=5,
+                repository_id=repository_id,
             )
         )
 
@@ -234,12 +236,14 @@ class ResearchReproductionService:
             self.symbol_retrieval_service.retrieve(
                 query=question,
                 k=25,
+                repository_id=repository_id,
             )
         )
 
         architecture = (
             await self.architecture_service.analyze(
-                question
+                question,
+                repository_id=repository_id,
             )
         )
 

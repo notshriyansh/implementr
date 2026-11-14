@@ -1,15 +1,17 @@
-from functools import cached_property
+﻿from functools import cached_property
 from typing import TYPE_CHECKING
 from app.embeddings.base import BaseEmbeddingModel
 
 if TYPE_CHECKING:
+    from app.architecture.repository_graph_registry import (
+        RepositoryGraphRegistry,
+    )
+    from app.agents.hybrid_implementation_agent import HybridImplementationAgent
     from app.architecture.architecture_reasoning_service import (
         ArchitectureReasoningService,
     )
     from app.architecture.context_expander import ContextExpander
     from app.architecture.execution_flow_service import ExecutionFlowService
-    from app.architecture.repository_graph import RepositoryGraph
-    from app.agents.hybrid_implementation_agent import HybridImplementationAgent
     from app.blueprints.implementation_blueprint_service import (
         ImplementationBlueprintService,
     )
@@ -26,6 +28,7 @@ if TYPE_CHECKING:
     from app.hybrid.hybrid_retrieval_service import HybridRetrievalService
     from app.llm.groq_client import GroqLLM
     from app.memory.conversation_memory import ConversationMemory
+    from app.repository_sources.repository_registry import RepositoryRegistry
     from app.reproduction.gap_analyzer import GapAnalyzer
     from app.reproduction.research_reproduction_service import (
         ResearchReproductionService,
@@ -153,16 +156,12 @@ class Container:
         )
 
     @cached_property
-    def repository_graph(self) -> "RepositoryGraph":
-        from app.architecture.repository_graph import RepositoryGraph
-
-        return RepositoryGraph()
-
-    @cached_property
     def context_expander(self) -> "ContextExpander":
         from app.architecture.context_expander import ContextExpander
 
-        return ContextExpander(graph=self.repository_graph)
+        return ContextExpander(
+            graph_registry=self.repository_graph_registry,
+        )
 
     @cached_property
     def repository_analyzer(self) -> "RepositoryAnalyzer":
@@ -170,7 +169,7 @@ class Container:
         from app.code_ingestion.repository_scanner import RepositoryScanner
 
         return RepositoryAnalyzer(
-            graph=self.repository_graph,
+            graph_registry=self.repository_graph_registry,
             scanner=RepositoryScanner(),
         )
 
@@ -179,7 +178,7 @@ class Container:
         from app.architecture.execution_flow_service import ExecutionFlowService
 
         return ExecutionFlowService(
-            graph=self.repository_graph,
+            graph_registry=self.repository_graph_registry,
             symbol_service=self.symbol_retrieval_service,
         )
 
@@ -281,3 +280,17 @@ class Container:
             concept_service=self.concept_service,
             llm=self.llm,
         )
+
+    @cached_property
+    def repository_graph_registry(self) -> "RepositoryGraphRegistry":
+        from app.architecture.repository_graph_registry import (
+            RepositoryGraphRegistry,
+        )
+
+        return RepositoryGraphRegistry()
+
+    @cached_property
+    def repository_registry(self) -> "RepositoryRegistry":
+        from app.repository_sources.repository_registry import RepositoryRegistry
+
+        return RepositoryRegistry()

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     )
     from app.architecture.context_expander import ContextExpander
     from app.architecture.execution_flow_service import ExecutionFlowService
-    from app.architecture.repository_graph import RepositoryGraph
+    from app.architecture.repository_graph_registry import RepositoryGraphRegistry
     from app.blueprints.implementation_blueprint_service import (
         ImplementationBlueprintService,
     )
@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     from app.hybrid.hybrid_retrieval_service import HybridRetrievalService
     from app.ingestion.pdf_downloader import PDFDownloader
     from app.repositories.arxiv_repository import ArxivRepository
+    from app.repository_sources.repository_registry import RepositoryRegistry
     from app.reproduction.gap_analyzer import GapAnalyzer
     from app.reproduction.research_reproduction_service import (
         ResearchReproductionService,
@@ -193,8 +194,12 @@ def get_benchmark_runner() -> BenchmarkRunner:
     )
 
 
-def get_repository_graph() -> RepositoryGraph:
-    return get_container().repository_graph
+def get_repository_graph_registry() -> RepositoryGraphRegistry:
+    return get_container().repository_graph_registry
+
+
+def get_repository_registry() -> RepositoryRegistry:
+    return get_container().repository_registry
 
 
 def get_repository_scanner() -> RepositoryScanner:
@@ -257,6 +262,7 @@ def get_code_ingestion_service() -> CodeIngestionService:
         concept_service=get_container().concept_service,
         concept_index=get_container().concept_index,
         repository_analyzer=get_container().repository_analyzer,
+        repository_registry=get_repository_registry(),
     )
 
 
