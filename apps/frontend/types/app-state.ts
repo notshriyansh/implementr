@@ -4,6 +4,7 @@ import { FileNode, CodeChunk } from "./repository";
 export interface AppState {
   selectedPaper?: Paper;
   selectedRepository?: string;
+  selectedRepositoryId?: string;
   selectedFile?: FileNode;
   selectedChunk?: CodeChunk;
   recentPapers: Paper[];
@@ -22,6 +23,7 @@ export interface AppState {
 export interface AppActions {
   setSelectedPaper: (paper: Paper) => void;
   setSelectedRepository: (repo: string) => void;
+  setSelectedRepositoryId: (repositoryId: string | undefined) => void;
   setSelectedFile: (file: FileNode) => void;
   setSelectedChunk: (chunk: CodeChunk) => void;
   addRecentPaper: (paper: Paper) => void;
@@ -41,6 +43,7 @@ export interface AppActions {
     workspaceId: string;
     workspaceName: string;
     selectedRepository?: string;
+    selectedRepositoryId?: string;
     workspaceQuestion?: string;
     blueprintTargetFile?: string;
     blueprintTargetSymbol?: string;

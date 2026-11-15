@@ -26,39 +26,111 @@ import { useBlueprint } from "@/hooks/use-blueprint";
 import { useBlueprintEvaluation } from "@/hooks/use-blueprint-evaluation";
 import { WorkspacePipeline } from "@/components/workspace/workspace-pipeline";
 import { useSaveWorkspace } from "@/hooks/use-save-workspace";
+import { useWorkspaceOutputs } from "@/hooks/use-workspace-outputs";
+import { saveWorkspaceOutputs } from "@/services/workspace.service";
 
 export default function WorkspacePage() {
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState(
+    () => useAppStore.getState().workspaceQuestion ?? "",
+  );
 
   const hybridMutation = useHybridAnalysis();
   const reproductionMutation = useReproductionPlan();
   const blueprintMutation = useBlueprint();
   const evaluationMutation = useBlueprintEvaluation();
+
   const selectedPaper = useAppStore((state) => state.selectedPaper);
   const selectedRepository = useAppStore((state) => state.selectedRepository);
-  const workspaceReady = !!selectedPaper && !!selectedRepository;
-  const saveWorkspaceMutation = useSaveWorkspace();
+  const selectedRepositoryId = useAppStore(
+    (state) => state.selectedRepositoryId,
+  );
   const workspaceId = useAppStore((state) => state.workspaceId);
   const setWorkspaceId = useAppStore((state) => state.setWorkspaceId);
   const setWorkspaceName = useAppStore((state) => state.setWorkspaceName);
 
-  async function handleSaveWorkspace() {
-    if (workspaceId) {
+  const workspaceOutputsQuery = useWorkspaceOutputs(workspaceId ?? "");
+  const saveWorkspaceMutation = useSaveWorkspace();
+
+  const workspaceReady =
+    !!selectedRepository && (!!selectedPaper || !!workspaceId);
+
+  const hybridResult =
+    hybridMutation.data ?? workspaceOutputsQuery.data?.hybrid_result ?? null;
+
+  const reproductionResult =
+    reproductionMutation.data ??
+    workspaceOutputsQuery.data?.reproduction_result ??
+    null;
+
+  const blueprintResult =
+    blueprintMutation.data ??
+    workspaceOutputsQuery.data?.blueprint_result ??
+    null;
+
+  const evaluationResult =
+    evaluationMutation.data ??
+    workspaceOutputsQuery.data?.evaluation_result ??
+    null;
+
+  async function persistWorkspaceOutput(
+    field:
+      | "hybrid_result"
+      | "reproduction_result"
+      | "blueprint_result"
+      | "evaluation_result",
+    result: unknown,
+  ) {
+    if (!workspaceId || !result) {
       return;
     }
 
-    const workspace = await saveWorkspaceMutation.mutateAsync({
-      name: question || "Untitled Workspace",
-      selected_repository: selectedRepository,
-      selected_paper: selectedPaper?.title,
-      workspace_question: question,
-      blueprint_target_file: useAppStore.getState().blueprintTargetFile,
-      blueprint_target_symbol: useAppStore.getState().blueprintTargetSymbol,
-      blueprint_target_reason: useAppStore.getState().blueprintTargetReason,
+    await saveWorkspaceOutputs({
+      workspace_id: workspaceId,
+      [field]: result,
     });
 
-    setWorkspaceId(workspace.id);
-    setWorkspaceName(workspace.name);
+    await workspaceOutputsQuery.refetch();
+  }
+
+  async function handleSaveWorkspace() {
+    let currentWorkspaceId = workspaceId;
+
+    if (!currentWorkspaceId) {
+      const workspace = await saveWorkspaceMutation.mutateAsync({
+        name: question || "Untitled Workspace",
+        selected_repository: selectedRepository,
+        selected_repository_id: selectedRepositoryId,
+        selected_paper: selectedPaper?.title,
+        workspace_question: question,
+        blueprint_target_file: useAppStore.getState().blueprintTargetFile,
+        blueprint_target_symbol: useAppStore.getState().blueprintTargetSymbol,
+        blueprint_target_reason: useAppStore.getState().blueprintTargetReason,
+      });
+
+      currentWorkspaceId = workspace.id;
+      setWorkspaceId(workspace.id);
+      setWorkspaceName(workspace.name);
+    }
+
+    const currentResults = [
+      ["hybrid_result", hybridResult],
+      ["reproduction_result", reproductionResult],
+      ["blueprint_result", blueprintResult],
+      ["evaluation_result", evaluationResult],
+    ] as const;
+
+    const outputs = Object.fromEntries(
+      currentResults.filter(([, result]) => result != null),
+    );
+
+    if (Object.keys(outputs).length > 0) {
+      await saveWorkspaceOutputs({
+        workspace_id: currentWorkspaceId,
+        ...outputs,
+      });
+
+      await workspaceOutputsQuery.refetch();
+    }
   }
 
   return (
@@ -163,24 +235,30 @@ export default function WorkspacePage() {
         <>
           <div className="mt-8">
             <WorkspacePipeline
-              hybridReady={!!hybridMutation.data}
-              reproductionReady={!!reproductionMutation.data}
-              blueprintReady={!!blueprintMutation.data}
-              evaluationReady={!!evaluationMutation.data}
+              hybridReady={!!hybridResult}
+              reproductionReady={!!reproductionResult}
+              blueprintReady={!!blueprintResult}
+              evaluationReady={!!evaluationResult}
             />
           </div>
 
           <div className="mt-8">
             <HybridQuery
               loading={hybridMutation.isPending}
-              onAnalyze={(inputQuestion) => {
+              onAnalyze={async (inputQuestion) => {
                 setQuestion(inputQuestion);
-                hybridMutation.mutate(inputQuestion);
+
+                const result = await hybridMutation.mutateAsync({
+                  question: inputQuestion,
+                  repositoryId: selectedRepositoryId,
+                });
+
+                await persistWorkspaceOutput("hybrid_result", result);
               }}
             />
           </div>
 
-          {!hybridMutation.data && (
+          {!hybridResult && (
             <div className="mt-10">
               <EmptyState
                 title="Ready for analysis"
@@ -189,11 +267,11 @@ export default function WorkspacePage() {
             </div>
           )}
 
-          {hybridMutation.data && (
+          {hybridResult && (
             <div className="mt-10 space-y-10">
-              <HybridResult result={hybridMutation.data} />
+              <HybridResult result={hybridResult} />
 
-              {!reproductionMutation.data && (
+              {!reproductionResult && (
                 <div className="rounded-lg border border-border bg-card p-6">
                   <h2 className="mb-3 text-lg font-semibold">
                     Research Reproduction
@@ -205,7 +283,16 @@ export default function WorkspacePage() {
                   </p>
 
                   <Button
-                    onClick={() => reproductionMutation.mutate(question)}
+                    onClick={async () => {
+                      const result = await reproductionMutation.mutateAsync({
+                        question,
+                        repositoryId: selectedRepositoryId,
+                      });
+                      await persistWorkspaceOutput(
+                        "reproduction_result",
+                        result,
+                      );
+                    }}
                     disabled={reproductionMutation.isPending}
                   >
                     {reproductionMutation.isPending ? (
@@ -220,11 +307,11 @@ export default function WorkspacePage() {
                 </div>
               )}
 
-              {reproductionMutation.data && (
+              {reproductionResult && (
                 <>
-                  <ReproductionResult result={reproductionMutation.data} />
+                  <ReproductionResult result={reproductionResult} />
 
-                  {!blueprintMutation.data && (
+                  {!blueprintResult && (
                     <div className="rounded-lg border border-border bg-card p-6">
                       <h2 className="mb-3 text-lg font-semibold">
                         Implementation Blueprint
@@ -235,7 +322,16 @@ export default function WorkspacePage() {
                       </p>
 
                       <Button
-                        onClick={() => blueprintMutation.mutate(question)}
+                        onClick={async () => {
+                          const result = await blueprintMutation.mutateAsync({
+                            question,
+                            repositoryId: selectedRepositoryId,
+                          });
+                          await persistWorkspaceOutput(
+                            "blueprint_result",
+                            result,
+                          );
+                        }}
                         disabled={blueprintMutation.isPending}
                       >
                         {blueprintMutation.isPending ? (
@@ -252,11 +348,11 @@ export default function WorkspacePage() {
                 </>
               )}
 
-              {blueprintMutation.data && (
+              {blueprintResult && (
                 <>
-                  <BlueprintResult result={blueprintMutation.data} />
+                  <BlueprintResult result={blueprintResult} />
 
-                  {!evaluationMutation.data && (
+                  {!evaluationResult && (
                     <div className="rounded-lg border border-border bg-card p-6">
                       <h2 className="mb-3 text-lg font-semibold">
                         Blueprint Evaluation
@@ -267,7 +363,14 @@ export default function WorkspacePage() {
                       </p>
 
                       <Button
-                        onClick={() => evaluationMutation.mutate(question)}
+                        onClick={async () => {
+                          const result =
+                            await evaluationMutation.mutateAsync(question);
+                          await persistWorkspaceOutput(
+                            "evaluation_result",
+                            result,
+                          );
+                        }}
                         disabled={evaluationMutation.isPending}
                       >
                         {evaluationMutation.isPending ? (
@@ -284,8 +387,8 @@ export default function WorkspacePage() {
                 </>
               )}
 
-              {evaluationMutation.data && (
-                <EvaluationResult result={evaluationMutation.data} />
+              {evaluationResult && (
+                <EvaluationResult result={evaluationResult} />
               )}
             </div>
           )}

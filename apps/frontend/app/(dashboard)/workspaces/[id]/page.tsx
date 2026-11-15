@@ -50,6 +50,7 @@ export default function WorkspaceDetailPage() {
       workspaceId: workspace.id,
       workspaceName: workspace.name,
       selectedRepository: workspace.selected_repository,
+      selectedRepositoryId: workspace.selected_repository_id,
       workspaceQuestion: workspace.workspace_question,
       blueprintTargetFile: workspace.blueprint_target_file,
       blueprintTargetSymbol: workspace.blueprint_target_symbol,
@@ -113,7 +114,10 @@ export default function WorkspaceDetailPage() {
         <div className="space-y-3 text-sm">
           {[
             { label: "Hybrid Analysis", done: !!outputs?.hybrid_result },
-            { label: "Reproduction Plan", done: !!outputs?.reproduction_result },
+            {
+              label: "Reproduction Plan",
+              done: !!outputs?.reproduction_result,
+            },
             { label: "Blueprint", done: !!outputs?.blueprint_result },
             { label: "Evaluation", done: !!outputs?.evaluation_result },
           ].map((item) => (
@@ -123,11 +127,17 @@ export default function WorkspaceDetailPage() {
                   item.done ? "bg-green-500" : "bg-muted-foreground/30"
                 }`}
               />
-              <span className={item.done ? "text-foreground" : "text-muted-foreground"}>
+              <span
+                className={
+                  item.done ? "text-foreground" : "text-muted-foreground"
+                }
+              >
                 {item.label}
               </span>
               {item.done && (
-                <span className="ml-auto text-xs text-green-500/80">Complete</span>
+                <span className="ml-auto text-xs text-green-500/80">
+                  Complete
+                </span>
               )}
             </div>
           ))}
