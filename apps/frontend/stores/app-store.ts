@@ -8,6 +8,7 @@ export const useAppStore = create<AppState & AppActions>()(
     (set) => ({
       selectedPaper: undefined,
       selectedRepository: undefined,
+      selectedRepositoryId: undefined,
       selectedFile: undefined,
       selectedChunk: undefined,
       recentPapers: [],
@@ -30,6 +31,11 @@ export const useAppStore = create<AppState & AppActions>()(
       setSelectedRepository: (repo) =>
         set({
           selectedRepository: repo,
+        }),
+
+      setSelectedRepositoryId: (repositoryId) =>
+        set({
+          selectedRepositoryId: repositoryId,
         }),
 
       setSelectedFile: (file) =>
@@ -107,6 +113,7 @@ export const useAppStore = create<AppState & AppActions>()(
         set({
           selectedPaper: undefined,
           selectedRepository: undefined,
+          selectedRepositoryId: undefined,
           selectedFile: undefined,
           selectedChunk: undefined,
           workspaceQuestion: undefined,
@@ -133,6 +140,7 @@ export const useAppStore = create<AppState & AppActions>()(
           workspaceId: payload.workspaceId,
           workspaceName: payload.workspaceName,
           selectedRepository: payload.selectedRepository,
+          selectedRepositoryId: payload.selectedRepositoryId,
           workspaceQuestion: payload.workspaceQuestion,
           blueprintTargetFile: payload.blueprintTargetFile,
           blueprintTargetSymbol: payload.blueprintTargetSymbol,
@@ -145,6 +153,7 @@ export const useAppStore = create<AppState & AppActions>()(
       partialize: (state) => ({
         selectedPaper: state.selectedPaper,
         selectedRepository: state.selectedRepository,
+        selectedRepositoryId: state.selectedRepositoryId,
         recentPapers: state.recentPapers,
         recentRepositories: state.recentRepositories,
         recentQuestions: state.recentQuestions,

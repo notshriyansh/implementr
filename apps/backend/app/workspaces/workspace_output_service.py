@@ -45,11 +45,13 @@ class WorkspaceOutputService:
         )
 
         if existing:
+            updates = payload.model_dump(
+                exclude_unset=True,
+                exclude={"workspace_id"},
+            )
 
-            existing.hybrid_result = payload.hybrid_result
-            existing.reproduction_result = payload.reproduction_result
-            existing.blueprint_result = payload.blueprint_result
-            existing.evaluation_result = payload.evaluation_result
+            for field, value in updates.items():
+                setattr(existing, field, value)
 
             self.db.commit()
             self.db.refresh(existing)

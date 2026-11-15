@@ -54,12 +54,17 @@ export default function RepositoryPage() {
   const setSelectedRepository = useAppStore(
     (state) => state.setSelectedRepository,
   );
+  const setSelectedRepositoryId = useAppStore(
+    (state) => state.setSelectedRepositoryId,
+  );
   const addRecentRepository = useAppStore((state) => state.addRecentRepository);
 
   async function handleAnalyze(location: string) {
     const repository = await ingestMutation.mutateAsync(location);
     setRepoPath(repository.repository_root);
     setSelectedRepository(repository.repository_root);
+    setSelectedRepositoryId(repository.repository_id);
+
     addRecentRepository(repository.repository_root);
     setSelectedFile(undefined);
     setSelectedChunk(undefined);

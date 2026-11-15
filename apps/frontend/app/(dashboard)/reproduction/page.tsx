@@ -9,6 +9,7 @@ import { ReproductionQuery } from "@/components/reproduction/reproduction-query"
 import { ReproductionResult } from "@/components/reproduction/reproduction-result";
 
 import { useReproductionPlan } from "@/hooks/use-reproduction-plan";
+import { useAppStore } from "@/stores/app-store";
 
 export default function ReproductionPage() {
   const mutation = useReproductionPlan();
@@ -35,7 +36,12 @@ export default function ReproductionPage() {
 
       <div className="mt-8">
         <ReproductionQuery
-          onAnalyze={(question) => mutation.mutate(question)}
+          onAnalyze={(question) =>
+            mutation.mutate({
+              question,
+              repositoryId: useAppStore.getState().selectedRepositoryId,
+            })
+          }
           loading={mutation.isPending}
         />
       </div>

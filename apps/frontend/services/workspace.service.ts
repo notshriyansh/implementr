@@ -1,3 +1,9 @@
+import type {
+  HybridAnalysisResponse,
+  ResearchReproductionPlan,
+  ImplementationBlueprint,
+  BlueprintEvaluationResult,
+} from "@/types/repository";
 import { apiClient } from "./api-client";
 
 import {
@@ -26,16 +32,18 @@ export async function getWorkspace(workspaceId: string): Promise<Workspace> {
   return response.data;
 }
 
-export async function saveWorkspaceOutputs(payload: {
+export interface SaveWorkspaceOutputsRequest {
   workspace_id: string;
+  hybrid_result?: HybridAnalysisResponse | null;
+  reproduction_result?: ResearchReproductionPlan | null;
+  blueprint_result?: ImplementationBlueprint | null;
+  evaluation_result?: BlueprintEvaluationResult | null;
+}
 
-  hybrid_result?: unknown;
-  reproduction_result?: unknown;
-  blueprint_result?: unknown;
-  evaluation_result?: unknown;
-}): Promise<WorkspaceOutput> {
+export async function saveWorkspaceOutputs(
+  payload: SaveWorkspaceOutputsRequest,
+): Promise<WorkspaceOutput> {
   const response = await apiClient.post("/workspace-outputs", payload);
-
   return response.data;
 }
 

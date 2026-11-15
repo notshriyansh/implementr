@@ -81,3 +81,5 @@ build/
 *.egg-info/
 
 .cph/
+
+benchmark-results/

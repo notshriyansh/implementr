@@ -9,6 +9,7 @@ import { BlueprintQuery } from "@/components/blueprints/blueprint-query";
 import { BlueprintResult } from "@/components/blueprints/blueprint-result";
 
 import { useBlueprint } from "@/hooks/use-blueprint";
+import { useAppStore } from "@/stores/app-store";
 
 export default function BlueprintsPage() {
   const mutation = useBlueprint();
@@ -35,7 +36,12 @@ export default function BlueprintsPage() {
 
       <div className="mt-8">
         <BlueprintQuery
-          onGenerate={(question) => mutation.mutate(question)}
+          onGenerate={(question) =>
+            mutation.mutate({
+              question,
+              repositoryId: useAppStore.getState().selectedRepositoryId,
+            })
+          }
           loading={mutation.isPending}
         />
       </div>

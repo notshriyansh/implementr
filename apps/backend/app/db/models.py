@@ -37,6 +37,11 @@ class Workspace(Base):
         nullable=True,
     )
 
+    selected_repository_id: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
     workspace_question: Mapped[str] = mapped_column(
         Text,
         nullable=True,

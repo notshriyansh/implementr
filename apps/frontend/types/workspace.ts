@@ -1,8 +1,16 @@
+import type {
+  HybridAnalysisResponse,
+  ResearchReproductionPlan,
+  ImplementationBlueprint,
+  BlueprintEvaluationResult,
+} from "./repository";
+
 export interface Workspace {
   id: string;
   name: string;
 
   selected_repository?: string;
+  selected_repository_id?: string;
   workspace_question?: string;
 
   blueprint_target_file?: string;
@@ -19,6 +27,7 @@ export interface CreateWorkspaceRequest {
   name: string;
 
   selected_repository?: string;
+  selected_repository_id?: string;
   workspace_question?: string;
 
   blueprint_target_file?: string;
@@ -31,9 +40,8 @@ export interface CreateWorkspaceRequest {
 export interface WorkspaceOutput {
   id: string;
   workspace_id: string;
-
-  hybrid_result?: unknown;
-  reproduction_result?: unknown;
-  blueprint_result?: unknown;
-  evaluation_result?: unknown;
+  hybrid_result?: HybridAnalysisResponse | null;
+  reproduction_result?: ResearchReproductionPlan | null;
+  blueprint_result?: ImplementationBlueprint | null;
+  evaluation_result?: BlueprintEvaluationResult | null;
 }
