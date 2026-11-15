@@ -102,15 +102,12 @@ class HybridImplementationAgent:
     async def analyze(
         self,
         question: str,
+        repository_id: str | None = None,
     ) -> HybridAnalysisResponse:
 
-        (
-            paper_chunks,
-            code_chunks,
-        ) = await (
-            self.retrieval_service.retrieve(
-                query=question,
-            )
+        paper_chunks, code_chunks = await self.retrieval_service.retrieve(
+            query=question,
+            repository_id=repository_id,
         )
 
         paper_context = "\n\n".join(
@@ -126,11 +123,10 @@ class HybridImplementationAgent:
             for chunk in code_chunks
         )
 
-        symbols = await (
-            self.symbol_retrieval_service.retrieve(
-                query=question,
-                k=20,
-            )
+        symbols = await self.symbol_retrieval_service.retrieve(
+            query=question,
+            k=20,
+            repository_id=repository_id,
         )
 
         concept_map = await (

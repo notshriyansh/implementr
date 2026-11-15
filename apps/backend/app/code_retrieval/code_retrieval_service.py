@@ -50,24 +50,18 @@ class CodeRetrievalService:
         self,
         query: str,
         k: int = 5,
+        repository_id: str | None = None,
     ) -> list[CodeChunk]:
-        query_embedding = (
-            await self.embedding_model.embed_query(
-                query
-            )
+        if k <= 0:
+            return []
+
+        query_embedding = await self.embedding_model.embed_query(query)
+
+        results = await self.vector_store.similarity_search(
+            query_embedding=query_embedding,
+            k=k * 3,
+            repository_id=repository_id,
         )
 
-        results = await (
-            self.vector_store.similarity_search(
-                query_embedding=query_embedding,
-                k=k * 3,
-            )
-        )
-
-        results = (
-            deduplicate_files(
-                results
-            )
-        )
-
+        results = deduplicate_files(results)
         return results[:k]

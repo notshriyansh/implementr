@@ -27,13 +27,12 @@ class SymbolVectorStore:
         embedding_dimension: int,
     ) -> None:
 
-        self.embedding_dimension = (
-            embedding_dimension
-        )
+        self.embedding_dimension = embedding_dimension
 
-        self.symbols: list[
-            CodeSymbol
-        ] = []
+        self.symbols: list[CodeSymbol] = []
+
+        self._repository_indexes: dict[str, faiss.Index] = {}
+        self._repository_symbol_indices: dict[str, list[int]] = {}
 
         self._load_or_create_index()
 
@@ -79,6 +78,42 @@ class SymbolVectorStore:
             len(self.symbols),
         )
 
+        self._rebuild_repository_indexes()
+
+    def _rebuild_repository_indexes(self) -> None:
+        self._repository_indexes = {}
+        self._repository_symbol_indices = {}
+
+        if not self.symbols:
+            return
+
+        if self.index.ntotal != len(self.symbols):
+            raise ValueError(
+                "Symbol FAISS index and metadata are inconsistent: "
+                f"{self.index.ntotal} vectors but {len(self.symbols)} symbols."
+            )
+
+        vectors_by_repository: dict[str, list[np.ndarray]] = {}
+
+        for global_index, symbol in enumerate(self.symbols):
+            vector = self.index.reconstruct(global_index)
+            vectors_by_repository.setdefault(
+                symbol.repository_id, []
+            ).append(vector)
+
+            self._repository_symbol_indices.setdefault(
+                symbol.repository_id, []
+            ).append(global_index)
+
+        for repository_id, vectors in vectors_by_repository.items():
+            repository_index = faiss.IndexFlatIP(
+                self.embedding_dimension
+            )
+            repository_index.add(
+                np.asarray(vectors, dtype=np.float32)
+            )
+            self._repository_indexes[repository_id] = repository_index
+
     def _persist(
         self,
     ) -> None:
@@ -103,26 +138,47 @@ class SymbolVectorStore:
     async def add_symbols(
         self,
         embeddings: np.ndarray,
-        symbols: list[
-            CodeSymbol
-        ],
+        symbols: list[CodeSymbol],
     ) -> None:
+        if len(embeddings) != len(symbols):
+            raise ValueError(
+                "The number of embeddings must match the number of symbols."
+            )
 
-        embeddings = embeddings.astype(
-            "float32"
-        )
+        if not symbols:
+            return
 
-        faiss.normalize_L2(
-            embeddings
-        )
+        embeddings = np.asarray(
+            embeddings,
+            dtype=np.float32,
+        ).copy()
 
-        self.index.add(
-            embeddings
-        )
+        if embeddings.ndim != 2 or embeddings.shape[1] != self.embedding_dimension:
+            raise ValueError(
+                f"Expected embeddings with shape (n, {self.embedding_dimension})."
+            )
 
-        self.symbols.extend(
-            symbols
-        )
+        faiss.normalize_L2(embeddings)
+
+        global_start = len(self.symbols)
+
+        self.index.add(embeddings)
+        self.symbols.extend(symbols)
+
+        for offset, symbol in enumerate(symbols):
+            repository_id = symbol.repository_id
+            vector = embeddings[offset : offset + 1]
+
+            if repository_id not in self._repository_indexes:
+                self._repository_indexes[repository_id] = faiss.IndexFlatIP(
+                    self.embedding_dimension
+                )
+                self._repository_symbol_indices[repository_id] = []
+
+            self._repository_indexes[repository_id].add(vector)
+            self._repository_symbol_indices[repository_id].append(
+                global_start + offset
+            )
 
         self._persist()
 
@@ -130,63 +186,75 @@ class SymbolVectorStore:
         self,
         query_embedding: np.ndarray,
         k: int = 5,
-    ) -> list[
-        CodeSymbol
-    ]:
+        repository_id: str | None = None,
+    ) -> list[CodeSymbol]:
+        if k <= 0 or self.index.ntotal == 0:
+            return []
 
-        query_embedding = (
-            query_embedding.astype(
-                "float32"
-            )
-        )
+        query_embedding = np.asarray(
+            query_embedding,
+            dtype=np.float32,
+        ).copy()
 
-        faiss.normalize_L2(
-            query_embedding
-        )
-
-        scores, indices = (
-            self.index.search(
-                query_embedding,
-                k,
-            )
-        )
-
-        scored_results = []
-
-        for position, idx in enumerate(
-            indices[0]
+        if (
+            query_embedding.ndim != 2
+            or query_embedding.shape[0] != 1
+            or query_embedding.shape[1] != self.embedding_dimension
         ):
+            raise ValueError(
+                "Expected query embedding with shape "
+                f"(1, {self.embedding_dimension})."
+            )
 
-            if (
-                idx == -1
-                or idx >= len(
-                    self.symbols
-                )
-            ):
+        faiss.normalize_L2(query_embedding)
+
+        if repository_id is None:
+            search_index = self.index
+            global_indices = None
+        else:
+            search_index = self._repository_indexes.get(repository_id)
+
+            if search_index is None or search_index.ntotal == 0:
+                return []
+
+            global_indices = self._repository_symbol_indices[repository_id]
+
+        search_k = (
+            search_index.ntotal
+            if repository_id is not None
+            else min(k, search_index.ntotal)
+        )
+
+        scores, indices = search_index.search(
+            query_embedding,
+            search_k,
+        )
+
+        ranked_symbols: list[tuple[float, CodeSymbol]] = []
+
+        for position, local_index in enumerate(indices[0]):
+            if local_index < 0:
                 continue
 
-            symbol = self.symbols[idx]
-
-            score = (
-                float(
-                    scores[0][position]
-                )
-                * symbol.importance
+            symbol_index = (
+                int(local_index)
+                if global_indices is None
+                else global_indices[int(local_index)]
             )
 
-            scored_results.append(
-                (
-                    score,
-                    symbol,
-                )
-            )
+            if symbol_index >= len(self.symbols):
+                continue
 
-        scored_results.sort(
+            symbol = self.symbols[symbol_index]
+            score = float(scores[0][position]) * symbol.importance
+            ranked_symbols.append((score, symbol))
+
+        ranked_symbols.sort(
+            key=lambda item: item[0],
             reverse=True,
-            key=lambda x: x[0],
         )
 
         return [
             symbol
-            for _, symbol in scored_results
+            for _, symbol in ranked_symbols[:k]
         ]
