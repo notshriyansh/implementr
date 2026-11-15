@@ -30,6 +30,7 @@ class WorkspaceService:
             blueprint_target_symbol=payload.blueprint_target_symbol,
             blueprint_target_reason=payload.blueprint_target_reason,
             selected_paper=payload.selected_paper,
+            selected_repository_id=payload.selected_repository_id,
         )
 
         self.db.add(workspace)

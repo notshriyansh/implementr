@@ -16,6 +16,8 @@ class CreateWorkspaceRequest(BaseModel):
 
     selected_paper: str | None = None
 
+    selected_repository_id: str | None = None
+
 
 class WorkspaceResponse(BaseModel):
     id: str
@@ -34,6 +36,8 @@ class WorkspaceResponse(BaseModel):
 
     selected_paper: str | None
 
+    selected_repository_id: str | None = None
+
 
 class UpdateWorkspaceRequest(
     BaseModel,
@@ -51,3 +55,5 @@ class UpdateWorkspaceRequest(
     blueprint_target_symbol: str | None = None
 
     blueprint_target_reason: str | None = None
+
+    selected_repository_id: str | None = None
