@@ -33,6 +33,9 @@ class FakeEmbeddingModel:
         self.query_calls += 1
         return np.array([[1.0, 0.0]], dtype=np.float32)
 
+    async def embed_chunks(self, items):
+        return np.ones((len(items), 2), dtype=np.float32)
+
 
 class FakeVectorStore:
     def __init__(self, chunks: list[CodeChunk]):
@@ -57,6 +60,13 @@ class FakeVectorStore:
             if repository_id is None
             or chunk.repository_id == repository_id
         ]
+
+    async def replace_repository(self, repository_id, embeddings, chunks):
+        self.replacement_kwargs = {
+            "repository_id": repository_id,
+            "embeddings": embeddings,
+            "chunks": chunks,
+        }
 
 
 def test_retrieve_forwards_repository_filter_and_deduplicates_files():
@@ -114,3 +124,21 @@ def test_retrieve_with_nonpositive_k_skips_embedding_and_search():
     assert results == []
     assert embedding_model.query_calls == 0
     assert vector_store.search_kwargs is None
+
+
+def test_replace_repository_chunks_forwards_repository_and_embeddings():
+    chunks = [
+        make_chunk("new-a1", "repo-a", "src/main.py"),
+        make_chunk("new-a2", "repo-a", "src/utils.py"),
+    ]
+    embedding_model = FakeEmbeddingModel()
+    vector_store = FakeVectorStore([])
+    service = CodeRetrievalService(embedding_model, vector_store)
+
+    asyncio.run(
+        service.replace_repository_chunks("repo-a", chunks)
+    )
+
+    assert vector_store.replacement_kwargs["repository_id"] == "repo-a"
+    assert vector_store.replacement_kwargs["chunks"] == chunks
+    assert vector_store.replacement_kwargs["embeddings"].shape == (2, 2)

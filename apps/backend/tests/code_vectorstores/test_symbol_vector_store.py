@@ -1,6 +1,7 @@
 import asyncio
 
 import numpy as np
+import pytest
 
 from app.code_vectorstores.symbol_vector_store import SymbolVectorStore
 from app.schemas.code_symbol import CodeSymbol
@@ -250,7 +251,6 @@ def test_repository_indexes_are_rebuilt_after_reload(
 
     asyncio.run(store.add_symbols(embeddings, symbols))
 
-    # Construct a fresh store using the same persisted files.
     reloaded_store = make_store(tmp_path, monkeypatch)
 
     assert reloaded_store._repository_indexes["repo-a"].ntotal == 1
@@ -265,3 +265,181 @@ def test_repository_indexes_are_rebuilt_after_reload(
     )
 
     assert [symbol.symbol_id for symbol in results] == ["b1"]
+
+
+def test_replace_repository_removes_old_symbols_and_indexes_new_ones(
+    tmp_path,
+    monkeypatch,
+):
+    store = make_store(tmp_path, monkeypatch)
+
+    asyncio.run(
+        store.add_symbols(
+            np.array(
+                [
+                    [1.0, 0.0],
+                    [0.0, 1.0],
+                    [0.8, 0.6],
+                ],
+                dtype=np.float32,
+            ),
+            [
+                make_symbol("old_a", "repo-a"),
+                make_symbol("keep_b", "repo-b"),
+                make_symbol("old_a2", "repo-a"),
+            ],
+        )
+    )
+
+    asyncio.run(
+        store.replace_repository(
+            "repo-a",
+            np.array([[0.6, 0.8]], dtype=np.float32),
+            [make_symbol("new_a", "repo-a")],
+        )
+    )
+
+    assert [s.symbol_id for s in store.symbols] == [
+        "keep_b",
+        "new_a",
+    ]
+    assert store.index.ntotal == 2
+    assert store._repository_indexes["repo-a"].ntotal == 1
+    assert store._repository_indexes["repo-b"].ntotal == 1
+
+
+def test_replace_repository_preserves_other_repository_search(
+    tmp_path,
+    monkeypatch,
+):
+    store = make_store(tmp_path, monkeypatch)
+
+    asyncio.run(
+        store.add_symbols(
+            np.array(
+                [
+                    [1.0, 0.0],
+                    [0.0, 1.0],
+                ],
+                dtype=np.float32,
+            ),
+            [
+                make_symbol("old_a", "repo-a"),
+                make_symbol("keep_b", "repo-b"),
+            ],
+        )
+    )
+
+    asyncio.run(
+        store.replace_repository(
+            "repo-a",
+            np.array([[0.8, 0.6]], dtype=np.float32),
+            [make_symbol("new_a", "repo-a")],
+        )
+    )
+
+    results = asyncio.run(
+        store.similarity_search(
+            np.array([[0.0, 1.0]], dtype=np.float32),
+            k=5,
+            repository_id="repo-b",
+        )
+    )
+
+    assert [s.symbol_id for s in results] == ["keep_b"]
+
+
+def test_replace_repository_with_empty_symbols_removes_repository(
+    tmp_path,
+    monkeypatch,
+):
+    store = make_store(tmp_path, monkeypatch)
+
+    asyncio.run(
+        store.add_symbols(
+            np.array([[1.0, 0.0]], dtype=np.float32),
+            [make_symbol("old_a", "repo-a")],
+        )
+    )
+
+    asyncio.run(
+        store.replace_repository(
+            "repo-a",
+            np.empty((0, 2), dtype=np.float32),
+            [],
+        )
+    )
+
+    assert store.index.ntotal == 0
+    assert store.symbols == []
+    assert "repo-a" not in store._repository_indexes
+    assert "repo-a" not in store._repository_symbol_indices
+
+
+def test_replace_repository_persists_consistent_indexes_and_metadata(
+    tmp_path,
+    monkeypatch,
+):
+    store = make_store(tmp_path, monkeypatch)
+
+    asyncio.run(
+        store.add_symbols(
+            np.array(
+                [
+                    [1.0, 0.0],
+                    [0.0, 1.0],
+                ],
+                dtype=np.float32,
+            ),
+            [
+                make_symbol("old_a", "repo-a"),
+                make_symbol("keep_b", "repo-b"),
+            ],
+        )
+    )
+
+    asyncio.run(
+        store.replace_repository(
+            "repo-a",
+            np.array([[0.6, 0.8]], dtype=np.float32),
+            [make_symbol("new_a", "repo-a")],
+        )
+    )
+
+    assert store.index.ntotal == len(store.symbols)
+
+    reloaded_store = make_store(tmp_path, monkeypatch)
+
+    assert reloaded_store.index.ntotal == 2
+    assert [s.symbol_id for s in reloaded_store.symbols] == [
+        "keep_b",
+        "new_a",
+    ]
+    assert reloaded_store._repository_indexes["repo-a"].ntotal == 1
+    assert reloaded_store._repository_indexes["repo-b"].ntotal == 1
+
+    results = asyncio.run(
+        reloaded_store.similarity_search(
+            np.array([[0.6, 0.8]], dtype=np.float32),
+            k=1,
+            repository_id="repo-a",
+        )
+    )
+
+    assert [s.symbol_id for s in results] == ["new_a"]
+
+
+def test_replace_repository_rejects_symbols_from_another_repository(
+    tmp_path,
+    monkeypatch,
+):
+    store = make_store(tmp_path, monkeypatch)
+
+    with pytest.raises(ValueError):
+        asyncio.run(
+            store.replace_repository(
+                "repo-a",
+                np.array([[1.0, 0.0]], dtype=np.float32),
+                [make_symbol("wrong_repo", "repo-b")],
+            )
+        )

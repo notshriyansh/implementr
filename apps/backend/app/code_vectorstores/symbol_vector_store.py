@@ -182,6 +182,106 @@ class SymbolVectorStore:
 
         self._persist()
 
+
+    async def replace_repository(
+        self,
+        repository_id: str,
+        embeddings: np.ndarray,
+        symbols: list[CodeSymbol],
+    ) -> None:
+        if len(embeddings) != len(symbols):
+            raise ValueError(
+                "The number of embeddings must match the number of symbols."
+            )
+
+        if any(
+            symbol.repository_id != repository_id
+            for symbol in symbols
+        ):
+            raise ValueError(
+                "All replacement symbols must belong to the specified repository."
+            )
+
+        new_embeddings = np.asarray(
+            embeddings,
+            dtype=np.float32,
+        ).copy()
+
+        if (
+            new_embeddings.ndim != 2
+            or new_embeddings.shape[1] != self.embedding_dimension
+        ):
+            raise ValueError(
+                f"Expected embeddings with shape (n, {self.embedding_dimension})."
+            )
+
+        if not np.isfinite(new_embeddings).all():
+            raise ValueError("Embeddings must contain only finite values.")
+
+        if self.index.ntotal != len(self.symbols):
+            raise ValueError(
+                "Symbol FAISS index and metadata are inconsistent: "
+                f"{self.index.ntotal} vectors but {len(self.symbols)} symbols."
+            )
+
+        faiss.normalize_L2(new_embeddings)
+
+        preserved_vectors = []
+        preserved_symbols = []
+
+        for global_index, symbol in enumerate(self.symbols):
+            if symbol.repository_id == repository_id:
+                continue
+
+            preserved_vectors.append(
+                self.index.reconstruct(global_index)
+            )
+            preserved_symbols.append(symbol)
+
+        replacement_index = faiss.IndexFlatIP(
+            self.embedding_dimension
+        )
+
+        if preserved_vectors:
+            replacement_index.add(
+                np.asarray(
+                    preserved_vectors,
+                    dtype=np.float32,
+                )
+            )
+
+        if len(new_embeddings):
+            replacement_index.add(new_embeddings)
+
+        replacement_symbols = preserved_symbols + symbols
+
+        repository_indexes: dict[str, faiss.Index] = {}
+        repository_symbol_indices: dict[str, list[int]] = {}
+
+        for global_index, symbol in enumerate(replacement_symbols):
+            current_repository_id = symbol.repository_id
+
+            if current_repository_id not in repository_indexes:
+                repository_indexes[current_repository_id] = (
+                    faiss.IndexFlatIP(self.embedding_dimension)
+                )
+                repository_symbol_indices[current_repository_id] = []
+
+            repository_indexes[current_repository_id].add(
+                replacement_index.reconstruct(global_index).reshape(1, -1)
+            )
+            repository_symbol_indices[current_repository_id].append(
+                global_index
+            )
+
+        self.index = replacement_index
+        self.symbols = replacement_symbols
+        self._repository_indexes = repository_indexes
+        self._repository_symbol_indices = repository_symbol_indices
+
+        self._persist()
+
+
     async def similarity_search(
         self,
         query_embedding: np.ndarray,

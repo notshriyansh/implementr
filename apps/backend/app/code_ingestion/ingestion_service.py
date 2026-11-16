@@ -32,6 +32,7 @@ from app.schemas.code_symbol import (
 from app.repository_sources.factory import (
     RepositorySourceFactory,
 )
+from app.schemas.concept import Concept
 
 
 class CodeIngestionService:
@@ -111,6 +112,8 @@ class CodeIngestionService:
             CodeSymbol
         ] = []
 
+        all_concepts: list[Concept] = []
+
         for file in files:
 
             chunks = self.chunker.chunk_file(
@@ -138,21 +141,26 @@ class CodeIngestionService:
             )
 
             for symbol in symbols:
-
-                concepts = (
+                all_concepts.extend(
                     self.concept_service.symbol_to_concepts(
                         symbol
                     )
                 )
 
-                for concept in concepts:
-                    self.concept_index.add(
-                        concept
-                    )
+        await self.retrieval_service.replace_repository_chunks(
+            repository.repository_id,
+            all_chunks,
+        )
 
-        await self.retrieval_service.index_chunks(all_chunks)
+        await self.symbol_retrieval_service.replace_repository_symbols(
+            repository.repository_id,
+            all_symbols,
+        )
 
-        await self.symbol_retrieval_service.index_symbols(all_symbols)
+        self.concept_index.replace_repository(
+            repository.repository_id,
+            all_concepts,
+        )
 
         self.repository_registry.register(repository)
 

@@ -39,6 +39,22 @@ class SymbolRetrievalService:
         )
 
 
+
+    async def replace_repository_symbols(
+        self,
+        repository_id: str,
+        symbols: list[CodeSymbol],
+    ) -> None:
+        embeddings = await self.embedding_model.embed_chunks(symbols)
+
+        await self.vector_store.replace_repository(
+            repository_id=repository_id,
+            embeddings=embeddings,
+            symbols=symbols,
+        )
+
+
+
     async def retrieve(
         self,
         query: str,
