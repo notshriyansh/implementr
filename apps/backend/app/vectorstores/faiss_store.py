@@ -108,21 +108,36 @@ class FAISSVectorStore(
         self,
         query_embedding: np.ndarray,
         k: int = 5,
+        paper_id: str | None = None,
     ) -> list[DocumentChunk]:
-        distances, indices = self.index.search(
+        if k <= 0 or self.index.ntotal == 0:
+            return []
+
+        search_k = (
+            self.index.ntotal
+            if paper_id is not None
+            else k
+        )
+
+        _, indices = self.index.search(
             query_embedding.astype("float32"),
-            k,
+            search_k,
         )
 
         results: list[DocumentChunk] = []
 
         for index in indices[0]:
-            if (
-                index != -1
-                and 0 <= index < len(self.chunks)
-            ):
-                results.append(
-                    self.chunks[index]
-                )
+            if index == -1 or not 0 <= index < len(self.chunks):
+                continue
+
+            chunk = self.chunks[index]
+
+            if paper_id is not None and chunk.paper_id != paper_id:
+                continue
+
+            results.append(chunk)
+
+            if len(results) == k:
+                break
 
         return results

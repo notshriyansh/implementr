@@ -10,21 +10,17 @@ export async function ingestRepository(
   location: string,
 ): Promise<RepositoryIngestResponse> {
   const response = await apiClient.post("/repository/ingest", null, {
-    params: {
-      location,
-    },
+    params: { location },
   });
 
   return response.data;
 }
 
 export async function getRepositoryStructure(
-  repoPath: string,
+  repositoryId: string,
 ): Promise<RepositoryMap> {
   const response = await apiClient.get("/repository/structure", {
-    params: {
-      repo_path: repoPath,
-    },
+    params: { repository_id: repositoryId },
   });
 
   return response.data;
@@ -39,11 +35,14 @@ export async function searchRepository(query: string) {
 }
 
 export async function fetchFileContent(
-  repoPath: string,
+  repositoryId: string,
   filePath: string,
 ): Promise<FileContent> {
   const response = await apiClient.get("/repository/file", {
-    params: { repo_path: repoPath, file_path: filePath },
+    params: {
+      repository_id: repositoryId,
+      file_path: filePath,
+    },
   });
 
   return response.data;

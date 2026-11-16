@@ -1,4 +1,4 @@
-import ast
+﻿import ast
 
 from pathlib import Path
 
@@ -11,6 +11,9 @@ from app.architecture.repository_graph import (
     RepositoryGraph,
 )
 
+from app.architecture.repository_graph_registry import (
+    RepositoryGraphRegistry,
+)
 from app.code_ingestion.repository_scanner import (
     RepositoryScanner,
 )
@@ -19,18 +22,19 @@ from app.code_ingestion.repository_scanner import (
 class RepositoryAnalyzer:
     def __init__(
         self,
-        graph: RepositoryGraph,
+        graph_registry: RepositoryGraphRegistry,
         scanner: RepositoryScanner,
     ) -> None:
-        self.graph = graph
+        self.graph_registry = graph_registry
         self.scanner = scanner
 
     def analyze(
         self,
         repo_path: str,
+        repository_id: str,
     ) -> RepositoryMap:
 
-        self.graph.clear()
+        graph = RepositoryGraph()
 
         root = Path(repo_path)
 
@@ -134,7 +138,7 @@ class RepositoryAnalyzer:
                             qualified_name
                         )
 
-                        self.graph.add_symbol(
+                        graph.add_symbol(
                             symbol_name=(
                                 qualified_name
                             ),
@@ -219,7 +223,7 @@ class RepositoryAnalyzer:
 
                             if called_name:
 
-                                self.graph.add_call(
+                                graph.add_call(
                                     caller=(
                                         qualified_name
                                     ),
@@ -237,12 +241,12 @@ class RepositoryAnalyzer:
                             node.name
                         )
 
-                        self.graph.add_symbol(
+                        graph.add_symbol(
                             symbol_name=node.name,
                             file_path=relative_path,
                         )
 
-                self.graph.add_file(
+                graph.add_file(
                     file_path=relative_path,
                     imports=imports,
                 )
@@ -258,6 +262,11 @@ class RepositoryAnalyzer:
 
             except Exception:
                 continue
+
+        self.graph_registry.replace(
+            repository_id,
+            graph,
+        )
 
         return RepositoryMap(
             files=files

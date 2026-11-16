@@ -9,9 +9,11 @@ export function useHybridAnalysis() {
     mutationFn: ({
       question,
       repositoryId,
+      paperId,
     }: {
       question: string;
       repositoryId?: string;
-    }) => analyzeHybrid(question, repositoryId),
+      paperId?: string;
+    }) => analyzeHybrid(question, repositoryId, paperId),
   });
 }

@@ -4,6 +4,7 @@ class PaperAuthor(BaseModel):
     name: str
 
 class Paper(BaseModel):
+    paper_id: str
     title: str
     summary: str
     pdf_url: str

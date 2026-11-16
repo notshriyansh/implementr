@@ -45,11 +45,13 @@ class ImplementationBlueprintService:
     async def generate(
         self,
         question: str,
+        repository_id: str | None = None,
     ) -> ImplementationBlueprint:
 
         plan = await (
             self.reproduction_service.generate(
-                question
+                question,
+                repository_id=repository_id,
             )
         )
 
@@ -57,6 +59,7 @@ class ImplementationBlueprintService:
             self.symbol_retrieval_service.retrieve(
                 query=question,
                 k=10,
+                repository_id=repository_id,
             )
         )
 

@@ -251,6 +251,7 @@ export default function WorkspacePage() {
                 const result = await hybridMutation.mutateAsync({
                   question: inputQuestion,
                   repositoryId: selectedRepositoryId,
+                  paperId: selectedPaper?.paper_id,
                 });
 
                 await persistWorkspaceOutput("hybrid_result", result);
@@ -287,6 +288,7 @@ export default function WorkspacePage() {
                       const result = await reproductionMutation.mutateAsync({
                         question,
                         repositoryId: selectedRepositoryId,
+                        paperId: selectedPaper?.paper_id,
                       });
                       await persistWorkspaceOutput(
                         "reproduction_result",

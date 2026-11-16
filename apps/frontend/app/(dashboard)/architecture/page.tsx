@@ -6,10 +6,17 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageContainer } from "@/components/shared/page-container";
 import { ContextPanel } from "@/components/context/context-panel";
 
+import { useAppStore } from "@/stores/app-store";
 import { useArchitectureAnalysis } from "@/hooks/use-architecture-analysis";
 
 export default function ArchitecturePage() {
   const mutation = useArchitectureAnalysis();
+
+  const selectedRepositoryId = useAppStore(
+    (state) => state.selectedRepositoryId,
+  );
+
+  const canAnalyze = Boolean(selectedRepositoryId);
 
   return (
     <PageContainer>
@@ -32,8 +39,14 @@ export default function ArchitecturePage() {
 
       <div className="mt-8">
         <ArchitectureQuery
-          onAnalyze={(query) => mutation.mutate(query)}
+          onAnalyze={(query) =>
+            mutation.mutate({
+              query,
+              repositoryId: selectedRepositoryId!,
+            })
+          }
           loading={mutation.isPending}
+          canAnalyze={canAnalyze}
         />
       </div>
 

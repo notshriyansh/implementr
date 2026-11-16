@@ -1,4 +1,4 @@
-from app.code_ingestion.code_chunker import (
+﻿from app.code_ingestion.code_chunker import (
     CodeChunker,
 )
 from app.code_ingestion.repository_scanner import (
@@ -25,6 +25,7 @@ from app.concepts.concept_index import (
 from app.code_ingestion.repository_analyzer import (
     RepositoryAnalyzer,
 )
+from app.repository_sources.repository_registry import RepositoryRegistry
 from app.schemas.code_symbol import (
     CodeSymbol,
 )
@@ -44,6 +45,7 @@ class CodeIngestionService:
         concept_service: ConceptService,
         concept_index: ConceptIndex,
         repository_analyzer: RepositoryAnalyzer,
+        repository_registry: RepositoryRegistry,
     ) -> None:
         self.scanner = scanner
 
@@ -71,6 +73,8 @@ class CodeIngestionService:
 
         self.repository_info = None
 
+        self.repository_registry = repository_registry
+
         self.repository_analyzer = (
         repository_analyzer
     )
@@ -91,7 +95,8 @@ class CodeIngestionService:
         self.repository_info = repository
 
         self.repository_analyzer.analyze(
-            str(repository.repository_root)
+            repo_path=str(repository.repository_root),
+            repository_id=repository.repository_id,
         )
 
         files = self.scanner.scan(
@@ -145,12 +150,10 @@ class CodeIngestionService:
                         concept
                     )
 
-        await self.retrieval_service.index_chunks(
-            all_chunks
-        )
+        await self.retrieval_service.index_chunks(all_chunks)
 
-        await self.symbol_retrieval_service.index_symbols(
-            all_symbols
-        )
+        await self.symbol_retrieval_service.index_symbols(all_symbols)
+
+        self.repository_registry.register(repository)
 
         return all_chunks

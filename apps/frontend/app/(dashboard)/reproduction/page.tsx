@@ -14,6 +14,11 @@ import { useAppStore } from "@/stores/app-store";
 export default function ReproductionPage() {
   const mutation = useReproductionPlan();
 
+  const selectedPaper = useAppStore((state) => state.selectedPaper);
+  const selectedRepositoryId = useAppStore(
+    (state) => state.selectedRepositoryId,
+  );
+
   return (
     <PageContainer>
       <section className="mb-12">
@@ -39,7 +44,8 @@ export default function ReproductionPage() {
           onAnalyze={(question) =>
             mutation.mutate({
               question,
-              repositoryId: useAppStore.getState().selectedRepositoryId,
+              repositoryId: selectedRepositoryId,
+              paperId: selectedPaper?.paper_id,
             })
           }
           loading={mutation.isPending}

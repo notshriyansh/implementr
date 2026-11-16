@@ -36,14 +36,18 @@ class HybridRetrievalService:
         paper_k: int = 3,
         code_k: int = 3,
         repository_id: str | None = None,
+        paper_id: str | None = None,
     ) -> tuple[list[DocumentChunk], list[CodeChunk]]:
         paper_chunks = await self.paper_retrieval.retrieve(
             query=query,
             k=paper_k,
+            paper_id=paper_id,
         )
+
         code_chunks = await self.code_retrieval.retrieve(
             query=query,
             k=code_k,
             repository_id=repository_id,
         )
+
         return paper_chunks, code_chunks

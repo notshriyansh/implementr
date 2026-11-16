@@ -1,37 +1,16 @@
-from app.schemas.architecture import (
-    ArchitectureInsight,
-)
+﻿import logging
 
-from app.code_retrieval.code_retrieval_service import (
-    CodeRetrievalService,
-)
-
-from app.code_retrieval.symbol_retrieval_service import (
-    SymbolRetrievalService,
-)
-
-from app.architecture.execution_flow_service import (
-    ExecutionFlowService,
-)
-
-from app.architecture.context_expander import (
-    ContextExpander,
-)
-
+from app.architecture.context_expander import ContextExpander
+from app.architecture.execution_flow_service import ExecutionFlowService
+from app.cache.memory_cache import MemoryCache
+from app.code_retrieval.code_retrieval_service import CodeRetrievalService
+from app.code_retrieval.symbol_retrieval_service import SymbolRetrievalService
 from app.llm.base import BaseLLM
+from app.observability.tracing import trace_execution
+from app.prompts.architecture_prompt import ARCHITECTURE_REASONING_PROMPT
+from app.schemas.architecture import ArchitectureInsight
 
-from app.prompts.architecture_prompt import (
-    ARCHITECTURE_REASONING_PROMPT,
-)
-
-from app.observability.tracing import (
-    trace_execution,
-)
-
-from app.cache.memory_cache import (
-    MemoryCache,
-)
-
+logger = logging.getLogger(__name__)
 
 class ArchitectureReasoningService:
     def __init__(
@@ -141,10 +120,11 @@ class ArchitectureReasoningService:
     async def analyze(
         self,
         query: str,
+        repository_id: str | None = None,
     ) -> ArchitectureInsight:
         
         cache_key = (
-            f"architecture:{query}"
+            f"architecture:{repository_id or 'global'}:{query}"
         )
 
         cached = self.cache.get(
@@ -159,6 +139,7 @@ class ArchitectureReasoningService:
             .retrieve(
                 query=query,
                 k=5,
+                repository_id=repository_id,
             )
         )
 
@@ -167,12 +148,15 @@ class ArchitectureReasoningService:
             .retrieve(
                 query=query,
                 k=5,
+                repository_id=repository_id,
             )
         )
 
         flow_context = await (
-            self.execution_flow_service
-            .expand_query(query)
+            self.execution_flow_service.expand_query(
+                query,
+                repository_id=repository_id,
+            )
         )
 
         relevant_files = list(
@@ -195,7 +179,8 @@ class ArchitectureReasoningService:
 
         relevant_files = (
             self.context_expander.expand(
-                list(graph_files)
+                list(graph_files),
+                repository_id=repository_id,
             )
         )
 
@@ -289,16 +274,22 @@ class ArchitectureReasoningService:
         )
 
         try:
-            reasoning = await (
-                self.llm.generate(
-                    prompt
-                )
+            reasoning = await self.llm.generate(prompt)
+
+            logger.info(
+                "Architecture LLM response received: "
+                "repository_id=%s, response_length=%d",
+                repository_id,
+                len(reasoning),
             )
 
         except Exception:
-            reasoning = (
-                "LLM generation failed."
+            logger.exception(
+                "Architecture LLM generation failed: "
+                "repository_id=%s",
+                repository_id,
             )
+            raise
 
         summary = (
             self.extract_section(

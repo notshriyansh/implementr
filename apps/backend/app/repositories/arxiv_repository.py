@@ -1,5 +1,7 @@
 import logging
 
+import re
+
 import feedparser  # type: ignore[import-untyped]
 import httpx
 
@@ -73,14 +75,14 @@ class ArxivRepository:
                 for author in entry.authors
             ]
 
+            paper_id = entry.id.rsplit("/abs/", 1)[-1]
+            paper_id = re.sub(r"v\d+$", "", paper_id)
+
             paper = Paper(
+                paper_id=paper_id,
                 title=entry.title,
                 summary=entry.summary,
-                pdf_url=entry.id.replace(
-                    "/abs/",
-                    "/pdf/",
-                )
-                + ".pdf",
+                pdf_url=entry.id.replace("/abs/", "/pdf/") + ".pdf",
                 published=entry.published,
                 authors=authors,
             )

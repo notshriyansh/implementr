@@ -52,6 +52,7 @@ class RetrievalService:
         self,
         query: str,
         k: int = 5,
+        paper_id: str | None = None,
     ) -> list[DocumentChunk]:
         query_embedding = (
             await self.embedding_model.embed_text(
@@ -63,11 +64,10 @@ class RetrievalService:
             query_embedding.reshape(1, -1)
         )
 
-        results = (
-            await self.vector_store.similarity_search(
-                query_embedding=query_embedding,
-                k=k,
-            )
+        results = await self.vector_store.similarity_search(
+            query_embedding=query_embedding,
+            k=k,
+            paper_id=paper_id,
         )
 
         results = deduplicate_chunks(

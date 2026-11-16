@@ -3,6 +3,7 @@ export interface PaperAuthor {
 }
 
 export interface Paper {
+  paper_id: string;
   title: string;
   summary: string;
   pdf_url: string;
