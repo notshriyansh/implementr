@@ -121,6 +121,87 @@ class CodeVectorStore:
 
         self._persist()
 
+
+    async def replace_repository(
+        self,
+        repository_id: str,
+        embeddings: np.ndarray,
+        chunks: list[CodeChunk],
+    ) -> None:
+        if len(embeddings) != len(chunks):
+            raise ValueError(
+                "The number of embeddings must match the number of chunks."
+            )
+
+        if any(
+            chunk.repository_id != repository_id
+            for chunk in chunks
+        ):
+            raise ValueError(
+                "All replacement chunks must belong to the specified repository."
+            )
+
+        new_embeddings = np.asarray(
+            embeddings,
+            dtype=np.float32,
+        ).copy()
+
+        if (
+            new_embeddings.ndim != 2
+            or new_embeddings.shape[1] != self.embedding_dimension
+        ):
+            raise ValueError(
+                f"Expected embeddings with shape (n, {self.embedding_dimension})."
+            )
+
+        if not np.isfinite(new_embeddings).all():
+            raise ValueError("Embeddings must contain only finite values.")
+
+        faiss.normalize_L2(new_embeddings)
+
+        if self.index.ntotal != len(self.chunks):
+            raise ValueError(
+                "Code FAISS index and metadata are inconsistent: "
+                f"{self.index.ntotal} vectors but {len(self.chunks)} chunks."
+            )
+
+        preserved_vectors = []
+        preserved_chunks = []
+
+        for index, chunk in enumerate(self.chunks):
+            if chunk.repository_id == repository_id:
+                continue
+
+            preserved_vectors.append(
+                self.index.reconstruct(index)
+            )
+            preserved_chunks.append(chunk)
+
+        replacement_index = faiss.IndexFlatIP(
+            self.embedding_dimension
+        )
+
+        if preserved_vectors:
+            replacement_index.add(
+                np.asarray(
+                    preserved_vectors,
+                    dtype=np.float32,
+                )
+            )
+
+        if len(new_embeddings):
+            replacement_index.add(new_embeddings)
+
+        replacement_chunks = (
+            preserved_chunks + chunks
+        )
+
+        self.index = replacement_index
+        self.chunks = replacement_chunks
+
+        self._persist()
+
+
     async def similarity_search(
         self,
         query_embedding: np.ndarray,

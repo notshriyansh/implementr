@@ -41,6 +41,12 @@ class CodeEmbeddingModel:
         chunks: list[Any],
     ) -> np.ndarray:
 
+        if not chunks:
+            return np.empty(
+                (0, self.embedding_model.embedding_dimension),
+                dtype=np.float32,
+            )
+
         texts: list[str] = []
 
         for chunk in chunks:

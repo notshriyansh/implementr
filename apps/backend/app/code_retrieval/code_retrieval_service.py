@@ -46,6 +46,22 @@ class CodeRetrievalService:
         )
 
 
+
+    async def replace_repository_chunks(
+        self,
+        repository_id: str,
+        chunks: list[CodeChunk],
+    ) -> None:
+        embeddings = await self.embedding_model.embed_chunks(chunks)
+
+        await self.vector_store.replace_repository(
+            repository_id=repository_id,
+            embeddings=embeddings,
+            chunks=chunks,
+        )
+
+
+
     async def retrieve(
         self,
         query: str,
