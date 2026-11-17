@@ -28,7 +28,7 @@ class GroqLLM(BaseLLM):
     ) -> str:
         response = (
             self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=settings.groq_model,
                 messages=[
                     {
                         "role": "user",
@@ -55,7 +55,7 @@ class GroqLLM(BaseLLM):
     ) -> AsyncGenerator[str, None]:
         stream = (
             self.client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model=settings.groq_model,
                 messages=[
                     {
                         "role": "user",

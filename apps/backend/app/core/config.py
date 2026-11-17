@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     groq_api_key: str = ""
+    groq_model: str = "openai/gpt-oss-120b"
     openai_api_key: str = ""
 
     jina_api_key: str = ""
